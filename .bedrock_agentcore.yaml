@@ -1,0 +1,182 @@
+default_agent: AcademicPipelineContentDev
+agents:
+  AcademicPipelineScholarDev:
+    name: AcademicPipelineScholarDev
+    language: python
+    node_version: '20'
+    entrypoint: /Users/guillermo.valdez/Documents/aws-a3-maestrias/src/agents/scholar/agent.py
+    deployment_type: direct_code_deploy
+    runtime_type: PYTHON_3_11
+    platform: linux/arm64
+    container_runtime: null
+    source_path: /Users/guillermo.valdez/Documents/aws-a3-maestrias
+    aws:
+      execution_role: arn:aws:iam::254508868459:role/AmazonBedrockAgentCoreSDKRuntime-us-east-1-4058655f4d
+      execution_role_auto_create: false
+      account: '254508868459'
+      region: us-east-1
+      ecr_repository: null
+      ecr_auto_create: false
+      s3_path: s3://bedrock-agentcore-codebuild-sources-254508868459-us-east-1
+      s3_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+        network_mode_config: null
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+      lifecycle_configuration:
+        idle_runtime_session_timeout: null
+        max_lifetime: null
+    bedrock_agentcore:
+      agent_id: AcademicPipelineScholarDev-7S4W3RBBi0
+      agent_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:runtime/AcademicPipelineScholarDev-7S4W3RBBi0
+      agent_session_id: 87e3c10a-3a59-4f93-947d-8112f4a22e28
+    codebuild:
+      project_name: null
+      execution_role: null
+      source_bucket: null
+    memory:
+      mode: STM_ONLY
+      memory_id: AcademicPipelineScholarDev_mem-FYZKJbF5He
+      memory_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:memory/AcademicPipelineScholarDev_mem-FYZKJbF5He
+      memory_name: AcademicPipelineScholarDev_mem
+      event_expiry_days: 30
+      first_invoke_memory_check_done: true
+      was_created_by_toolkit: false
+    identity:
+      credential_providers: []
+      workload: null
+    aws_jwt:
+      enabled: false
+      audiences: []
+      signing_algorithm: ES384
+      issuer_url: null
+      duration_seconds: 300
+    authorizer_configuration: null
+    request_header_configuration: null
+    oauth_configuration: null
+    api_key_env_var_name: null
+    api_key_credential_provider_name: null
+    is_generated_by_agentcore_create: false
+  AcademicPipelineDIDev:
+    name: AcademicPipelineDIDev
+    language: python
+    node_version: '20'
+    entrypoint: /Users/guillermo.valdez/Documents/aws-a3-maestrias/src/agents/di/agent.py
+    deployment_type: direct_code_deploy
+    runtime_type: PYTHON_3_11
+    platform: linux/arm64
+    container_runtime: null
+    source_path: /Users/guillermo.valdez/Documents/aws-a3-maestrias
+    aws:
+      execution_role: arn:aws:iam::254508868459:role/AmazonBedrockAgentCoreSDKRuntime-us-east-1-f5e6ae937f
+      execution_role_auto_create: false
+      account: '254508868459'
+      region: us-east-1
+      ecr_repository: null
+      ecr_auto_create: false
+      s3_path: s3://bedrock-agentcore-codebuild-sources-254508868459-us-east-1
+      s3_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+        network_mode_config: null
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+      lifecycle_configuration:
+        idle_runtime_session_timeout: null
+        max_lifetime: null
+    bedrock_agentcore:
+      agent_id: AcademicPipelineDIDev-Rp1Oj57gGL
+      agent_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:runtime/AcademicPipelineDIDev-Rp1Oj57gGL
+      agent_session_id: 562ad5d3-c975-4dfc-88d4-84bf45904fb0
+    codebuild:
+      project_name: null
+      execution_role: null
+      source_bucket: null
+    memory:
+      mode: STM_ONLY
+      memory_id: AcademicPipelineDIDev_mem-4QE2yM6pPf
+      memory_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:memory/AcademicPipelineDIDev_mem-4QE2yM6pPf
+      memory_name: AcademicPipelineDIDev_mem
+      event_expiry_days: 30
+      first_invoke_memory_check_done: true
+      was_created_by_toolkit: true
+    identity:
+      credential_providers: []
+      workload: null
+    aws_jwt:
+      enabled: false
+      audiences: []
+      signing_algorithm: ES384
+      issuer_url: null
+      duration_seconds: 300
+    authorizer_configuration: null
+    request_header_configuration: null
+    oauth_configuration: null
+    api_key_env_var_name: null
+    api_key_credential_provider_name: null
+    is_generated_by_agentcore_create: false
+  AcademicPipelineContentDev:
+    name: AcademicPipelineContentDev
+    language: python
+    node_version: '20'
+    entrypoint: /Users/guillermo.valdez/Documents/aws-a3-maestrias/src/agents/content/agent.py
+    deployment_type: direct_code_deploy
+    runtime_type: PYTHON_3_11
+    platform: linux/arm64
+    container_runtime: null
+    source_path: /Users/guillermo.valdez/Documents/aws-a3-maestrias
+    aws:
+      execution_role: arn:aws:iam::254508868459:role/AmazonBedrockAgentCoreSDKRuntime-us-east-1-a5142d6db9
+      execution_role_auto_create: false
+      account: '254508868459'
+      region: us-east-1
+      ecr_repository: null
+      ecr_auto_create: false
+      s3_path: s3://bedrock-agentcore-codebuild-sources-254508868459-us-east-1
+      s3_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+        network_mode_config: null
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+      lifecycle_configuration:
+        idle_runtime_session_timeout: null
+        max_lifetime: null
+    bedrock_agentcore:
+      agent_id: AcademicPipelineContentDev-fX2AEsCaMw
+      agent_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:runtime/AcademicPipelineContentDev-fX2AEsCaMw
+      agent_session_id: 7d5d1e66-b181-49fa-b20f-2738f8d53ca0
+    codebuild:
+      project_name: null
+      execution_role: null
+      source_bucket: null
+    memory:
+      mode: STM_ONLY
+      memory_id: AcademicPipelineContentDev_mem-Gjqbhj7KMz
+      memory_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:memory/AcademicPipelineContentDev_mem-Gjqbhj7KMz
+      memory_name: AcademicPipelineContentDev_mem
+      event_expiry_days: 30
+      first_invoke_memory_check_done: true
+      was_created_by_toolkit: true
+    identity:
+      credential_providers: []
+      workload: null
+    aws_jwt:
+      enabled: false
+      audiences: []
+      signing_algorithm: ES384
+      issuer_url: null
+      duration_seconds: 300
+    authorizer_configuration: null
+    request_header_configuration: null
+    oauth_configuration: null
+    api_key_env_var_name: null
+    api_key_credential_provider_name: null
+    is_generated_by_agentcore_create: false

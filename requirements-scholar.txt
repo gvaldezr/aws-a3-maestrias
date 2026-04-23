@@ -1,0 +1,6 @@
+strands-agents
+bedrock-agentcore
+httpx
+tenacity
+boto3
+jsonschema

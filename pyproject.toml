@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "academic-pipeline"
+version = "1.0.0"
+description = "Pipeline académico serverless → Canvas LMS con Amazon Bedrock Agents"
+requires-python = ">=3.11"
+dependencies = [
+    "aws-cdk-lib==2.170.0",
+    "constructs==10.4.2",
+    "boto3>=1.42.0",
+    "botocore>=1.42.0",
+    "jsonschema==4.23.0",
+    "pydantic==2.10.6",
+    # AgentCore Runtime + Strands
+    "bedrock-agentcore>=1.0.0",
+    "strands-agents>=0.1.0",
+    "strands-agents-tools>=0.1.0",
+    # HTTP client para Scopus
+    "httpx>=0.27.0",
+    "tenacity>=8.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.5",
+    "pytest-cov==6.0.0",
+    "hypothesis==6.130.0",
+    "moto[s3,dynamodb,secretsmanager,sns,kms]==5.0.27",
+    "aws-cdk-lib==2.170.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=src --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["src/infrastructure/stacks/*"]
