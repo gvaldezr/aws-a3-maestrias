@@ -28,6 +28,13 @@ class QACheckpointStack(cdk.Stack):
         cdk.Tags.of(self).add("Unit", "u5-qa-checkpoint")
         cdk.Tags.of(self).add("Environment", env_name)
 
+        # Shared layer with src.infrastructure modules
+        shared_layer = lambda_.LayerVersion(self, "SharedLayer",
+            code=lambda_.Code.from_asset("lambda-layer"),
+            compatible_runtimes=[lambda_.Runtime.PYTHON_3_11],
+            description="Shared infrastructure modules (logger, state_manager, schema)",
+        )
+
         bucket = s3.Bucket.from_bucket_name(self, "Bucket", subjects_bucket_name)
         table = dynamodb.Table.from_table_name(self, "Table", subjects_table_name)
         staff_topic = sns.Topic.from_topic_arn(self, "StaffTopic", staff_topic_arn)
@@ -67,6 +74,7 @@ class QACheckpointStack(cdk.Stack):
             timeout=cdk.Duration.seconds(30),
             memory_size=256,
             environment=lambda_env,
+            layers=[shared_layer],
         )
         bucket.grant_read_write(qa_lambda)
         table.grant_read_write_data(qa_lambda)
@@ -81,6 +89,7 @@ class QACheckpointStack(cdk.Stack):
             timeout=cdk.Duration.seconds(30),
             memory_size=256,
             environment=lambda_env,
+            layers=[shared_layer],
         )
         bucket.grant_read_write(checkpoint_lambda)
         table.grant_read_write_data(checkpoint_lambda)
@@ -96,6 +105,7 @@ class QACheckpointStack(cdk.Stack):
             timeout=cdk.Duration.seconds(60),
             memory_size=256,
             environment=lambda_env,
+            layers=[shared_layer],
         )
         bucket.grant_read(timeout_lambda)
         table.grant_read_data(timeout_lambda)

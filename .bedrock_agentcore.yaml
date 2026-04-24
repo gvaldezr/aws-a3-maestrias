@@ -32,7 +32,7 @@ agents:
     bedrock_agentcore:
       agent_id: AcademicPipelineScholarDev-7S4W3RBBi0
       agent_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:runtime/AcademicPipelineScholarDev-7S4W3RBBi0
-      agent_session_id: 87e3c10a-3a59-4f93-947d-8112f4a22e28
+      agent_session_id: 69b3d897-af99-4ecd-b08a-2a3991bcdf2c
     codebuild:
       project_name: null
       execution_role: null
