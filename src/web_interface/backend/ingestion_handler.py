@@ -44,11 +44,15 @@ def _extract_text_from_s3(bucket: str, key: str) -> str:
 
 def _extract_pdf(file_bytes: bytes) -> str:
     try:
-        import pdfplumber
-        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-            return "\n".join(page.extract_text() or "" for page in pdf.pages)
-    except ImportError:
-        return file_bytes.decode("utf-8", errors="ignore")
+        from pdfminer.high_level import extract_text
+        import io
+        text = extract_text(io.BytesIO(file_bytes))
+        if text and text.strip():
+            return text
+    except Exception:
+        pass
+    # Fallback: read as plain text
+    return file_bytes.decode("utf-8", errors="ignore")
 
 
 def _extract_docx(file_bytes: bytes) -> str:

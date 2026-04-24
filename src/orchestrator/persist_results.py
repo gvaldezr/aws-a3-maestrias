@@ -1,22 +1,65 @@
 """
 Persist agent results back to the Subject JSON in S3.
 Called by Step Functions after each agent completes.
+Handles Markdown-wrapped JSON responses from AgentCore agents.
 """
 from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import datetime, timezone
 from typing import Any
 
 import boto3
 
-from src.infrastructure.observability.logger import get_logger
-
-logger = get_logger(__name__)
-
 BUCKET = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
 TABLE = os.environ.get("SUBJECTS_TABLE_NAME", "academic-pipeline-subjects-dev")
+
+
+def _extract_json(result: dict) -> dict:
+    """Extract JSON from agent response — handles Markdown-wrapped JSON."""
+    raw = result.get("result", "")
+    if not raw:
+        return {}
+    if isinstance(raw, dict):
+        return raw
+    text = str(raw)
+
+    # 1. Direct JSON parse
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        pass
+
+    # 2. Extract from ```json ... ``` blocks (largest one)
+    matches = re.findall(r'```(?:json)?\s*\n(.*?)\n```', text, re.DOTALL)
+    best = {}
+    for m in matches:
+        try:
+            parsed = json.loads(m.strip())
+            if isinstance(parsed, dict) and len(parsed) > len(best):
+                best = parsed
+        except json.JSONDecodeError:
+            continue
+    if best:
+        return best
+
+    # 3. Find largest JSON object in text
+    brace_start = text.find('{')
+    if brace_start >= 0:
+        depth = 0
+        for i in range(brace_start, len(text)):
+            if text[i] == '{':
+                depth += 1
+            elif text[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(text[brace_start:i+1])
+                    except json.JSONDecodeError:
+                        break
+    return {}
 
 
 def _get_json(s3, subject_id: str) -> dict:
@@ -26,18 +69,12 @@ def _get_json(s3, subject_id: str) -> dict:
 
 def _save_json(s3, subject_id: str, data: dict) -> None:
     data["updated_at"] = datetime.now(timezone.utc).isoformat()
-    s3.put_object(
-        Bucket=BUCKET,
-        Key=f"subjects/{subject_id}/subject.json",
-        Body=json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8"),
-        ContentType="application/json",
-    )
-    # Update DynamoDB state index
-    ddb = boto3.resource("dynamodb", region_name=os.environ.get("AWS_REGION", "us-east-1"))
-    table = ddb.Table(TABLE)
-    table.put_item(Item={
-        "subject_id": subject_id,
-        "SK": "STATE",
+    s3.put_object(Bucket=BUCKET, Key=f"subjects/{subject_id}/subject.json",
+                  Body=json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8"),
+                  ContentType="application/json")
+    ddb = boto3.resource("dynamodb")
+    ddb.Table(TABLE).put_item(Item={
+        "subject_id": subject_id, "SK": "STATE",
         "current_state": data["pipeline_state"]["current_state"],
         "subject_name": data["metadata"]["subject_name"],
         "program_name": data["metadata"]["program_name"],
@@ -46,21 +83,28 @@ def _save_json(s3, subject_id: str, data: dict) -> None:
     })
 
 
+def _add_history(sj: dict, state: str, agent: str) -> None:
+    sj["pipeline_state"]["current_state"] = state
+    sj["pipeline_state"]["state_history"].append({
+        "state": state, "agent": agent,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "llm_version": "claude-sonnet-4.6", "result_hash": "",
+    })
+
+
 def persist_scholar(event: dict, context: Any) -> dict:
-    """Persist Scholar results into Subject JSON. Update state to KNOWLEDGE_MATRIX_READY."""
     subject_id = event.get("subject_id") or event.get("scholar", {}).get("subject_id", "")
-    scholar_result = event.get("scholar", {}).get("result", {})
-    s3 = boto3.client("s3", region_name=os.environ.get("AWS_REGION", "us-east-1"))
-
-    logger.info("persist_scholar", extra={"subject_id": subject_id})
+    raw_result = event.get("scholar", {}).get("result", {})
+    parsed = _extract_json(raw_result)
+    
+    # Log what we received and parsed
+    import logging
+    logging.getLogger().setLevel(logging.INFO)
+    logging.info(f"PERSIST_SCHOLAR raw_keys={list(raw_result.keys()) if isinstance(raw_result, dict) else type(raw_result).__name__}")
+    logging.info(f"PERSIST_SCHOLAR parsed_keys={list(parsed.keys())}")
+    
+    s3 = boto3.client("s3")
     sj = _get_json(s3, subject_id)
-
-    # Extract papers and matrix from agent response (may be in "result" key)
-    result_text = scholar_result.get("result", "")
-    try:
-        parsed = json.loads(result_text) if isinstance(result_text, str) else result_text
-    except (json.JSONDecodeError, TypeError):
-        parsed = {}
 
     sj.setdefault("research", {})
     if parsed.get("top20_papers"):
@@ -70,32 +114,17 @@ def persist_scholar(event: dict, context: Any) -> dict:
     if parsed.get("keywords_used"):
         sj["research"]["keywords"] = parsed["keywords_used"]
 
-    sj["pipeline_state"]["current_state"] = "KNOWLEDGE_MATRIX_READY"
-    now = datetime.now(timezone.utc).isoformat()
-    sj["pipeline_state"]["state_history"].append({
-        "state": "KNOWLEDGE_MATRIX_READY", "agent": "scholar-agent",
-        "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": "",
-    })
-
+    _add_history(sj, "KNOWLEDGE_MATRIX_READY", "scholar-agent")
     _save_json(s3, subject_id, sj)
-    logger.info("persist_scholar_done", extra={"subject_id": subject_id})
-    return {"subject_id": subject_id, "state": "KNOWLEDGE_MATRIX_READY"}
+    return {"subject_id": subject_id, "state": "KNOWLEDGE_MATRIX_READY",
+            "papers_persisted": len(sj["research"].get("top20_papers", []))}
 
 
 def persist_di(event: dict, context: Any) -> dict:
-    """Persist DI results into Subject JSON. Update state to DI_READY."""
     subject_id = event.get("subject_id") or event.get("di", {}).get("subject_id", "")
-    di_result = event.get("di", {}).get("result", {})
-    s3 = boto3.client("s3", region_name=os.environ.get("AWS_REGION", "us-east-1"))
-
-    logger.info("persist_di", extra={"subject_id": subject_id})
+    parsed = _extract_json(event.get("di", {}).get("result", {}))
+    s3 = boto3.client("s3")
     sj = _get_json(s3, subject_id)
-
-    result_text = di_result.get("result", "")
-    try:
-        parsed = json.loads(result_text) if isinstance(result_text, str) else result_text
-    except (json.JSONDecodeError, TypeError):
-        parsed = {}
 
     sj.setdefault("instructional_design", {})
     if parsed.get("objectives"):
@@ -107,31 +136,17 @@ def persist_di(event: dict, context: Any) -> dict:
     if parsed.get("content_map"):
         sj["instructional_design"]["content_map"] = parsed["content_map"]
 
-    sj["pipeline_state"]["current_state"] = "DI_READY"
-    now = datetime.now(timezone.utc).isoformat()
-    sj["pipeline_state"]["state_history"].append({
-        "state": "DI_READY", "agent": "di-agent",
-        "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": "",
-    })
-
+    _add_history(sj, "DI_READY", "di-agent")
     _save_json(s3, subject_id, sj)
-    return {"subject_id": subject_id, "state": "DI_READY"}
+    return {"subject_id": subject_id, "state": "DI_READY",
+            "objectives_persisted": len(sj["instructional_design"].get("learning_objectives", []))}
 
 
 def persist_content(event: dict, context: Any) -> dict:
-    """Persist Content results into Subject JSON. Update state to CONTENT_READY."""
     subject_id = event.get("subject_id") or event.get("content", {}).get("subject_id", "")
-    content_result = event.get("content", {}).get("result", {})
-    s3 = boto3.client("s3", region_name=os.environ.get("AWS_REGION", "us-east-1"))
-
-    logger.info("persist_content", extra={"subject_id": subject_id})
+    parsed = _extract_json(event.get("content", {}).get("result", {}))
+    s3 = boto3.client("s3")
     sj = _get_json(s3, subject_id)
-
-    result_text = content_result.get("result", "")
-    try:
-        parsed = json.loads(result_text) if isinstance(result_text, str) else result_text
-    except (json.JSONDecodeError, TypeError):
-        parsed = {}
 
     sj.setdefault("content_package", {})
     if parsed.get("executive_readings"):
@@ -143,12 +158,8 @@ def persist_content(event: dict, context: Any) -> dict:
     if parsed.get("lab_cases"):
         sj["content_package"]["lab_cases"] = parsed["lab_cases"]
 
-    sj["pipeline_state"]["current_state"] = "CONTENT_READY"
-    now = datetime.now(timezone.utc).isoformat()
-    sj["pipeline_state"]["state_history"].append({
-        "state": "CONTENT_READY", "agent": "content-agent",
-        "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": "",
-    })
-
+    _add_history(sj, "CONTENT_READY", "content-agent")
     _save_json(s3, subject_id, sj)
-    return {"subject_id": subject_id, "state": "CONTENT_READY"}
+    return {"subject_id": subject_id, "state": "CONTENT_READY",
+            "quizzes_persisted": len(sj["content_package"].get("quizzes", [])),
+            "has_maestria": bool(sj["content_package"].get("maestria_artifacts"))}

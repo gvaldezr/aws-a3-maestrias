@@ -10,11 +10,6 @@ import uuid
 from typing import Any
 
 import boto3
-from botocore.auth import SigV4Auth
-from botocore.awsrequest import AWSRequest
-from botocore.credentials import Credentials
-import urllib.request
-import urllib.error
 
 from src.infrastructure.observability.logger import get_logger
 
@@ -26,41 +21,29 @@ CONTENT_ARN = os.environ.get("CONTENT_RUNTIME_ARN", "")
 
 
 def _invoke_runtime(runtime_arn: str, payload: dict) -> dict:
-    """Invoke AgentCore Runtime via signed HTTP request."""
+    """Invoke AgentCore Runtime via boto3 bedrock-agent-runtime."""
+    import uuid
     region = os.environ.get("AWS_REGION", "us-east-1")
     runtime_id = runtime_arn.split("/")[-1]
-    session_id = f"orch-{uuid.uuid4().hex[:16]}"
-
-    # Build the invoke URL
-    url = f"https://bedrock-agentcore.{region}.amazonaws.com/runtimes/{runtime_id}/endpoints/DEFAULT/sessions/{session_id}/invocations"
-
-    body = json.dumps(payload).encode("utf-8")
-
-    # Sign the request with SigV4
-    session = boto3.Session()
-    credentials = session.get_credentials().get_frozen_credentials()
-
-    request = AWSRequest(method="POST", url=url, data=body, headers={
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    })
-    SigV4Auth(credentials, "bedrock-agentcore", region).add_auth(request)
-
-    req = urllib.request.Request(
-        url=url,
-        data=body,
-        headers=dict(request.headers),
-        method="POST",
-    )
+    session_id = f"orch-{uuid.uuid4().hex}-{uuid.uuid4().hex[:8]}"
 
     try:
-        with urllib.request.urlopen(req, timeout=300) as resp:
-            result = json.loads(resp.read().decode("utf-8"))
-            return result
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode("utf-8") if e.fp else str(e)
-        logger.error("agentcore_invoke_failed", extra={"runtime_id": runtime_id, "status": e.code, "error": error_body[:200]})
-        return {"error": error_body[:500], "status_code": e.code}
+        client = boto3.client("bedrock-agentcore", region_name=region)
+        response = client.invoke_agent_runtime(
+            agentRuntimeArn=runtime_arn,
+            qualifier="DEFAULT",
+            runtimeSessionId=session_id,
+            payload=json.dumps(payload).encode("utf-8"),
+        )
+        body = response.get("body", b"")
+        if hasattr(body, "read"):
+            body = body.read()
+        if isinstance(body, bytes):
+            body = body.decode("utf-8")
+        try:
+            return json.loads(body)
+        except json.JSONDecodeError:
+            return {"result": body}
     except Exception as e:
         logger.error("agentcore_invoke_error", extra={"runtime_id": runtime_id, "error": str(e)})
         return {"error": str(e)}
