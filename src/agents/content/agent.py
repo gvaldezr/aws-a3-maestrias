@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 
+import boto3
 from bedrock_agentcore import BedrockAgentCoreApp
 from bedrock_agentcore.runtime.context import RequestContext
 
@@ -156,7 +158,56 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
         })
 
     result = agent(prompt)
-    return {"result": str(result)}
+    result_str = str(result)
+
+    if subject_id:
+        try:
+            _self_persist_content(subject_id, result_str)
+        except Exception:
+            pass
+
+    return {"result": result_str}
+
+
+def _self_persist_content(subject_id: str, result_text: str) -> None:
+
+    from datetime import datetime, timezone
+
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    table_name = os.environ.get("SUBJECTS_TABLE_NAME", "academic-pipeline-subjects-dev")
+    s3 = boto3.client("s3")
+    ddb = boto3.resource("dynamodb")
+
+    obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
+    sj = json.loads(obj["Body"].read().decode("utf-8"))
+
+    parsed = {}
+    matches = re.findall(r'```(?:json)?\s*\n(.*?)\n```', result_text, re.DOTALL)
+    for m in matches:
+        try:
+            p = json.loads(m.strip())
+            if isinstance(p, dict) and len(p) > len(parsed):
+                parsed = p
+        except json.JSONDecodeError:
+            continue
+
+    sj.setdefault("content_package", {})
+    if parsed.get("executive_readings"):
+        sj["content_package"]["executive_readings"] = parsed["executive_readings"]
+    if parsed.get("quizzes"):
+        sj["content_package"]["quizzes"] = parsed["quizzes"]
+    if parsed.get("maestria_artifacts"):
+        sj["content_package"]["maestria_artifacts"] = parsed["maestria_artifacts"]
+    if parsed.get("lab_cases"):
+        sj["content_package"]["lab_cases"] = parsed["lab_cases"]
+
+    now = datetime.now(timezone.utc).isoformat()
+    sj["pipeline_state"]["current_state"] = "CONTENT_READY"
+    sj["pipeline_state"]["state_history"].append({"state": "CONTENT_READY", "agent": "content-agent", "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": ""})
+    sj["updated_at"] = now
+
+    s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json", Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"), ContentType="application/json")
+    ddb.Table(table_name).put_item(Item={"subject_id": subject_id, "SK": "STATE", "current_state": "CONTENT_READY", "subject_name": sj["metadata"]["subject_name"], "program_name": sj["metadata"]["program_name"], "updated_at": now, "s3_key": f"subjects/{subject_id}/subject.json"})
 
 
 if __name__ == "__main__":

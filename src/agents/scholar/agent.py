@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 
+import boto3
 from bedrock_agentcore import BedrockAgentCoreApp
 from bedrock_agentcore.runtime.context import RequestContext
 
@@ -153,7 +155,84 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
         })
 
     result = agent(prompt)
-    return {"result": str(result)}
+    result_str = str(result)
+
+    # Self-persist: if subject_id provided, write results to S3 + DynamoDB
+    if subject_id:
+        try:
+            _self_persist(subject_id, result_str, "research", "KNOWLEDGE_MATRIX_READY", "scholar-agent")
+        except Exception as e:
+            import logging
+            logging.getLogger().error(f"PERSIST_ERROR: {e}")
+
+    return {"result": result_str}
+
+
+def _self_persist(subject_id: str, result_text: str, section: str, new_state: str, agent_name: str) -> None:
+    """Write agent results directly to S3 JSON and update DynamoDB."""
+    from datetime import datetime, timezone
+
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    table_name = os.environ.get("SUBJECTS_TABLE_NAME", "academic-pipeline-subjects-dev")
+
+    s3 = boto3.client("s3")
+    ddb = boto3.resource("dynamodb")
+
+    # Read current JSON
+    obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
+    sj = json.loads(obj["Body"].read().decode("utf-8"))
+
+    # Parse JSON from agent response
+    parsed = {}
+    # Try ```json blocks
+    matches = re.findall(r'```(?:json)?\s*\n(.*?)\n```', result_text, re.DOTALL)
+    for m in matches:
+        try:
+            p = json.loads(m.strip())
+            if isinstance(p, dict) and len(p) > len(parsed):
+                parsed = p
+        except json.JSONDecodeError:
+            continue
+    # Try direct parse
+    if not parsed:
+        try:
+            parsed = json.loads(result_text)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    # Persist based on section
+    if section == "research":
+        sj.setdefault("research", {})
+        if parsed.get("top20_papers"):
+            sj["research"]["top20_papers"] = parsed["top20_papers"]
+        if parsed.get("knowledge_matrix"):
+            sj["research"]["knowledge_matrix"] = parsed["knowledge_matrix"]
+        if parsed.get("keywords_used"):
+            sj["research"]["keywords"] = parsed["keywords_used"]
+
+    # Update state
+    now = datetime.now(timezone.utc).isoformat()
+    sj["pipeline_state"]["current_state"] = new_state
+    sj["pipeline_state"]["state_history"].append({
+        "state": new_state, "agent": agent_name,
+        "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": "",
+    })
+    sj["updated_at"] = now
+
+    # Write back to S3
+    s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json",
+                  Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"),
+                  ContentType="application/json")
+
+    # Update DynamoDB
+    ddb.Table(table_name).put_item(Item={
+        "subject_id": subject_id, "SK": "STATE",
+        "current_state": new_state,
+        "subject_name": sj["metadata"]["subject_name"],
+        "program_name": sj["metadata"]["program_name"],
+        "updated_at": now,
+        "s3_key": f"subjects/{subject_id}/subject.json",
+    })
 
 
 if __name__ == "__main__":
