@@ -38,6 +38,7 @@ class OrchestratorStack(cdk.Stack):
         }
 
         # Lambda for each orchestration step
+        warmup_lambda = self._create_lambda("WarmupStep", "invoke_agent.warm_up_agents", lambda_env, shared_layer, env_name, timeout=120)
         scholar_lambda = self._create_lambda("ScholarStep", "invoke_agent.invoke_scholar", lambda_env, shared_layer, env_name, timeout=600)
         persist_scholar = self._create_lambda("PersistScholarFn", "persist_results.persist_scholar", lambda_env, shared_layer, env_name, timeout=30)
         di_lambda = self._create_lambda("DIStep", "invoke_agent.invoke_di", lambda_env, shared_layer, env_name, timeout=480)
@@ -48,7 +49,7 @@ class OrchestratorStack(cdk.Stack):
         canvas_lambda = self._create_lambda("CanvasStep", "invoke_agent.invoke_canvas_publisher", lambda_env, shared_layer, env_name, timeout=300)
 
         # Grant AgentCore invoke permissions
-        for fn in [scholar_lambda, di_lambda, content_lambda]:
+        for fn in [warmup_lambda, scholar_lambda, di_lambda, content_lambda]:
             fn.add_to_role_policy(iam.PolicyStatement(
                 actions=["bedrock-agentcore:InvokeAgentRuntime"],
                 resources=["*"],
@@ -80,6 +81,8 @@ class OrchestratorStack(cdk.Stack):
             ))
 
         # Step Functions tasks with persist steps
+        step_warmup = tasks.LambdaInvoke(self, "WarmUpAgents",
+            lambda_function=warmup_lambda, payload_response_only=True, result_path="$.warmup")
         step_scholar = tasks.LambdaInvoke(self, "InvokeScholar",
             lambda_function=scholar_lambda, payload_response_only=True, result_path="$.scholar")
         step_persist_scholar = tasks.LambdaInvoke(self, "PersistScholar",
@@ -130,7 +133,8 @@ class OrchestratorStack(cdk.Stack):
         # QA passes → Pending Approval (human reviews via API)
         # QA fails → Fail state
         definition = (
-            step_scholar
+            step_warmup
+            .next(step_scholar)
             .next(step_persist_scholar)
             .next(step_di)
             .next(step_persist_di)

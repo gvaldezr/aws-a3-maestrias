@@ -20,6 +20,44 @@ DI_ARN = os.environ.get("DI_RUNTIME_ARN", "")
 CONTENT_ARN = os.environ.get("CONTENT_RUNTIME_ARN", "")
 
 
+def warm_up_agents(event: dict, context: Any) -> dict:
+    """Pre-warm all 3 AgentCore agents with a simple ping. Called once at pipeline start."""
+    import time
+    region = os.environ.get("AWS_REGION", "us-east-1")
+    client = boto3.client("bedrock-agentcore", region_name=region)
+    results = {}
+
+    for name, arn in [("scholar", SCHOLAR_ARN), ("di", DI_ARN), ("content", CONTENT_ARN)]:
+        if not arn:
+            results[name] = "skipped"
+            continue
+        session_id = f"warmup-{uuid.uuid4().hex}-{uuid.uuid4().hex[:8]}"
+        for attempt in range(3):
+            try:
+                resp = client.invoke_agent_runtime(
+                    agentRuntimeArn=arn,
+                    qualifier="DEFAULT",
+                    runtimeSessionId=session_id,
+                    payload=json.dumps({"prompt": "ping"}).encode("utf-8"),
+                )
+                body = resp.get("body", b"")
+                if hasattr(body, "read"):
+                    body.read()
+                results[name] = "warm"
+                logger.info("warmup_ok", extra={"agent": name, "attempt": attempt + 1})
+                break
+            except Exception as e:
+                if attempt < 2:
+                    logger.info("warmup_retry", extra={"agent": name, "attempt": attempt + 1, "error": str(e)[:100]})
+                    time.sleep(15)
+                    session_id = f"warmup-{uuid.uuid4().hex}-{uuid.uuid4().hex[:8]}"
+                else:
+                    results[name] = f"failed: {str(e)[:80]}"
+                    logger.error("warmup_failed", extra={"agent": name, "error": str(e)[:100]})
+
+    return {"subject_id": event.get("subject_id", ""), "warmup": results}
+
+
 def _invoke_runtime(runtime_arn: str, payload: dict) -> dict:
     """Invoke AgentCore Runtime via boto3 bedrock-agent-runtime."""
     import uuid
@@ -40,7 +78,7 @@ def _invoke_runtime(runtime_arn: str, payload: dict) -> dict:
                     runtimeSessionId=session_id,
                     payload=json.dumps(payload).encode("utf-8"),
                 )
-                body = response.get("body", b"")
+                body = response.get("response") or response.get("body", b"")
                 if hasattr(body, "read"):
                     body = body.read()
                 if isinstance(body, bytes):
