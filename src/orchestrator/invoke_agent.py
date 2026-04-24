@@ -29,21 +29,37 @@ def _invoke_runtime(runtime_arn: str, payload: dict) -> dict:
 
     try:
         client = boto3.client("bedrock-agentcore", region_name=region)
-        response = client.invoke_agent_runtime(
-            agentRuntimeArn=runtime_arn,
-            qualifier="DEFAULT",
-            runtimeSessionId=session_id,
-            payload=json.dumps(payload).encode("utf-8"),
-        )
-        body = response.get("body", b"")
-        if hasattr(body, "read"):
-            body = body.read()
-        if isinstance(body, bytes):
-            body = body.decode("utf-8")
-        try:
-            return json.loads(body)
-        except json.JSONDecodeError:
-            return {"result": body}
+        
+        # Retry up to 3 times for cold start timeouts
+        last_error = None
+        for attempt in range(3):
+            try:
+                response = client.invoke_agent_runtime(
+                    agentRuntimeArn=runtime_arn,
+                    qualifier="DEFAULT",
+                    runtimeSessionId=session_id,
+                    payload=json.dumps(payload).encode("utf-8"),
+                )
+                body = response.get("body", b"")
+                if hasattr(body, "read"):
+                    body = body.read()
+                if isinstance(body, bytes):
+                    body = body.decode("utf-8")
+                try:
+                    return json.loads(body)
+                except json.JSONDecodeError:
+                    return {"result": body}
+            except Exception as e:
+                last_error = e
+                if "500" in str(e) and attempt < 2:
+                    import time
+                    logger.info("agentcore_retry", extra={"runtime_id": runtime_id, "attempt": attempt + 1})
+                    time.sleep(10)
+                    session_id = f"orch-{uuid.uuid4().hex}-{uuid.uuid4().hex[:8]}"
+                    continue
+                raise
+        
+        return {"error": str(last_error)}
     except Exception as e:
         logger.error("agentcore_invoke_error", extra={"runtime_id": runtime_id, "error": str(e)})
         return {"error": str(e)}
