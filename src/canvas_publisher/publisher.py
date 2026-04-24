@@ -9,15 +9,24 @@ import os
 from datetime import datetime, timezone
 from typing import Any
 
-from src.canvas_publisher.canvas_client import CanvasAPIError, CanvasClient
-from src.canvas_publisher.formatters import (
+try:
+    from canvas_client import CanvasAPIError, CanvasClient
+except ImportError:
+    from src.canvas_publisher.canvas_client import CanvasAPIError, CanvasClient
+try:
+    from formatters import (
+except ImportError:
+    from src.canvas_publisher.formatters import (
     format_apa_page_payload,
     format_page_payload,
     format_quiz_payload,
     format_quiz_question_payload,
     format_rubric_payload,
 )
-from src.canvas_publisher.models import PublicationResult
+try:
+    from models import PublicationResult
+except ImportError:
+    from src.canvas_publisher.models import PublicationResult
 from src.infrastructure.observability.logger import get_logger
 from src.infrastructure.observability.metrics import record_metric, send_notification
 from src.infrastructure.state.models import StateMetadata, SubjectState

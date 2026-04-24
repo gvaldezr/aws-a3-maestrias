@@ -31,7 +31,7 @@ def _get_agent():
         model_id="us.anthropic.claude-sonnet-4-6",
         region_name=os.environ.get("AWS_REGION", "us-east-1"),
         temperature=0.0,
-        max_tokens=4096,
+        max_tokens=16384,
     )
 
     @tool
@@ -47,7 +47,7 @@ def _get_agent():
         import httpx
 
         def _get_api_key() -> str:
-            secret_arn = os.environ.get("SCOPUS_SECRET_ARN", "")
+            secret_arn = os.environ.get("SCOPUS_SECRET_ARN", "arn:aws:secretsmanager:us-east-1:254508868459:secret:academic-pipeline/dev/scopus-api-key-CrgImQ")
             if not secret_arn:
                 return ""
             client = boto3.client("secretsmanager")

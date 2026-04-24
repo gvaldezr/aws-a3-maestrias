@@ -1,39 +1,31 @@
+# CDK
+cdk.out/
+.cdk.staging/
+
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
+*.pyc
+.venv/
 *.egg-info/
 dist/
 build/
-.eggs/
-*.egg
-
-# Virtual environments
-.venv/
-venv/
-env/
-
-# Coverage
-.coverage
-htmlcov/
-.pytest_cache/
-
-# CDK
-cdk.out/
 
 # AgentCore
-.bedrock_agentcore/
+.bedrock_agentcore.yaml
 
 # IDE
-.vscode/
 .idea/
+.vscode/
+*.swp
 
 # OS
 .DS_Store
-Thumbs.db
+
+# Coverage
+coverage-report/
+.coverage
+htmlcov/
 
 # Cache
 .cache/
-
-# Generated diagrams at root (duplicates)
-pipeline-academico-canvas.png
+.pytest_cache/

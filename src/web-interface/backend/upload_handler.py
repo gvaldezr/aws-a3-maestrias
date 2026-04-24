@@ -13,7 +13,11 @@ import boto3
 
 from src.infrastructure.observability.logger import get_logger
 from src.infrastructure.observability.metrics import record_metric
-from src.web_interface.backend.document_parser import validate_upload
+
+try:
+    from document_parser import validate_upload
+except ImportError:
+    from src.web_interface.backend.document_parser import validate_upload
 
 logger = get_logger(__name__)
 

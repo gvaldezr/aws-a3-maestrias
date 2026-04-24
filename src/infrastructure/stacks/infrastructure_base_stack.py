@@ -99,6 +99,12 @@ class InfrastructureBaseStack(cdk.Stack):
             description="OAuth Token de Canvas LMS Cloud — poblar manualmente",
             encryption_key=self.kms_key,
         )
+        self.canvas_api_key_secret = secretsmanager.Secret(
+            self, "CanvasApiKey",
+            secret_name=f"academic-pipeline/{env_name}/canvas-api-key",
+            description="API Key de Canvas LMS — poblar manualmente",
+            encryption_key=self.kms_key,
+        )
 
         # ── SNS Topics ───────────────────────────────────────────────────────
         self.pipeline_alerts_topic = sns.Topic(
@@ -137,6 +143,7 @@ class InfrastructureBaseStack(cdk.Stack):
         cdk.CfnOutput(self, "StaffNotificationsTopicArn", value=self.staff_notifications_topic.topic_arn)
         cdk.CfnOutput(self, "ScopusSecretArn", value=self.scopus_secret.secret_arn)
         cdk.CfnOutput(self, "CanvasSecretArn", value=self.canvas_secret.secret_arn)
+        cdk.CfnOutput(self, "CanvasApiKeySecretArn", value=self.canvas_api_key_secret.secret_arn)
 
     def _create_unit_roles(self, env_name: str) -> None:
         """Crea roles IAM con least-privilege para cada unidad del pipeline."""
@@ -166,5 +173,6 @@ class InfrastructureBaseStack(cdk.Stack):
         self.kms_key.grant_encrypt_decrypt(lambda_role)
         self.scopus_secret.grant_read(lambda_role)
         self.canvas_secret.grant_read(lambda_role)
+        self.canvas_api_key_secret.grant_read(lambda_role)
         self.pipeline_alerts_topic.grant_publish(lambda_role)
         self.staff_notifications_topic.grant_publish(lambda_role)

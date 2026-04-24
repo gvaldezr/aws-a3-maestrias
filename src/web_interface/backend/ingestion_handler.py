@@ -17,7 +17,11 @@ from src.infrastructure.observability.logger import get_logger
 from src.infrastructure.observability.metrics import record_metric
 from src.infrastructure.state.models import StateMetadata, SubjectState
 from src.infrastructure.state.state_manager import update_subject_state
-from src.web_interface.backend.document_parser import parse_text_to_document
+
+try:
+    from document_parser import parse_text_to_document
+except ImportError:
+    from src.web_interface.backend.document_parser import parse_text_to_document
 
 logger = get_logger(__name__)
 
@@ -100,20 +104,19 @@ def _build_initial_json(parsed: "ParsedDocument") -> dict:
 
 
 def _invoke_scholar_agent(subject_id: str) -> None:
-    """Invoca el Agente Scholar en AgentCore Runtime para iniciar el pipeline."""
-    runtime_arn = os.environ.get("SCHOLAR_AGENT_RUNTIME_ARN", "")
-    if not runtime_arn:
-        logger.warning("scholar_runtime_arn_not_configured", extra={"subject_id": subject_id})
+    """Invoca el pipeline completo via Step Functions."""
+    state_machine_arn = os.environ.get("STATE_MACHINE_ARN", "")
+    if not state_machine_arn:
+        logger.warning("state_machine_arn_not_configured", extra={"subject_id": subject_id})
         return
 
-    bedrock_agentcore = boto3.client("bedrock-agentcore", region_name=os.environ.get("AWS_REGION", "us-east-1"))
-    bedrock_agentcore.invoke_agent_runtime(
-        agentRuntimeArn=runtime_arn,
-        qualifier="DEFAULT",
-        runtimeSessionId=subject_id,
-        payload=json.dumps({"subject_id": subject_id}).encode(),
+    sfn_client = boto3.client("stepfunctions", region_name=os.environ.get("AWS_REGION", "us-east-1"))
+    sfn_client.start_execution(
+        stateMachineArn=state_machine_arn,
+        name=f"pipeline-{subject_id[:8]}-{uuid.uuid4().hex[:8]}",
+        input=json.dumps({"subject_id": subject_id}),
     )
-    logger.info("scholar_agent_invoked", extra={"subject_id": subject_id})
+    logger.info("pipeline_started_via_stepfunctions", extra={"subject_id": subject_id})
 
 
 def lambda_handler(event: dict, context: Any) -> dict:

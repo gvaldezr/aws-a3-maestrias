@@ -89,6 +89,10 @@ aws secretsmanager put-secret-value \
 aws secretsmanager put-secret-value \
   --secret-id "academic-pipeline/dev/canvas-oauth-token" \
   --secret-string '{"oauth_token": "<tu-canvas-token>"}'
+
+aws secretsmanager put-secret-value \
+  --secret-id "academic-pipeline/dev/canvas-api-key" \
+  --secret-string '{"api_key": "<tu-canvas-api-key>"}'
 ```
 
 ### 5. Desplegar agentes con AgentCore CLI (U2, U3, U4)

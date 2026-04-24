@@ -29,6 +29,13 @@ class CanvasPublisherStack(cdk.Stack):
         staff_topic = sns.Topic.from_topic_arn(self, "StaffTopic", staff_topic_arn)
         alerts_topic = sns.Topic.from_topic_arn(self, "AlertsTopic", alerts_topic_arn)
 
+        # Shared layer
+        shared_layer = lambda_.LayerVersion(self, "SharedLayer",
+            code=lambda_.Code.from_asset("lambda-layer"),
+            compatible_runtimes=[lambda_.Runtime.PYTHON_3_11],
+            description="Shared infrastructure modules",
+        )
+
         publisher_lambda = lambda_.Function(self, "CanvasPublisher",
             function_name=f"academic-pipeline-canvas-publisher-{env_name}",
             runtime=lambda_.Runtime.PYTHON_3_11,
@@ -36,11 +43,12 @@ class CanvasPublisherStack(cdk.Stack):
             code=lambda_.Code.from_asset("src/canvas_publisher"),
             timeout=cdk.Duration.seconds(300),
             memory_size=512,
+            layers=[shared_layer],
             environment={
                 "SUBJECTS_BUCKET_NAME": subjects_bucket_name,
                 "SUBJECTS_TABLE_NAME": subjects_table_name,
                 "CANVAS_SECRET_ARN": canvas_secret_arn,
-                "CANVAS_BASE_URL": "https://institution.instructure.com",  # configurar por entorno
+                "CANVAS_BASE_URL": "https://anahuacmerida.instructure.com",
                 "CANVAS_ACCOUNT_ID": "1",
                 "STAFF_NOTIFICATIONS_TOPIC_ARN": staff_topic_arn,
                 "PIPELINE_ALERTS_TOPIC_ARN": alerts_topic_arn,
