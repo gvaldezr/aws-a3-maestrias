@@ -101,6 +101,11 @@ class WebInterfaceStack(cdk.Stack):
         # API Gateway (reuse from U5 or create new)
         api = apigateway.RestApi(self, "WebAPI",
             rest_api_name=f"academic-pipeline-web-{env_name}",
+            default_cors_preflight_options=apigateway.CorsOptions(
+                allow_origins=apigateway.Cors.ALL_ORIGINS,
+                allow_methods=apigateway.Cors.ALL_METHODS,
+                allow_headers=["Authorization", "Content-Type", "X-Amz-Date", "X-Api-Key"],
+            ),
         )
         user_pool = cognito.UserPool.from_user_pool_id(self, "UserPool", user_pool_id)
         authorizer = apigateway.CognitoUserPoolsAuthorizer(self, "WebAuth",

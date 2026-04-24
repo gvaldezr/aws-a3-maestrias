@@ -129,6 +129,9 @@ def lambda_handler(event: dict, context: Any) -> dict:
     for record in records:
         bucket = record["s3"]["bucket"]["name"]
         key = record["s3"]["object"]["key"]
+        # S3 events URL-encode the key — decode it
+        import urllib.parse
+        key = urllib.parse.unquote_plus(key)
 
         # Extraer subject_id del path: uploads/{subject_id}/{filename}
         parts = key.split("/")
@@ -141,8 +144,22 @@ def lambda_handler(event: dict, context: Any) -> dict:
             parsed = parse_text_to_document(text, subject_id, source_file=key)
             initial_json = _build_initial_json(parsed)
 
-            # Persistir JSON inicial en S3 + DynamoDB
+            # Persistir JSON inicial en S3
             from src.infrastructure.state.state_manager import save_subject_json
+            save_subject_json(initial_json)
+
+            # Persistir estado en DynamoDB directamente
+            ddb = boto3.resource("dynamodb")
+            table = ddb.Table(os.environ.get("SUBJECTS_TABLE_NAME", "academic-pipeline-subjects-dev"))
+            table.put_item(Item={
+                "subject_id": subject_id,
+                "SK": "STATE",
+                "current_state": "INGESTED",
+                "subject_name": parsed.subject_name,
+                "program_name": parsed.program_name,
+                "updated_at": initial_json["updated_at"],
+                "s3_key": f"subjects/{subject_id}/subject.json",
+            })
             save_subject_json(initial_json)
 
             # Disparar Agente Scholar (BR-W04)

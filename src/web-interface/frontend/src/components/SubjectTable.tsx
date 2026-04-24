@@ -1,114 +1,108 @@
-/**
- * SubjectTable — Dashboard de estado del pipeline por asignatura.
- * Polling cada 30 segundos (BR-W05).
- */
 import React, { useCallback, useEffect, useState } from "react";
-import { DashboardData, getDashboard, PipelineStatus } from "../api/pipeline";
 
-const STATE_LABELS: Record<string, string> = {
-  INGESTED: "Ingresado",
-  KNOWLEDGE_MATRIX_READY: "Investigación completa",
-  DI_READY: "Diseño instruccional listo",
-  CONTENT_READY: "Contenido generado",
-  PENDING_APPROVAL: "⏳ Pendiente de aprobación",
-  APPROVED: "Aprobado",
-  REJECTED: "Rechazado",
-  PUBLISHED: "✅ Publicado en Canvas",
-  FAILED: "❌ Error",
-  RESEARCH_ESCALATED: "⚠️ Escalado — Investigación",
-  DI_ALIGNMENT_GAP: "⚠️ Gap de alineación",
-  QA_FAILED: "⚠️ QA fallido",
-  CONTENT_QA_FAILED: "⚠️ Contenido incompleto",
+const LABELS: Record<string, string> = {
+  INGESTED: "Ingresado", KNOWLEDGE_MATRIX_READY: "Investigacion completa",
+  DI_READY: "Diseno instruccional listo", CONTENT_READY: "Contenido generado",
+  PENDING_APPROVAL: "Pendiente de aprobacion", APPROVED: "Aprobado",
+  REJECTED: "Rechazado", PUBLISHED: "Publicado en Canvas",
+  FAILED: "Error", RESEARCH_ESCALATED: "Escalado",
+};
+const COLORS: Record<string, string> = {
+  PUBLISHED: "#4CAF50", APPROVED: "#8BC34A", PENDING_APPROVAL: "#FF9800",
+  FAILED: "#f44336", REJECTED: "#f44336", INGESTED: "#2196F3",
 };
 
-interface Props {
-  onCheckpoint: (subjectId: string) => void;
-}
+interface Subject { subject_id: string; subject_name: string; program_name: string; current_state: string; updated_at: string; pending_approval: boolean; }
+interface Props { apiUrl: string; checkpointApiUrl: string; headers: Record<string, string>; onCheckpoint: (id: string) => void; }
 
-export function SubjectTable({ onCheckpoint }: Props) {
-  const [data, setData] = useState<DashboardData | null>(null);
+export function SubjectTable({ apiUrl, checkpointApiUrl, headers, onCheckpoint }: Props) {
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
+  const [counts, setCounts] = useState({ total: 0, pending: 0, published: 0, failed: 0 });
+  const [deciding, setDeciding] = useState<string | null>(null);
+  const [comments, setComments] = useState("");
 
   const fetchData = useCallback(async () => {
     try {
-      const result = await getDashboard();
-      setData(result);
-    } catch {
-      // silently retry on next poll
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      const r = await fetch(`${apiUrl}/api/subjects`, { headers });
+      if (r.ok) {
+        const data = await r.json();
+        setSubjects(data.subjects || []);
+        setCounts({ total: data.total, pending: data.pending_approval_count, published: data.published_count, failed: data.failed_count });
+      }
+    } catch {} finally { setLoading(false); }
+  }, [apiUrl, headers]);
 
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30_000); // BR-W05
-    return () => clearInterval(interval);
-  }, [fetchData]);
+  useEffect(() => { fetchData(); const i = setInterval(fetchData, 30000); return () => clearInterval(i); }, [fetchData]);
+
+  const handleDecision = async (subjectId: string, decision: string) => {
+    try {
+      await fetch(`${checkpointApiUrl}/subjects/${subjectId}/decision`, {
+        method: "POST", headers,
+        body: JSON.stringify({ decision, comments: comments || undefined }),
+      });
+      setDeciding(null); setComments("");
+      fetchData();
+    } catch (err: any) { alert(`Error: ${err.message}`); }
+  };
 
   if (loading) return <p data-testid="refresh-indicator">Cargando...</p>;
-  if (!data) return <p>Error al cargar el dashboard.</p>;
 
   return (
     <div>
-      <div className="dashboard-summary">
-        <span>Total: {data.total}</span>
-        <span>Pendientes: {data.pending_approval_count}</span>
-        <span>Publicados: {data.published_count}</span>
-        <span>Errores: {data.failed_count}</span>
+      <h2>Estado del Pipeline</h2>
+      <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
+        <span style={{ padding: "8px 16px", background: "#e3f2fd", borderRadius: 4 }}>Total: {counts.total}</span>
+        <span style={{ padding: "8px 16px", background: "#fff3e0", borderRadius: 4 }}>Pendientes: {counts.pending}</span>
+        <span style={{ padding: "8px 16px", background: "#e8f5e9", borderRadius: 4 }}>Publicados: {counts.published}</span>
+        <span style={{ padding: "8px 16px", background: "#ffebee", borderRadius: 4 }}>Errores: {counts.failed}</span>
       </div>
-
-      <span data-testid="refresh-indicator" aria-live="polite" className="sr-only">
-        Actualizando cada 30 segundos
-      </span>
-
-      <table aria-label="Estado del pipeline por asignatura">
+      <span data-testid="refresh-indicator" style={{ fontSize: 12, color: "#999" }}>Actualiza cada 30s</span>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 10 }}>
         <thead>
-          <tr>
-            <th>Asignatura</th>
-            <th>Programa</th>
-            <th>Estado</th>
-            <th>Actualizado</th>
-            <th>Acción</th>
+          <tr style={{ background: "#f5f5f5", textAlign: "left" }}>
+            <th style={{ padding: 10 }}>Asignatura</th><th style={{ padding: 10 }}>Programa</th>
+            <th style={{ padding: 10 }}>Estado</th><th style={{ padding: 10 }}>Actualizado</th><th style={{ padding: 10 }}>Accion</th>
           </tr>
         </thead>
         <tbody>
-          {data.subjects.map((subject: PipelineStatus) => (
-            <tr key={subject.subject_id} data-testid={`subject-row-${subject.subject_id}`}>
-              <td>{subject.subject_name}</td>
-              <td>{subject.program_name}</td>
-              <td>
-                <span
-                  data-testid={`status-badge-${subject.subject_id}`}
-                  className={`status-badge status-${subject.current_state.toLowerCase()}`}
-                >
-                  {STATE_LABELS[subject.current_state] ?? subject.current_state}
+          {subjects.map((s) => (
+            <tr key={s.subject_id} data-testid={`subject-row-${s.subject_id}`} style={{ borderBottom: "1px solid #eee" }}>
+              <td style={{ padding: 10 }}>{s.subject_name}</td>
+              <td style={{ padding: 10 }}>{s.program_name}</td>
+              <td style={{ padding: 10 }}>
+                <span data-testid={`status-badge-${s.subject_id}`}
+                  style={{ padding: "4px 10px", borderRadius: 12, fontSize: 13, color: "white", background: COLORS[s.current_state] || "#9e9e9e" }}>
+                  {LABELS[s.current_state] || s.current_state}
                 </span>
               </td>
-              <td>{new Date(subject.updated_at).toLocaleString()}</td>
-              <td>
-                {subject.pending_approval && (
-                  <button
-                    data-testid={`action-button-${subject.subject_id}`}
-                    onClick={() => onCheckpoint(subject.subject_id)}
-                    aria-label={`Revisar ${subject.subject_name}`}
-                  >
+              <td style={{ padding: 10, fontSize: 13 }}>{new Date(s.updated_at).toLocaleString()}</td>
+              <td style={{ padding: 10 }}>
+                {s.pending_approval && deciding !== s.subject_id && (
+                  <button data-testid={`action-button-${s.subject_id}`} onClick={() => setDeciding(s.subject_id)}
+                    style={{ padding: "6px 14px", background: "#FF9800", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}>
                     Revisar
                   </button>
                 )}
-                {subject.canvas_course_url && (
-                  <a
-                    href={subject.canvas_course_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-testid={`canvas-link-${subject.subject_id}`}
-                  >
-                    Ver en Canvas
-                  </a>
+                {deciding === s.subject_id && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <button data-testid="approve-button" onClick={() => handleDecision(s.subject_id, "APPROVED")}
+                      style={{ padding: "6px 12px", background: "#4CAF50", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}>
+                      Aprobar
+                    </button>
+                    <input data-testid="rejection-comments-input" placeholder="Comentarios (obligatorio para rechazar)"
+                      value={comments} onChange={(e) => setComments(e.target.value)}
+                      style={{ padding: 6, border: "1px solid #ccc", borderRadius: 4 }} />
+                    <button data-testid="reject-button" onClick={() => handleDecision(s.subject_id, "REJECTED")} disabled={!comments}
+                      style={{ padding: "6px 12px", background: "#f44336", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}>
+                      Rechazar
+                    </button>
+                  </div>
                 )}
               </td>
             </tr>
           ))}
+          {subjects.length === 0 && <tr><td colSpan={5} style={{ padding: 20, textAlign: "center", color: "#999" }}>No hay asignaturas en proceso</td></tr>}
         </tbody>
       </table>
     </div>

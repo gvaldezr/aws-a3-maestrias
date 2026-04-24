@@ -28,6 +28,9 @@ _SECURITY_HEADERS = {
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Content-Security-Policy": "default-src 'self'",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Authorization,Content-Type",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
 }
 
 
@@ -57,11 +60,15 @@ def lambda_handler(event: dict, context: Any) -> dict:
     s3_key = f"uploads/{subject_id}/{file_name}"
     bucket = os.environ["SUBJECTS_BUCKET_NAME"]
 
-    s3_client = boto3.client("s3")
+    s3_client = boto3.client("s3", config=boto3.session.Config(signature_version='s3v4'))
     presigned_url = s3_client.generate_presigned_url(
         "put_object",
-        Params={"Bucket": bucket, "Key": s3_key, "ContentType": content_type},
-        ExpiresIn=300,  # 5 minutos
+        Params={
+            "Bucket": bucket,
+            "Key": s3_key,
+            "ContentType": content_type,
+        },
+        ExpiresIn=300,
     )
 
     record_metric("DocumentsUploaded", 1, "Count")
