@@ -45,8 +45,23 @@ def _get_agent():
             language: Content language: ES, EN, or BILINGUAL
             papers: Optional list of research papers to reference in readings
         """
+        def _ensure_dicts(items):
+            result = []
+            for item in (items or []):
+                if isinstance(item, dict):
+                    result.append(item)
+                elif isinstance(item, str):
+                    try:
+                        parsed = json.loads(item)
+                        if isinstance(parsed, dict):
+                            result.append(parsed)
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+            return result
+
+        weekly_map = _ensure_dicts(weekly_map)
+        papers = _ensure_dicts(papers)
         readings = []
-        papers = papers or []
         for week in weekly_map:
             w = week.get("week", 1)
             theme = week.get("theme", "")
@@ -110,7 +125,22 @@ def _get_agent():
             objectives: Optional list of learning objectives from DI agent
             syllabus: Optional syllabus text for context
         """
-        objectives = objectives or []
+        def _ensure_dicts(items):
+            result = []
+            for item in (items or []):
+                if isinstance(item, dict):
+                    result.append(item)
+                elif isinstance(item, str):
+                    try:
+                        parsed = json.loads(item)
+                        if isinstance(parsed, dict):
+                            result.append(parsed)
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+            return result
+
+        learning_outcomes = _ensure_dicts(learning_outcomes)
+        objectives = _ensure_dicts(objectives)
         quizzes = []
         for lo in learning_outcomes:
             ra_id = lo["ra_id"]
@@ -175,6 +205,26 @@ def _get_agent():
         """
         weekly_map = weekly_map or []
         learning_outcomes = learning_outcomes or []
+
+        # Coerce string items to dicts (LLM sometimes passes JSON strings)
+        def _ensure_dicts(items: list) -> list:
+            result = []
+            for item in items:
+                if isinstance(item, dict):
+                    result.append(item)
+                elif isinstance(item, str):
+                    try:
+                        parsed = json.loads(item)
+                        if isinstance(parsed, dict):
+                            result.append(parsed)
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+            return result
+
+        papers = _ensure_dicts(papers)
+        competencies = _ensure_dicts(competencies)
+        weekly_map = _ensure_dicts(weekly_map)
+        learning_outcomes = _ensure_dicts(learning_outcomes)
 
         # 1. Dashboard de Evidencia — use ACTUAL papers
         rows = ["| # | Título | Año | Revista | Hallazgo |", "|---|--------|-----|---------|----------|"]
