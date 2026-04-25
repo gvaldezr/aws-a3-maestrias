@@ -38,16 +38,35 @@ class OrchestratorStack(cdk.Stack):
         }
 
         # Lambda for each orchestration step
+        warmup_lambda = self._create_lambda("WarmupStep", "invoke_agent.warm_up_agents", lambda_env, shared_layer, env_name, timeout=120)
         scholar_lambda = self._create_lambda("ScholarStep", "invoke_agent.invoke_scholar", lambda_env, shared_layer, env_name, timeout=600)
+        persist_scholar = self._create_lambda("PersistScholarFn", "persist_results.persist_scholar", lambda_env, shared_layer, env_name, timeout=30)
         di_lambda = self._create_lambda("DIStep", "invoke_agent.invoke_di", lambda_env, shared_layer, env_name, timeout=480)
+        persist_di = self._create_lambda("PersistDIFn", "persist_results.persist_di", lambda_env, shared_layer, env_name, timeout=30)
         content_lambda = self._create_lambda("ContentStep", "invoke_agent.invoke_content", lambda_env, shared_layer, env_name, timeout=600)
+        persist_content = self._create_lambda("PersistContentFn", "persist_results.persist_content", lambda_env, shared_layer, env_name, timeout=30)
         qa_lambda = self._create_lambda("QAStep", "invoke_agent.invoke_qa_gate", lambda_env, shared_layer, env_name, timeout=60)
         canvas_lambda = self._create_lambda("CanvasStep", "invoke_agent.invoke_canvas_publisher", lambda_env, shared_layer, env_name, timeout=300)
 
         # Grant AgentCore invoke permissions
-        for fn in [scholar_lambda, di_lambda, content_lambda]:
+        for fn in [warmup_lambda, scholar_lambda, di_lambda, content_lambda]:
             fn.add_to_role_policy(iam.PolicyStatement(
                 actions=["bedrock-agentcore:InvokeAgentRuntime"],
+                resources=["*"],
+            ))
+
+        # Grant S3/DynamoDB/KMS for persist lambdas
+        for fn in [persist_scholar, persist_di, persist_content]:
+            fn.add_to_role_policy(iam.PolicyStatement(
+                actions=["s3:GetObject", "s3:PutObject"],
+                resources=[f"arn:aws:s3:::academic-pipeline-subjects-*/*"],
+            ))
+            fn.add_to_role_policy(iam.PolicyStatement(
+                actions=["dynamodb:PutItem", "dynamodb:GetItem"],
+                resources=[f"arn:aws:dynamodb:us-east-1:{self.account}:table/academic-pipeline-subjects-*"],
+            ))
+            fn.add_to_role_policy(iam.PolicyStatement(
+                actions=["kms:Decrypt", "kms:Encrypt", "kms:GenerateDataKey"],
                 resources=["*"],
             ))
 
@@ -61,30 +80,26 @@ class OrchestratorStack(cdk.Stack):
                 ],
             ))
 
-        # Step Functions tasks
+        # Step Functions tasks with persist steps
+        step_warmup = tasks.LambdaInvoke(self, "WarmUpAgents",
+            lambda_function=warmup_lambda, payload_response_only=True, result_path="$.warmup")
         step_scholar = tasks.LambdaInvoke(self, "InvokeScholar",
-            lambda_function=scholar_lambda,
-            payload_response_only=True,
-            result_path="$.scholar",
-        )
+            lambda_function=scholar_lambda, payload_response_only=True, result_path="$.scholar")
+        step_persist_scholar = tasks.LambdaInvoke(self, "PersistScholar",
+            lambda_function=persist_scholar, payload_response_only=True, result_path="$.persist_scholar")
 
         step_di = tasks.LambdaInvoke(self, "InvokeDI",
-            lambda_function=di_lambda,
-            payload_response_only=True,
-            result_path="$.di",
-        )
+            lambda_function=di_lambda, payload_response_only=True, result_path="$.di")
+        step_persist_di = tasks.LambdaInvoke(self, "PersistDI",
+            lambda_function=persist_di, payload_response_only=True, result_path="$.persist_di")
 
         step_content = tasks.LambdaInvoke(self, "InvokeContent",
-            lambda_function=content_lambda,
-            payload_response_only=True,
-            result_path="$.content",
-        )
+            lambda_function=content_lambda, payload_response_only=True, result_path="$.content")
+        step_persist_content = tasks.LambdaInvoke(self, "PersistContent",
+            lambda_function=persist_content, payload_response_only=True, result_path="$.persist_content")
 
         step_qa = tasks.LambdaInvoke(self, "InvokeQAGate",
-            lambda_function=qa_lambda,
-            payload_response_only=True,
-            result_path="$.qa",
-        )
+            lambda_function=qa_lambda, payload_response_only=True, result_path="$.qa")
 
         # Wait for human approval (callback pattern)
         wait_for_approval = sfn.Wait(self, "WaitForHumanApproval",
@@ -118,9 +133,13 @@ class OrchestratorStack(cdk.Stack):
         # QA passes → Pending Approval (human reviews via API)
         # QA fails → Fail state
         definition = (
-            step_scholar
+            step_warmup
+            .next(step_scholar)
+            .next(step_persist_scholar)
             .next(step_di)
+            .next(step_persist_di)
             .next(step_content)
+            .next(step_persist_content)
             .next(step_qa)
             .next(
                 check_approval

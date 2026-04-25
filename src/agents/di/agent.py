@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 
+import boto3
 from bedrock_agentcore import BedrockAgentCoreApp
 from bedrock_agentcore.runtime.context import RequestContext
 
@@ -30,7 +32,7 @@ def _get_agent():
         model_id="us.anthropic.claude-sonnet-4-6",
         region_name=os.environ.get("AWS_REGION", "us-east-1"),
         temperature=0.0,
-        max_tokens=8192,
+        max_tokens=16384,
     )
 
     @tool
@@ -109,12 +111,67 @@ def _get_agent():
         model=model,
         tools=[generate_learning_objectives, build_descriptive_card],
         system_prompt=(
-            "You are DI, an instructional design agent for professional Master's programs. "
-            "Use generate_learning_objectives first, then build_descriptive_card. "
-            "Return JSON with: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps"
+            "You are DI, an instructional design agent. "
+            "Call generate_learning_objectives then build_descriptive_card. "
+            "Use EXACT competency IDs (C1,C2,C3,C4) and RA IDs (RA1,RA2) from input. "
+            "Subject name and weeks must match the syllabus exactly. "
+            "Return a single JSON block: ```json\n{...}\n``` "
+            "Keys: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps. "
+            "No extra text outside the JSON block."
         ),
     )
     return _di_agent
+
+
+def _load_subject_context(subject_id: str) -> dict:
+    """Load the subject JSON from S3 to get academic inputs and research results."""
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    s3 = boto3.client("s3")
+    try:
+        obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
+        return json.loads(obj["Body"].read().decode("utf-8"))
+    except Exception:
+        return {}
+
+
+def _build_di_prompt(subject_id: str, sj: dict) -> str:
+    """Build a compact prompt with academic context for the DI agent."""
+    meta = sj.get("metadata", {})
+    inputs = sj.get("academic_inputs", {})
+    research = sj.get("research", {})
+
+    subject_name = meta.get("subject_name", "Unknown")
+    subject_type = meta.get("subject_type", "CONCENTRACION")
+    grad_profile = inputs.get("graduation_profile", "")[:200]
+    competencies = inputs.get("competencies", [])
+    learning_outcomes = inputs.get("learning_outcomes", [])
+    syllabus = inputs.get("syllabus", "")
+    papers = research.get("top20_papers", [])
+
+    comp_text = "\n".join(f"  {c['competency_id']}: {c['description'][:80]}" for c in competencies)
+    lo_text = "\n".join(f"  {lo['ra_id']}: {lo['description'][:80]}" for lo in learning_outcomes)
+    papers_text = ", ".join(f"\"{p.get('title','')[:40]}\" ({p.get('year','')})" for p in papers[:10])
+
+    return f"""Design instructional content for "{subject_name}" (ID: {subject_id}, type: {subject_type}).
+
+Graduation profile: {grad_profile}
+
+Competencies (use EXACT IDs):
+{comp_text}
+
+Learning Outcomes (use EXACT IDs):
+{lo_text}
+
+Syllabus:
+{syllabus}
+
+Top papers: {papers_text}
+
+CALL generate_learning_objectives then build_descriptive_card.
+Use EXACT IDs: {', '.join(c['competency_id'] for c in competencies)} and {', '.join(lo['ra_id'] for lo in learning_outcomes)}.
+Weeks must match syllabus topics. Subject name must be "{subject_name}".
+Return JSON with keys: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps.
+"""
 
 
 @app.entrypoint
@@ -129,14 +186,69 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
     agent = _get_agent()
 
     if subject_id:
-        prompt = json.dumps({
-            "task": "Design instructional content for this subject",
-            "subject_id": subject_id,
-            "instructions": "Use generate_learning_objectives and build_descriptive_card tools",
-        })
+        sj = _load_subject_context(subject_id)
+        if sj:
+            prompt = _build_di_prompt(subject_id, sj)
+        else:
+            prompt = json.dumps({
+                "task": "Design instructional content for this subject",
+                "subject_id": subject_id,
+                "instructions": "Use generate_learning_objectives and build_descriptive_card tools",
+            })
 
     result = agent(prompt)
-    return {"result": str(result)}
+    result_str = str(result)
+
+    if subject_id:
+        try:
+            _self_persist_di(subject_id, result_str)
+        except Exception:
+            pass
+
+    return {"result": result_str}
+
+
+def _self_persist_di(subject_id: str, result_text: str) -> None:
+
+    from datetime import datetime, timezone
+
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    table_name = os.environ.get("SUBJECTS_TABLE_NAME", "academic-pipeline-subjects-dev")
+    s3 = boto3.client("s3")
+    ddb = boto3.resource("dynamodb")
+
+    obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
+    sj = json.loads(obj["Body"].read().decode("utf-8"))
+
+    parsed = {}
+    matches = re.findall(r'```(?:json)?\s*\n(.*?)\n```', result_text, re.DOTALL)
+    for m in matches:
+        try:
+            p = json.loads(m.strip())
+            if isinstance(p, dict) and len(p) > len(parsed):
+                parsed = p
+        except json.JSONDecodeError:
+            continue
+
+    sj.setdefault("instructional_design", {})
+    for key in ["objectives", "learning_objectives"]:
+        if parsed.get(key):
+            sj["instructional_design"]["learning_objectives"] = parsed[key]
+            break
+    if parsed.get("traceability_matrix"):
+        sj["instructional_design"]["traceability_matrix"] = parsed["traceability_matrix"]
+    if parsed.get("descriptive_card"):
+        sj["instructional_design"]["descriptive_card"] = parsed["descriptive_card"]
+    if parsed.get("content_map"):
+        sj["instructional_design"]["content_map"] = parsed["content_map"]
+
+    now = datetime.now(timezone.utc).isoformat()
+    sj["pipeline_state"]["current_state"] = "DI_READY"
+    sj["pipeline_state"]["state_history"].append({"state": "DI_READY", "agent": "di-agent", "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": ""})
+    sj["updated_at"] = now
+
+    s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json", Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"), ContentType="application/json")
+    ddb.Table(table_name).put_item(Item={"subject_id": subject_id, "SK": "STATE", "current_state": "DI_READY", "subject_name": sj["metadata"]["subject_name"], "program_name": sj["metadata"]["program_name"], "updated_at": now, "s3_key": f"subjects/{subject_id}/subject.json"})
 
 
 if __name__ == "__main__":
