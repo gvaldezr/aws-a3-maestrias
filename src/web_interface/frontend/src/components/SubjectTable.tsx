@@ -46,16 +46,23 @@ export function SubjectTable({ onCheckpoint }: Props) {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  if (loading) return <p data-testid="refresh-indicator">Cargando...</p>;
-  if (!data) return <p>Error al cargar el dashboard.</p>;
+  if (loading) return <p style={{padding:"1rem",color:"#718096"}}>Cargando asignaturas...</p>;
+  if (!data) return <p style={{padding:"1rem",color:"#e53e3e"}}>Error al cargar el dashboard.</p>;
 
   return (
     <div>
-      <div className="dashboard-summary">
-        <span>Total: {data.total}</span>
-        <span>Pendientes: {data.pending_approval_count}</span>
-        <span>Publicados: {data.published_count}</span>
-        <span>Errores: {data.failed_count}</span>
+      <div style={{display:"flex",gap:"1rem",marginBottom:"1rem",flexWrap:"wrap"}}>
+        {[
+          {label:"Total",value:data.total,bg:"#edf2f7",color:"#2d3748"},
+          {label:"Pendientes",value:data.pending_approval_count,bg:"#fefcbf",color:"#744210"},
+          {label:"Publicados",value:data.published_count,bg:"#c6f6d5",color:"#22543d"},
+          {label:"Errores",value:data.failed_count,bg:"#fed7d7",color:"#742a2a"},
+        ].map(s => (
+          <div key={s.label} style={{background:s.bg,padding:"0.5rem 1rem",borderRadius:"8px",textAlign:"center",minWidth:"80px"}}>
+            <div style={{fontSize:"1.3rem",fontWeight:700,color:s.color}}>{s.value}</div>
+            <div style={{fontSize:"0.7rem",color:s.color,opacity:0.8}}>{s.label}</div>
+          </div>
+        ))}
       </div>
 
       <span data-testid="refresh-indicator" aria-live="polite" className="sr-only">
@@ -92,8 +99,9 @@ export function SubjectTable({ onCheckpoint }: Props) {
                     data-testid={`action-button-${subject.subject_id}`}
                     onClick={() => onCheckpoint(subject.subject_id)}
                     aria-label={`Revisar ${subject.subject_name}`}
+                    style={{background:"#dd6b20",color:"white",border:"none",padding:"0.3rem 0.75rem",borderRadius:"4px",cursor:"pointer",fontWeight:600,fontSize:"0.8rem"}}
                   >
-                    Revisar
+                    📋 Revisar
                   </button>
                 )}
                 {subject.canvas_course_url && (
@@ -102,8 +110,9 @@ export function SubjectTable({ onCheckpoint }: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                     data-testid={`canvas-link-${subject.subject_id}`}
+                    style={{color:"#2b6cb0",fontSize:"0.8rem"}}
                   >
-                    Ver en Canvas
+                    🔗 Ver en Canvas
                   </a>
                 )}
               </td>
