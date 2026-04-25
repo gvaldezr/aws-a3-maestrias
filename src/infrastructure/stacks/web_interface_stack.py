@@ -107,6 +107,23 @@ class WebInterfaceStack(cdk.Stack):
                 allow_headers=["Authorization", "Content-Type", "X-Amz-Date", "X-Api-Key"],
             ),
         )
+        # Add CORS headers to error responses (401, 403, etc.)
+        api.add_gateway_response("CorsDefault4xx",
+            type=apigateway.ResponseType.DEFAULT_4_XX,
+            response_headers={
+                "Access-Control-Allow-Origin": "'*'",
+                "Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+                "Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+            },
+        )
+        api.add_gateway_response("CorsDefault5xx",
+            type=apigateway.ResponseType.DEFAULT_5_XX,
+            response_headers={
+                "Access-Control-Allow-Origin": "'*'",
+                "Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+                "Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+            },
+        )
         user_pool = cognito.UserPool.from_user_pool_id(self, "UserPool", user_pool_id)
         authorizer = apigateway.CognitoUserPoolsAuthorizer(self, "WebAuth",
             cognito_user_pools=[user_pool],
