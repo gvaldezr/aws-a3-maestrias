@@ -148,9 +148,20 @@ def _build_di_prompt(subject_id: str, sj: dict) -> str:
     syllabus = inputs.get("syllabus", "")
     papers = research.get("top20_papers", [])
 
+    # Extract week count from syllabus
+    import re as _re
+    weeks_match = _re.search(r"[Dd]uracion[:\s]*(\d+)\s*semanas", syllabus)
+    num_weeks = int(weeks_match.group(1)) if weeks_match else 0
+    # Count numbered topics as fallback
+    topic_count = len(_re.findall(r'\d+\)', syllabus))
+    if not num_weeks and topic_count:
+        num_weeks = topic_count
+
     comp_text = "\n".join(f"  {c['competency_id']}: {c['description'][:80]}" for c in competencies)
     lo_text = "\n".join(f"  {lo['ra_id']}: {lo['description'][:80]}" for lo in learning_outcomes)
     papers_text = ", ".join(f"\"{p.get('title','')[:40]}\" ({p.get('year','')})" for p in papers[:10])
+
+    weeks_instruction = f"MANDATORY: Generate EXACTLY {num_weeks} weeks in the content_map. NOT more, NOT less." if num_weeks else "Match weeks to the number of topics in the syllabus."
 
     return f"""Design instructional content for "{subject_name}" (ID: {subject_id}, type: {subject_type}).
 
@@ -162,14 +173,16 @@ Competencies (use EXACT IDs):
 Learning Outcomes (use EXACT IDs):
 {lo_text}
 
-Syllabus:
+Syllabus ({num_weeks} weeks):
 {syllabus}
 
 Top papers: {papers_text}
 
 CALL generate_learning_objectives then build_descriptive_card.
 Use EXACT IDs: {', '.join(c['competency_id'] for c in competencies)} and {', '.join(lo['ra_id'] for lo in learning_outcomes)}.
-Weeks must match syllabus topics. Subject name must be "{subject_name}".
+{weeks_instruction}
+Each week in content_map MUST have a non-empty "theme" field with the topic name from the syllabus.
+Subject name must be "{subject_name}".
 Return JSON with keys: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps.
 """
 

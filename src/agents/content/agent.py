@@ -455,16 +455,14 @@ def _self_persist_content(subject_id: str, result_text: str) -> None:
     obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
     sj = json.loads(obj["Body"].read().decode("utf-8"))
 
-    parsed = {}
-    matches = re.findall(r'```(?:json)?\s*\n(.*?)\n```', result_text, re.DOTALL)
-    for m in matches:
-        try:
-            p = json.loads(m.strip())
-            if isinstance(p, dict) and len(p) > len(parsed):
-                parsed = p
-        except json.JSONDecodeError:
-            continue
+    parsed = _extract_content_json(result_text)
 
+    if not parsed:
+        import logging
+        logging.getLogger().warning(f"CONTENT_PERSIST: no parseable JSON found for {subject_id}")
+        return
+
+    now = datetime.now(timezone.utc).isoformat()
     sj.setdefault("content_package", {})
     if parsed.get("executive_readings"):
         sj["content_package"]["executive_readings"] = parsed["executive_readings"]
@@ -485,6 +483,63 @@ def _self_persist_content(subject_id: str, result_text: str) -> None:
     sj["updated_at"] = now
 
     s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json", Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"), ContentType="application/json")
+
+
+def _extract_content_json(text: str) -> dict:
+    """Extract content JSON from agent response — handles multiple formats."""
+    if not text:
+        return {}
+
+    # Strategy 1: Try ```json blocks (largest one with expected keys)
+    matches = re.findall(r'```(?:json)?\s*\n(.*?)\n```', text, re.DOTALL)
+    best = {}
+    for m in matches:
+        try:
+            p = json.loads(m.strip())
+            if isinstance(p, dict) and len(p) > len(best):
+                if any(k in p for k in ("executive_readings", "quizzes", "maestria_artifacts")):
+                    best = p
+        except json.JSONDecodeError:
+            continue
+    if best:
+        return best
+
+    # Strategy 2: Find the largest JSON object containing expected keys
+    # Search for {"executive_readings" or {"quizzes" patterns
+    for key in ("executive_readings", "quizzes", "maestria_artifacts"):
+        pattern = f'"{key}"'
+        idx = text.rfind(pattern)  # Last occurrence
+        if idx < 0:
+            continue
+        # Walk backwards to find the opening brace
+        brace_start = text.rfind('{', 0, idx)
+        if brace_start < 0:
+            continue
+        # Walk forward to find matching closing brace
+        depth = 0
+        for i in range(brace_start, len(text)):
+            if text[i] == '{':
+                depth += 1
+            elif text[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    try:
+                        candidate = json.loads(text[brace_start:i+1])
+                        if isinstance(candidate, dict) and any(k in candidate for k in ("executive_readings", "quizzes", "maestria_artifacts")):
+                            return candidate
+                    except json.JSONDecodeError:
+                        pass
+                    break
+
+    # Strategy 3: Direct parse
+    try:
+        p = json.loads(text)
+        if isinstance(p, dict):
+            return p
+    except (json.JSONDecodeError, TypeError):
+        pass
+
+    return {}
 
 
 if __name__ == "__main__":
