@@ -29,8 +29,18 @@ def validate_ra_coverage(subject_json: dict) -> RACoverageResult:
     Función pura — sin efectos secundarios.
     """
     learning_outcomes = subject_json["academic_inputs"]["learning_outcomes"]
-    quizzes = subject_json.get("content_package", {}).get("quizzes", [])
-    covered_ra_ids = {q["ra_id"] for q in quizzes}
+    quizzes_data = subject_json.get("content_package", {}).get("quizzes", [])
+    # Handle nested structure: {quizzes: [...]} or direct list
+    if isinstance(quizzes_data, dict):
+        quizzes = quizzes_data.get("quizzes", [])
+    elif isinstance(quizzes_data, list):
+        quizzes = quizzes_data
+    else:
+        quizzes = []
+    covered_ra_ids = set()
+    for q in quizzes:
+        if isinstance(q, dict):
+            covered_ra_ids.add(q.get("ra_id", ""))
     all_ra_ids = {lo["ra_id"] for lo in learning_outcomes}
     gaps = sorted(all_ra_ids - covered_ra_ids)
     return RACoverageResult(
@@ -65,13 +75,16 @@ def validate_maestria_artifacts(subject_json: dict) -> bool | None:
     if subject_json["metadata"]["program_type"] != "MAESTRIA":
         return None
     ma = subject_json.get("content_package", {}).get("maestria_artifacts")
-    if not ma:
+    if not ma or not isinstance(ma, dict):
+        return False
+    # Skip error/status keys from failed tool calls
+    if ma.get("status") == "error":
         return False
     return all([
-        bool(ma.get("evidence_dashboard", {}).get("html_content")),
-        bool(ma.get("critical_path_map", {}).get("markdown_content")),
-        bool(ma.get("executive_cases_repository", {}).get("cases")),
-        bool(ma.get("facilitator_guide", {}).get("sessions")),
+        bool(ma.get("evidence_dashboard", {}).get("html_content", "") if isinstance(ma.get("evidence_dashboard"), dict) else False),
+        bool(ma.get("critical_path_map", {}).get("markdown_content", "") if isinstance(ma.get("critical_path_map"), dict) else False),
+        bool(ma.get("executive_cases_repository", {}).get("cases", []) if isinstance(ma.get("executive_cases_repository"), dict) else False),
+        bool(ma.get("facilitator_guide", {}).get("sessions", []) if isinstance(ma.get("facilitator_guide"), dict) else False),
     ])
 
 
