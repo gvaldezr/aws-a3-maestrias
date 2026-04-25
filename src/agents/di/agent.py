@@ -243,12 +243,15 @@ def _self_persist_di(subject_id: str, result_text: str) -> None:
         sj["instructional_design"]["content_map"] = parsed["content_map"]
 
     now = datetime.now(timezone.utc).isoformat()
-    sj["pipeline_state"]["current_state"] = "DI_READY"
-    sj["pipeline_state"]["state_history"].append({"state": "DI_READY", "agent": "di-agent", "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": ""})
+    current = sj["pipeline_state"]["current_state"]
+    advanced_states = {"PENDING_APPROVAL", "APPROVED", "REJECTED", "PUBLISHED", "CONTENT_READY"}
+    if current not in advanced_states:
+        sj["pipeline_state"]["current_state"] = "DI_READY"
+        sj["pipeline_state"]["state_history"].append({"state": "DI_READY", "agent": "di-agent", "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": ""})
+        ddb.Table(table_name).put_item(Item={"subject_id": subject_id, "SK": "STATE", "current_state": "DI_READY", "subject_name": sj["metadata"]["subject_name"], "program_name": sj["metadata"]["program_name"], "updated_at": now, "s3_key": f"subjects/{subject_id}/subject.json"})
     sj["updated_at"] = now
 
     s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json", Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"), ContentType="application/json")
-    ddb.Table(table_name).put_item(Item={"subject_id": subject_id, "SK": "STATE", "current_state": "DI_READY", "subject_name": sj["metadata"]["subject_name"], "program_name": sj["metadata"]["program_name"], "updated_at": now, "s3_key": f"subjects/{subject_id}/subject.json"})
 
 
 if __name__ == "__main__":
