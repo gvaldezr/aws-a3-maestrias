@@ -32,7 +32,7 @@ def _get_agent():
         model_id="us.anthropic.claude-sonnet-4-6",
         region_name=os.environ.get("AWS_REGION", "us-east-1"),
         temperature=0.0,
-        max_tokens=8192,
+        max_tokens=16384,
     )
 
     @tool
@@ -111,19 +111,13 @@ def _get_agent():
         model=model,
         tools=[generate_learning_objectives, build_descriptive_card],
         system_prompt=(
-            "You are DI, an instructional design agent for university programs. "
-            "You receive the COMPLETE academic context: syllabus, competencies, learning outcomes, and research papers. "
-            "CRITICAL RULES: "
-            "1. Use the EXACT competency IDs from the input (C1, C2, C3, C4) — NEVER generate generic IDs like C-01, C-02. "
-            "2. Use the EXACT learning outcome IDs from the input (RA1, RA2) — NEVER generate generic IDs like RA-01, RA-02. "
-            "3. The subject_name in all outputs MUST match the input subject name EXACTLY. "
-            "4. The number of weeks MUST match the syllabus content (count the numbered topics). "
-            "5. Content themes MUST come from the actual syllabus, NOT from generic ML/AI topics. "
-            "Use generate_learning_objectives first, then build_descriptive_card. "
-            "CRITICAL: Your final response MUST be ONLY a single JSON code block with NO text before or after. "
-            "Format: ```json\n{...}\n``` "
-            "The JSON MUST have these keys: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps. "
-            "Do NOT include any markdown tables, explanations, or commentary outside the JSON block."
+            "You are DI, an instructional design agent. "
+            "Call generate_learning_objectives then build_descriptive_card. "
+            "Use EXACT competency IDs (C1,C2,C3,C4) and RA IDs (RA1,RA2) from input. "
+            "Subject name and weeks must match the syllabus exactly. "
+            "Return a single JSON block: ```json\n{...}\n``` "
+            "Keys: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps. "
+            "No extra text outside the JSON block."
         ),
     )
     return _di_agent
@@ -141,62 +135,42 @@ def _load_subject_context(subject_id: str) -> dict:
 
 
 def _build_di_prompt(subject_id: str, sj: dict) -> str:
-    """Build a rich prompt with all academic context for the DI agent."""
+    """Build a compact prompt with academic context for the DI agent."""
     meta = sj.get("metadata", {})
     inputs = sj.get("academic_inputs", {})
     research = sj.get("research", {})
 
-    # Extract key data
     subject_name = meta.get("subject_name", "Unknown")
     subject_type = meta.get("subject_type", "CONCENTRACION")
-    program_name = meta.get("program_name", "")
-    grad_profile = inputs.get("graduation_profile", "")
+    grad_profile = inputs.get("graduation_profile", "")[:200]
     competencies = inputs.get("competencies", [])
     learning_outcomes = inputs.get("learning_outcomes", [])
     syllabus = inputs.get("syllabus", "")
     papers = research.get("top20_papers", [])
 
-    # Format competencies
-    comp_text = "\n".join(f"  - {c['competency_id']}: {c['description']}" for c in competencies)
+    comp_text = "\n".join(f"  {c['competency_id']}: {c['description'][:80]}" for c in competencies)
+    lo_text = "\n".join(f"  {lo['ra_id']}: {lo['description'][:80]}" for lo in learning_outcomes)
+    papers_text = ", ".join(f"\"{p.get('title','')[:40]}\" ({p.get('year','')})" for p in papers[:10])
 
-    # Format learning outcomes
-    lo_text = "\n".join(f"  - {lo['ra_id']}: {lo['description']}" for lo in learning_outcomes)
+    return f"""Design instructional content for "{subject_name}" (ID: {subject_id}, type: {subject_type}).
 
-    # Format top papers (first 10)
-    papers_text = "\n".join(
-        f"  {i}. {p.get('title','')} ({p.get('year','')}, {p.get('journal','')[:40]})"
-        for i, p in enumerate(papers[:10], 1)
-    )
+Graduation profile: {grad_profile}
 
-    return f"""Design instructional content for the following subject. Use generate_learning_objectives and build_descriptive_card tools.
-
-SUBJECT: {subject_name}
-SUBJECT_ID: {subject_id}
-SUBJECT_TYPE: {subject_type}
-PROGRAM: {program_name}
-
-GRADUATION PROFILE:
-{grad_profile}
-
-PROGRAM COMPETENCIES (use these EXACT IDs — C1, C2, C3, C4 — NOT generic C-01, C-02):
+Competencies (use EXACT IDs):
 {comp_text}
 
-LEARNING OUTCOMES (use these EXACT IDs — RA1, RA2 — NOT generic RA-01, RA-02):
+Learning Outcomes (use EXACT IDs):
 {lo_text}
 
-SYLLABUS (use this to determine themes, weeks, and content — do NOT invent different topics):
+Syllabus:
 {syllabus}
 
-TOP RESEARCH PAPERS (from Scopus — reference these in the content map):
-{papers_text}
+Top papers: {papers_text}
 
-CRITICAL INSTRUCTIONS:
-1. The learning objectives MUST align with the SYLLABUS topics above, NOT generic ML/AI topics
-2. Use the EXACT competency IDs from the program: {', '.join(c['competency_id'] for c in competencies)}
-3. Use the EXACT learning outcome IDs: {', '.join(lo['ra_id'] for lo in learning_outcomes)}
-4. The number of weeks MUST match the syllabus (count the numbered topics)
-5. Bloom taxonomy verbs must align competencies to objectives explicitly
-6. The Carta Descriptiva subject_name must be "{subject_name}" (NOT a generic name)
+CALL generate_learning_objectives then build_descriptive_card.
+Use EXACT IDs: {', '.join(c['competency_id'] for c in competencies)} and {', '.join(lo['ra_id'] for lo in learning_outcomes)}.
+Weeks must match syllabus topics. Subject name must be "{subject_name}".
+Return JSON with keys: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps.
 """
 
 
