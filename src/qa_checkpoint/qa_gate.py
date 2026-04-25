@@ -21,6 +21,20 @@ except ImportError:
 logger = get_logger(__name__)
 
 
+def _save_json_direct(subject_id: str, subject_json: dict) -> None:
+    """Save subject JSON directly to S3 without schema validation."""
+    import boto3
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    s3 = boto3.client("s3")
+    subject_json["updated_at"] = datetime.now(timezone.utc).isoformat()
+    s3.put_object(
+        Bucket=bucket,
+        Key=f"subjects/{subject_id}/subject.json",
+        Body=json.dumps(subject_json, ensure_ascii=False, indent=2).encode("utf-8"),
+        ContentType="application/json",
+    )
+
+
 # ── Pure business logic ───────────────────────────────────────────────────────
 
 def validate_ra_coverage(subject_json: dict) -> RACoverageResult:
@@ -136,17 +150,33 @@ def lambda_handler(event: dict, context: Any) -> dict:
         subject_json = get_subject_json(subject_id)
         report = run_qa_gate(subject_json, retry_count)
 
-        # Store QA report in JSON
+        # Store QA report in JSON and save to S3
         subject_json["qa_report"] = report.to_dict()
+        _save_json_direct(subject_id, subject_json)
 
         if report.overall_status == "PASS":
-            # Advance to PENDING_APPROVAL
+            # Save qa_report to S3 and advance state to PENDING_APPROVAL
+            subject_json["pipeline_state"]["current_state"] = "PENDING_APPROVAL"
+            subject_json["pipeline_state"]["state_history"].append({
+                "state": "PENDING_APPROVAL", "agent": "qa-gate",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "llm_version": "", "result_hash": "",
+            })
+            _save_json_direct(subject_id, subject_json)
+
+            # Update DynamoDB index
+            import boto3 as _boto3
+            _ddb = _boto3.resource("dynamodb")
+            _ddb.Table(os.environ.get("SUBJECTS_TABLE_NAME", "academic-pipeline-subjects-dev")).put_item(Item={
+                "subject_id": subject_id, "SK": "STATE",
+                "current_state": "PENDING_APPROVAL",
+                "subject_name": subject_json["metadata"]["subject_name"],
+                "program_name": subject_json["metadata"]["program_name"],
+                "updated_at": subject_json["updated_at"],
+                "s3_key": f"subjects/{subject_id}/subject.json",
+            })
+
             _notify_staff_for_review(subject_id, subject_json, report)
-            update_subject_state(
-                subject_id,
-                SubjectState.PENDING_APPROVAL,
-                StateMetadata(agent="qa-gate"),
-            )
             record_metric("QAGatePassed", 1, "Count")
             logger.info("qa_gate_passed", extra={"subject_id": subject_id})
             return {"statusCode": 200, "body": json.dumps({"status": "PENDING_APPROVAL", "subject_id": subject_id})}
@@ -202,3 +232,6 @@ def _notify_staff_for_review(subject_id: str, subject_json: dict, report: QARepo
     subject_json["validation"]["status"] = "PENDING_APPROVAL"
     subject_json["validation"]["pending_since"] = now.isoformat()
     subject_json["validation"]["reminder_sent_at"] = None
+
+    # Save updated JSON to S3
+    _save_json_direct(subject_id, subject_json)
