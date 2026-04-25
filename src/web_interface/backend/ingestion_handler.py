@@ -56,10 +56,33 @@ def _extract_pdf(file_bytes: bytes) -> str:
 
 
 def _extract_docx(file_bytes: bytes) -> str:
+    """Extract text from DOCX including tables (Anáhuac format has data in tables)."""
     try:
         from docx import Document
         doc = Document(io.BytesIO(file_bytes))
-        return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+
+        parts = []
+
+        # 1. Paragraphs
+        for p in doc.paragraphs:
+            if p.text.strip():
+                parts.append(p.text.strip())
+
+        # 2. Tables — extract as labeled key-value pairs
+        for table in doc.tables:
+            for row in table.rows:
+                cells = [cell.text.strip() for cell in row.cells]
+                # Deduplicate merged cells
+                unique = []
+                prev = None
+                for c in cells:
+                    if c != prev and c:
+                        unique.append(c)
+                    prev = c
+                if unique:
+                    parts.append(" | ".join(unique))
+
+        return "\n".join(parts)
     except ImportError:
         return file_bytes.decode("utf-8", errors="ignore")
 
