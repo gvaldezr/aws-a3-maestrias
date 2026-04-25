@@ -32,7 +32,7 @@ def _get_agent():
         model_id="us.anthropic.claude-sonnet-4-6",
         region_name=os.environ.get("AWS_REGION", "us-east-1"),
         temperature=0.3,
-        max_tokens=8192,
+        max_tokens=16384,
     )
 
     @tool
@@ -267,22 +267,10 @@ def _get_agent():
         model=model,
         tools=[generate_executive_readings, generate_quizzes, generate_maestria_artifacts],
         system_prompt=(
-            "You are Content, a content generation agent for university programs. "
-            "You receive the COMPLETE academic context: syllabus, competencies, learning outcomes, objectives, content map, and research papers. "
-            "CRITICAL RULES: "
-            "1. ALL content MUST be specific to the actual subject — NEVER generate generic 'Research Methods' or placeholder content. "
-            "2. Use the EXACT learning outcome IDs from the input (RA1, RA2) — NEVER generate generic IDs. "
-            "3. The subject_name in all outputs MUST match the input subject name EXACTLY. "
-            "4. Readings MUST match the content map weeks (NOT 8 generic weeks). "
-            "5. Quiz questions MUST be substantive and specific to the subject domain. "
-            "6. The Evidence Dashboard MUST use the actual Scopus papers provided. "
-            "7. Pass the papers list to generate_maestria_artifacts and generate_executive_readings. "
-            "8. Pass the weekly_map from the content map to generate_executive_readings and generate_maestria_artifacts. "
-            "Use generate_executive_readings, generate_quizzes, and generate_maestria_artifacts (if Maestría). "
-            "CRITICAL: Your final response MUST be ONLY a single JSON code block with NO text before or after. "
-            "Format: ```json\n{...}\n``` "
-            "The JSON MUST have keys: executive_readings, quizzes, maestria_artifacts, lab_cases. "
-            "Do NOT include markdown tables, explanations, summaries, or commentary outside the JSON block."
+            "You are Content, a content generation agent. "
+            "Call all 3 tools with the data from the prompt, then return a single JSON block. "
+            "Format: ```json\n{...}\n``` with keys: executive_readings, quizzes, maestria_artifacts. "
+            "Use EXACT IDs from input. Subject name must match input exactly. No extra text."
         ),
     )
     return _content_agent
@@ -300,7 +288,7 @@ def _load_subject_context(subject_id: str) -> dict:
 
 
 def _build_content_prompt(subject_id: str, sj: dict) -> str:
-    """Build a rich prompt with all academic context for the Content agent."""
+    """Build a compact prompt with essential academic context for the Content agent."""
     meta = sj.get("metadata", {})
     inputs = sj.get("academic_inputs", {})
     research = sj.get("research", {})
@@ -308,84 +296,66 @@ def _build_content_prompt(subject_id: str, sj: dict) -> str:
 
     subject_name = meta.get("subject_name", "Unknown")
     subject_type = meta.get("subject_type", "CONCENTRACION")
-    program_name = meta.get("program_name", "")
     program_type = meta.get("program_type", "MAESTRIA")
     language = meta.get("language", "ES")
     competencies = inputs.get("competencies", [])
     learning_outcomes = inputs.get("learning_outcomes", [])
-    syllabus = inputs.get("syllabus", "")
     papers = research.get("top20_papers", [])
     objectives = di.get("learning_objectives", [])
     content_map = di.get("content_map", {})
-    descriptive_card = di.get("descriptive_card", {})
 
-    # Format competencies
-    comp_text = "\n".join(f"  - {c['competency_id']}: {c['description']}" for c in competencies)
+    # Compact competencies
+    comp_text = ", ".join(f"{c['competency_id']}" for c in competencies)
 
-    # Format learning outcomes
-    lo_text = "\n".join(f"  - {lo['ra_id']}: {lo['description']}" for lo in learning_outcomes)
+    # Compact learning outcomes
+    lo_text = "\n".join(f"  {lo['ra_id']}: {lo['description'][:80]}" for lo in learning_outcomes)
 
-    # Format objectives from DI
+    # Compact objectives
     obj_text = "\n".join(
-        f"  - {o.get('objective_id','')}: [{o.get('bloom_level','')}] {o.get('description','')}"
+        f"  {o.get('objective_id','')}: [{o.get('bloom_level','')}] {o.get('description','')[:80]}"
         for o in objectives
     )
 
-    # Format content map weeks
+    # Content map weeks — compact
     weeks = content_map.get("weeks", [])
-    weeks_text = "\n".join(
-        f"  Sem {w.get('week','')}: {w.get('theme','')} [{w.get('bloom_level','')}]"
+    weeks_json = json.dumps([
+        {"week": w.get("week"), "theme": w.get("theme","")[:50], "bloom_level": w.get("bloom_level",""),
+         "subtopics": w.get("subtopics", [])[:3], "activities": w.get("activities", [])[:2]}
         for w in weeks
-    )
+    ], ensure_ascii=False)
 
-    # Format top papers
-    papers_text = "\n".join(
-        f"  {i}. {p.get('title','')} ({p.get('year','')}, {p.get('journal','')[:40]}) — {p.get('key_finding','')}"
-        for i, p in enumerate(papers[:20], 1)
-    )
+    # Papers — compact (title + year only, for dashboard)
+    papers_compact = json.dumps([
+        {"title": p.get("title","")[:60], "year": p.get("year",""), "journal": p.get("journal","")[:30], "key_finding": p.get("key_finding","")[:30]}
+        for p in papers[:20]
+    ], ensure_ascii=False)
 
-    # Determine number of weeks from content map or syllabus
     num_weeks = len(weeks) if weeks else 5
 
-    return f"""Generate the complete content package for the following subject. Use generate_executive_readings, generate_quizzes, and generate_maestria_artifacts tools.
+    return f"""Generate content for subject "{subject_name}" (ID: {subject_id}).
+Type: {subject_type} | Program: {program_type} | Language: {language} | Weeks: {num_weeks}
 
-SUBJECT: {subject_name}
-SUBJECT_ID: {subject_id}
-SUBJECT_TYPE: {subject_type}
-PROGRAM: {program_name}
-PROGRAM_TYPE: {program_type}
-LANGUAGE: {language}
-TOTAL_WEEKS: {num_weeks}
+Competencies: {comp_text}
 
-SYLLABUS:
-{syllabus}
-
-PROGRAM COMPETENCIES:
-{comp_text}
-
-LEARNING OUTCOMES (use these for quizzes — EXACT IDs):
+Learning Outcomes:
 {lo_text}
 
-LEARNING OBJECTIVES (from DI agent — use for readings alignment):
+Objectives:
 {obj_text}
 
-CONTENT MAP (from DI agent — use for weekly readings):
-{weeks_text}
+Weekly Map (pass as weekly_map to tools):
+{weeks_json}
 
-TOP 20 RESEARCH PAPERS (use for Evidence Dashboard and readings):
-{papers_text}
+Papers (pass to generate_maestria_artifacts and generate_executive_readings):
+{papers_compact}
 
-CRITICAL INSTRUCTIONS:
-1. Executive readings MUST match the content map weeks above ({num_weeks} weeks), NOT 8 generic weeks
-2. Each reading MUST be about the ACTUAL topic from the syllabus, NOT generic "Research Methods"
-3. Quizzes MUST use the EXACT learning outcome IDs: {', '.join(lo['ra_id'] for lo in learning_outcomes)}
-4. Quiz questions MUST be specific to "{subject_name}" content, NOT template placeholders
-5. The Evidence Dashboard MUST use the actual 20 Scopus papers listed above
-6. The subject_name in all outputs must be "{subject_name}" (NOT a generic name)
-7. Language is {language} — generate content in Spanish
-8. This is a {program_type} program — generate ALL 4 Maestría artifacts
-9. Executive cases must relate to {subject_name} in a financial/business context
-10. The Facilitator Guide sessions must match the {num_weeks} weeks of the content map
+CALL THESE 3 TOOLS with the data above:
+1. generate_executive_readings(weekly_map=<weekly_map>, subject_name="{subject_name}", language="{language}", papers=<papers>)
+2. generate_quizzes(learning_outcomes=<learning_outcomes as list of dicts>, subject_name="{subject_name}", language="{language}", objectives=<objectives as list>)
+3. generate_maestria_artifacts(papers=<papers>, subject_name="{subject_name}", competencies=<competencies as list>, language="{language}", weekly_map=<weekly_map>, learning_outcomes=<learning_outcomes>)
+
+Then return a JSON with keys: executive_readings, quizzes, maestria_artifacts.
+Subject name in ALL outputs must be "{subject_name}".
 """
 
 

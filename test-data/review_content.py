@@ -39,7 +39,10 @@ if card:
     print(f"  Objetivo General: {card.get('general_objective','')[:150]}")
     print(f"  Especificos: {len(card.get('specific_objectives',[]))}")
     for so in card.get("specific_objectives", []):
-        print(f"    - {so[:100]}")
+        if isinstance(so, dict):
+            print(f"    - {so.get('text', so.get('description', str(so)))[:100]}")
+        else:
+            print(f"    - {str(so)[:100]}")
     print(f"  Mapa Semanal:\n{card.get('weekly_map','')[:400]}")
 
 cmap = sj.get("instructional_design", {}).get("content_map", {})

@@ -2,7 +2,7 @@
   "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
   "schema_version": "1.0",
   "created_at": "2026-04-25T00:33:35.765501+00:00",
-  "updated_at": "2026-04-25T00:44:24.629776+00:00",
+  "updated_at": "2026-04-25T01:58:38.568245+00:00",
   "metadata": {
     "subject_name": "Ciencia de datos aplicada a las finanzas",
     "program_name": "Maestria en Direccion y Tecnologia Financiera - Anahuac Online",
@@ -47,23 +47,30 @@
     "current_state": "CONTENT_READY",
     "state_history": [
       {
+        "state": "UPLOADED",
+        "agent": "system-reset",
+        "timestamp": "2026-04-25T01:00:09.112202+00:00",
+        "llm_version": "",
+        "result_hash": ""
+      },
+      {
         "state": "KNOWLEDGE_MATRIX_READY",
-        "agent": "scholar-direct",
-        "timestamp": "2026-04-25T00:40:47.903640+00:00",
-        "llm_version": "scopus-api-direct",
+        "agent": "scholar-agent",
+        "timestamp": "2026-04-25T01:17:44.713446+00:00",
+        "llm_version": "claude-sonnet-4.6",
         "result_hash": ""
       },
       {
         "state": "DI_READY",
         "agent": "di-agent",
-        "timestamp": "2026-04-25T00:42:09.201798+00:00",
+        "timestamp": "2026-04-25T01:42:18.453652+00:00",
         "llm_version": "claude-sonnet-4.6",
         "result_hash": ""
       },
       {
         "state": "CONTENT_READY",
         "agent": "content-agent",
-        "timestamp": "2026-04-25T00:44:24.629776+00:00",
+        "timestamp": "2026-04-25T01:55:55.443469+00:00",
         "llm_version": "claude-sonnet-4.6",
         "result_hash": ""
       }
@@ -71,499 +78,1459 @@
   },
   "research": {
     "keywords": [
+      "financial time series forecasting",
+      "financial data analytics",
+      "quantitative financial modeling",
+      "financial decision making models",
+      "ESG corporate finance data",
+      "financial risk quantitative models",
+      "big data artificial intelligence financial technology",
+      "fintech data analytics",
+      "financial returns descriptive statistics",
+      "portfolio optimization quantitative",
+      "green finance analytics",
       "financial data science",
-      "quantitative finance",
-      "machine learning financial forecasting",
-      "financial modeling data driven"
+      "digital finance",
+      "financial market prediction",
+      "corporate finance data-driven decisions",
+      "financial data visualization",
+      "financial scenario analysis",
+      "investment analytics machine learning",
+      "financial inclusion data",
+      "quantitative model decision making"
     ],
     "top20_papers": [
       {
-        "scopus_id": "85082930228",
-        "title": "Quant GANs: deep generation of financial time series",
+        "rank": 1,
+        "scopus_id": "85079823443",
+        "title": "Financial time series forecasting with deep learning: A systematic literature review: 2005–2019",
         "authors": [
-          "Wiese M."
+          "Sezer O.B."
         ],
         "year": 2020,
-        "journal": "Quantitative Finance",
+        "journal": "Applied Soft Computing Journal",
         "quartile": "Q1",
-        "key_finding": "Cited 225 times",
-        "doi": "10.1080/14697688.2020.1730426"
-      },
-      {
-        "scopus_id": "85075727644",
-        "title": "Application and comparison of several machine learning algorithms and their integration models in regression problems",
-        "authors": [
-          "Huang J.C."
+        "doi": "10.1016/j.asoc.2020.106181",
+        "key_finding": "Comprehensive systematic review of deep learning architectures applied to financial time series forecasting, covering stock price prediction, volatility modeling, and algorithmic trading strategies with quantitative performance benchmarks.",
+        "syllabus_alignment": [
+          "Tema 1: Fundamentos de ciencia de datos en el contexto financiero — tipos de datos financieros",
+          "Tema 3: Análisis exploratorio y visualización — patrones y tendencias en series temporales financieras",
+          "Tema 4: Modelación cuantitativa — construcción y validación de modelos financieros"
         ],
-        "year": 2020,
-        "journal": "Neural Computing and Applications",
-        "quartile": "Q1",
-        "key_finding": "Cited 185 times",
-        "doi": "10.1007/s00521-019-04644-5"
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
       },
       {
-        "scopus_id": "85199768036",
-        "title": "Explainable artificial intelligence (XAI) in finance: a systematic literature review",
+        "rank": 2,
+        "scopus_id": "85129373077",
+        "title": "Big data, artificial intelligence and machine learning: A transformative symbiosis in favour of financial technology",
         "authors": [
-          "Černevičienė J."
-        ],
-        "year": 2024,
-        "journal": "Artificial Intelligence Review",
-        "quartile": "Q1",
-        "key_finding": "Cited 152 times",
-        "doi": "10.1007/s10462-024-10854-8"
-      },
-      {
-        "scopus_id": "85094680770",
-        "title": "Comprehensive review of text-mining applications in finance",
-        "authors": [
-          "Gupta A."
-        ],
-        "year": 2020,
-        "journal": "Financial Innovation",
-        "quartile": "Q1",
-        "key_finding": "Cited 139 times",
-        "doi": "10.1186/s40854-020-00205-1"
-      },
-      {
-        "scopus_id": "85192916714",
-        "title": "Financial Sentiment Analysis: Techniques and Applications",
-        "authors": [
-          "Du K."
-        ],
-        "year": 2024,
-        "journal": "ACM Computing Surveys",
-        "quartile": "Q1",
-        "key_finding": "Cited 124 times",
-        "doi": "10.1145/3649451"
-      },
-      {
-        "scopus_id": "85186697185",
-        "title": "Leveraging Temporal Patterns with LSTMs Networks for Financial Forecasting: A New Stastical Machine Learning Approach",
-        "authors": [
-          "Thinakaran K."
+          "Nguyen D.K."
         ],
         "year": 2023,
-        "journal": "2023 International Conference on Communication Security and Artificial Intelligence Iccsai 2023",
+        "journal": "European Financial Management",
         "quartile": "Q1",
-        "key_finding": "Cited 95 times",
-        "doi": "10.1109/ICCSAI59793.2023.10421705"
+        "doi": "10.1111/eufm.12365",
+        "key_finding": "Examines how big data and AI transform financial analytics pipelines, covering data preparation, integration, model building, and decision support systems in financial institutions, with implications for fintech strategy.",
+        "syllabus_alignment": [
+          "Tema 1: Fundamentos de ciencia de datos en el contexto financiero — rol de la analítica",
+          "Tema 2: Preparación y gestión de datos financieros — obtención, integración, limpieza",
+          "Tema 5: Aplicación de modelos en decisiones financieras — comunicación de resultados"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
       },
       {
-        "scopus_id": "85089076507",
-        "title": "Special issue on ensemble learning and applications",
+        "rank": 3,
+        "scopus_id": "85087552053",
+        "title": "Multivariate portfolio optimization under illiquid market prospects: a review of theoretical algorithms and practical techniques for liquidity risk management",
         "authors": [
-          "Pintelas P."
+          "Al Janabi M.A.M."
         ],
-        "year": 2020,
-        "journal": "Algorithms",
-        "quartile": "Q1",
-        "key_finding": "Cited 79 times",
-        "doi": "10.3390/A13060140"
-      },
-      {
-        "scopus_id": "85207834000",
-        "title": "Machine learning for financial forecasting, planning and analysis: recent developments and pitfalls",
-        "authors": [
-          "Wasserbacher H."
-        ],
-        "year": 2022,
-        "journal": "Digital Finance",
-        "quartile": "Q1",
-        "key_finding": "Cited 75 times",
-        "doi": "10.1007/s42521-021-00046-2"
-      },
-      {
-        "scopus_id": "85138617969",
-        "title": "Algorithmic Trading and Financial Forecasting Using Advanced Artificial Intelligence Methodologies",
-        "authors": [
-          "Cohen G."
-        ],
-        "year": 2022,
-        "journal": "Mathematics",
-        "quartile": "Q1",
-        "key_finding": "Cited 72 times",
-        "doi": "10.3390/math10183302"
-      },
-      {
-        "scopus_id": "85137738490",
-        "title": "Solar Photovoltaic Modules’ Performance Reliability and Degradation Analysis—A Review",
-        "authors": [
-          "Alimi O.A."
-        ],
-        "year": 2022,
-        "journal": "Energies",
-        "quartile": "Q1",
-        "key_finding": "Cited 72 times",
-        "doi": "10.3390/en15165964"
-      },
-      {
-        "scopus_id": "85123526727",
-        "title": "Investigating Explainability Methods in Recurrent Neural Network Architectures for Financial Time Series Data",
-        "authors": [
-          "Freeborough W."
-        ],
-        "year": 2022,
-        "journal": "Applied Sciences Switzerland",
-        "quartile": "Q1",
-        "key_finding": "Cited 56 times",
-        "doi": "10.3390/app12031427"
-      },
-      {
-        "scopus_id": "85198859265",
-        "title": "Financial data modeling: an analysis of factors influencing big data analytics-driven financial decision quality",
-        "authors": [
-          "Al-Okaily M."
-        ],
-        "year": 2025,
+        "year": 2021,
         "journal": "Journal of Modelling in Management",
         "quartile": "Q1",
-        "key_finding": "Cited 53 times",
-        "doi": "10.1108/JM2-08-2023-0183"
-      },
-      {
-        "scopus_id": "85117493044",
-        "title": "A comparison of the optimized LSTM, XGBOOST and ARIMA in Time Series forecasting",
-        "authors": [
-          "Paliari I."
+        "doi": "10.1108/JM2-07-2019-0178",
+        "key_finding": "Reviews quantitative models for multivariate portfolio optimization incorporating liquidity risk variables, explicit model assumptions, and validation techniques directly applicable to financial decision-making in organizations.",
+        "syllabus_alignment": [
+          "Tema 4: Modelación cuantitativa — construcción de modelos, variables, supuestos, validación",
+          "Tema 5: Aplicación de modelos — evaluación de escenarios financieros",
+          "Software: Python para modelación cuantitativa"
         ],
-        "year": 2021,
-        "journal": "Iisa 2021 12th International Conference on Information Intelligence Systems and Applications",
-        "quartile": "Q1",
-        "key_finding": "Cited 44 times",
-        "doi": "10.1109/IISA52424.2021.9555520"
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
       },
       {
-        "scopus_id": "85176099113",
-        "title": "Renovation in environmental, social and governance (ESG) research: the application of machine learning",
+        "rank": 4,
+        "scopus_id": "85106274228",
+        "title": "Optimization algorithms and investment portfolio analytics with machine learning techniques under time-varying liquidity constraints",
         "authors": [
-          "Zhang A.Y."
-        ],
-        "year": 2024,
-        "journal": "Asian Review of Accounting",
-        "quartile": "Q1",
-        "key_finding": "Cited 43 times",
-        "doi": "10.1108/ARA-07-2023-0201"
-      },
-      {
-        "scopus_id": "85199506442",
-        "title": "A Review of Degradation and Reliability Analysis of a Solar PV Module",
-        "authors": [
-          "Ullah Khan Z."
-        ],
-        "year": 2024,
-        "journal": "IEEE Access",
-        "quartile": "Q1",
-        "key_finding": "Cited 42 times",
-        "doi": "10.1109/ACCESS.2024.3432394"
-      },
-      {
-        "scopus_id": "85097053428",
-        "title": "Significance, relevance and explainability in the machine learning age: an econometrics and financial data science perspective",
-        "authors": [
-          "Hoepner A.G.F."
-        ],
-        "year": 2021,
-        "journal": "European Journal of Finance",
-        "quartile": "Q1",
-        "key_finding": "Cited 33 times",
-        "doi": "10.1080/1351847X.2020.1847725"
-      },
-      {
-        "scopus_id": "85208737125",
-        "title": "Unlocking financial innovation through strategic investments in information management: a systematic review",
-        "authors": [
-          "Garad A."
-        ],
-        "year": 2024,
-        "journal": "Discover Sustainability",
-        "quartile": "Q1",
-        "key_finding": "Cited 18 times",
-        "doi": "10.1007/s43621-024-00542-6"
-      },
-      {
-        "scopus_id": "85197178295",
-        "title": "Data-Driven Sustainable Investment Strategies: Integrating ESG, Financial Data Science, and Time Series Analysis for Alpha Generation",
-        "authors": [
-          "Sorathiya A."
-        ],
-        "year": 2024,
-        "journal": "International Journal of Financial Studies",
-        "quartile": "Q1",
-        "key_finding": "Cited 10 times",
-        "doi": "10.3390/ijfs12020036"
-      },
-      {
-        "scopus_id": "85117153169",
-        "title": "Artificial intelligence based optimal functional link neural network for financial data Science",
-        "authors": [
-          "Hilal A.M."
+          "Al Janabi M.A.M."
         ],
         "year": 2022,
-        "journal": "Computers Materials and Continua",
+        "journal": "Journal of Modelling in Management",
         "quartile": "Q1",
-        "key_finding": "Cited 8 times",
-        "doi": "10.32604/cmc.2022.021522"
+        "doi": "10.1108/JM2-10-2020-0259",
+        "key_finding": "Applies quantitative optimization algorithms to investment portfolio analytics, integrating financial data variables and scenario-based evaluation for strategic financial decisions under dynamic market conditions.",
+        "syllabus_alignment": [
+          "Tema 4: Modelación cuantitativa — construcción de modelos con variables definidas",
+          "Tema 5: Aplicación de modelos — interpretación y evaluación de escenarios",
+          "Software: Python para optimización financiera"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
       },
       {
-        "scopus_id": "105007279710",
-        "title": "Revolutionizing High-Frequency Trading: The Impacts of Financial Technology and Data Science Innovations",
+        "rank": 5,
+        "scopus_id": "85124651167",
+        "title": "How much should we trust staggered difference-in-differences estimates?",
         "authors": [
-          "Balaji K."
+          "Baker A.C."
+        ],
+        "year": 2022,
+        "journal": "Journal of Financial Economics",
+        "quartile": "Q1",
+        "doi": "10.1016/j.jfineco.2022.01.004",
+        "key_finding": "Demonstrates biases in staggered DiD estimators widely used in corporate finance empirical research, proposing corrected quantitative methods for financial panel data analysis and model validation.",
+        "syllabus_alignment": [
+          "Tema 4: Modelación cuantitativa — supuestos explícitos y validación de modelos",
+          "Tema 2: Preparación y gestión de datos financieros — calidad y transformación de datos",
+          "Tema 5: Aplicación de modelos — interpretación de resultados financieros"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
+      },
+      {
+        "rank": 6,
+        "scopus_id": "105013149358",
+        "title": "Quantitative Models with Qualitative Scenarios: Simulation with Transformer and Large Language Models",
+        "authors": [
+          "Aldridge I."
         ],
         "year": 2025,
-        "journal": "Machine Learning and Modeling Techniques in Financial Data Science",
+        "journal": "Journal of Financial Data Science",
         "quartile": "Q1",
-        "key_finding": "Cited 6 times",
-        "doi": "10.4018/979-8-3693-8186-1.ch004"
+        "doi": "10.3905/jfds.2025.1.198",
+        "key_finding": "Integrates quantitative financial models with qualitative scenario simulation using LLMs, demonstrating how explicit assumptions and scenario analysis enhance financial decision communication and impact estimation.",
+        "syllabus_alignment": [
+          "Tema 4: Modelación cuantitativa — construcción de modelos y supuestos explícitos",
+          "Tema 5: Aplicación de modelos — evaluación de escenarios y comunicación de resultados",
+          "Tema 1: Fundamentos de ciencia de datos en el contexto financiero"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
+      },
+      {
+        "rank": 7,
+        "scopus_id": "105029062156",
+        "title": "QuantVisExplorer: a multi-perspective visual analytics system for quantitative investment",
+        "authors": [
+          "Huang X."
+        ],
+        "year": 2026,
+        "journal": "Journal of Visualization",
+        "quartile": "Q1",
+        "doi": "10.1007/s12650-026-01106-8",
+        "key_finding": "Presents a multi-perspective visual analytics system for quantitative investment combining financial data visualization, pattern exploration, and interactive dashboards for investment decision support.",
+        "syllabus_alignment": [
+          "Tema 3: Análisis exploratorio y visualización de datos financieros — patrones y tendencias",
+          "Tema 5: Aplicación de modelos — comunicación de resultados financieros",
+          "Software: Power BI para visualización financiera"
+        ],
+        "ra_relevance": [
+          "RA1"
+        ]
+      },
+      {
+        "rank": 8,
+        "scopus_id": "85100062751",
+        "title": "Firms and social responsibility: A review of ESG and CSR research in corporate finance",
+        "authors": [
+          "Gillan S.L."
+        ],
+        "year": 2021,
+        "journal": "Journal of Corporate Finance",
+        "quartile": "Q1",
+        "doi": "10.1016/j.jcorpfin.2021.101889",
+        "key_finding": "Reviews ESG and CSR data integration in corporate finance quantitative models, highlighting how non-financial data types enrich financial decision-making and ethical capital allocation.",
+        "syllabus_alignment": [
+          "Tema 1: Tipos de datos financieros — datos no financieros en modelos corporativos",
+          "Tema 4: Modelación cuantitativa — variables e integración de datos ESG",
+          "Competencia C4: Pensamiento ético en decisiones financieras"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
+      },
+      {
+        "rank": 9,
+        "scopus_id": "85100981551",
+        "title": "Corporate green bonds",
+        "authors": [
+          "Flammer C."
+        ],
+        "year": 2021,
+        "journal": "Journal of Financial Economics",
+        "quartile": "Q1",
+        "doi": "10.1016/j.jfineco.2021.01.010",
+        "key_finding": "Quantitative analysis of green bond issuance impact on firm financial performance and ESG scores using financial data modeling, causal inference, and scenario evaluation techniques.",
+        "syllabus_alignment": [
+          "Tema 4: Modelación cuantitativa — estimación de resultados de impacto financiero",
+          "Tema 5: Aplicación de modelos — evaluación de escenarios de financiamiento",
+          "Competencia C3: Pensamiento relacional — variables macro-financieras"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
+      },
+      {
+        "rank": 10,
+        "scopus_id": "85172909522",
+        "title": "Building Trust in Fintech: An Analysis of Ethical and Privacy Considerations in the Intersection of Big Data, AI, and Customer Trust",
+        "authors": [
+          "Aldboush H.H.H."
+        ],
+        "year": 2023,
+        "journal": "International Journal of Financial Studies",
+        "quartile": "Q1",
+        "doi": "10.3390/ijfs11030090",
+        "key_finding": "Analyzes ethical dimensions of financial data use, transparency in algorithmic financial models, and responsible data-driven decision making in fintech, linking data quality to professional accountability.",
+        "syllabus_alignment": [
+          "Tema 2: Calidad de datos financieros — integridad y gobernanza",
+          "Competencia C4: Pensamiento ético — transparencia y responsabilidad profesional",
+          "Tema 5: Comunicación responsable de resultados financieros"
+        ],
+        "ra_relevance": [
+          "RA1"
+        ]
+      },
+      {
+        "rank": 11,
+        "scopus_id": "85083721681",
+        "title": "COVID-19 and finance: Agendas for future research",
+        "authors": [
+          "Goodell J.W."
+        ],
+        "year": 2020,
+        "journal": "Finance Research Letters",
+        "quartile": "Q1",
+        "doi": "10.1016/j.frl.2020.101512",
+        "key_finding": "Identifies key financial data analytics research gaps exposed by COVID-19, including financial market volatility modeling, scenario analysis, data-driven risk assessment, and quantitative impact estimation.",
+        "syllabus_alignment": [
+          "Tema 3: Análisis exploratorio — patrones y tendencias en datos financieros de crisis",
+          "Tema 4: Modelación cuantitativa — evaluación de escenarios de riesgo",
+          "Tema 5: Aplicación de modelos en decisiones financieras bajo incertidumbre"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
+      },
+      {
+        "rank": 12,
+        "scopus_id": "85144054036",
+        "title": "Can average skewness really predict financial returns? The euro area case",
+        "authors": [
+          "Annaert J."
+        ],
+        "year": 2023,
+        "journal": "Finance Research Letters",
+        "quartile": "Q1",
+        "doi": "10.1016/j.frl.2022.103375",
+        "key_finding": "Uses descriptive statistics and distributional analysis of financial return data to evaluate the predictive power of skewness in financial market modeling, illustrating exploratory data analysis in finance.",
+        "syllabus_alignment": [
+          "Tema 3: Estadística descriptiva y análisis exploratorio de datos financieros",
+          "Tema 4: Modelación cuantitativa — variables y supuestos en modelos de retorno",
+          "Software: Python/Excel para análisis estadístico financiero"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
+      },
+      {
+        "rank": 13,
+        "scopus_id": "85104889606",
+        "title": "Intelligent FinTech Data Mining by Advanced Deep Learning Approaches",
+        "authors": [
+          "Huang S.C."
+        ],
+        "year": 2022,
+        "journal": "Computational Economics",
+        "quartile": "Q1",
+        "doi": "10.1007/s10614-021-10118-5",
+        "key_finding": "Applies advanced data mining and deep learning to financial datasets for pattern recognition, trend detection, and predictive financial analytics, demonstrating Python-based quantitative workflows.",
+        "syllabus_alignment": [
+          "Tema 3: Análisis exploratorio — patrones y tendencias en datos financieros",
+          "Tema 2: Preparación y transformación de datos financieros",
+          "Software: Python para minería de datos financieros"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
+      },
+      {
+        "rank": 14,
+        "scopus_id": "85123870870",
+        "title": "How does green finance affect green total factor productivity? Evidence from China",
+        "authors": [
+          "Lee C.C."
+        ],
+        "year": 2022,
+        "journal": "Energy Economics",
+        "quartile": "Q1",
+        "doi": "10.1016/j.eneco.2022.105863",
+        "key_finding": "Employs quantitative panel data models with explicit financial variables and assumptions to estimate the impact of green finance on productivity, demonstrating scenario-based financial impact analysis.",
+        "syllabus_alignment": [
+          "Tema 4: Modelación cuantitativa — variables definidas y supuestos explícitos",
+          "Tema 5: Estimación de resultados de impacto financiero en organizaciones",
+          "Competencia C3: Variables macro-financieras y estrategias sostenibles"
+        ],
+        "ra_relevance": [
+          "RA2"
+        ]
+      },
+      {
+        "rank": 15,
+        "scopus_id": "85104058997",
+        "title": "Demand for green finance: Resolving financing constraints on green innovation in China",
+        "authors": [
+          "Yu C.H."
+        ],
+        "year": 2021,
+        "journal": "Energy Policy",
+        "quartile": "Q1",
+        "doi": "10.1016/j.enpol.2021.112255",
+        "key_finding": "Quantitative modeling of financing constraints using financial data to assess green investment decisions and capital allocation strategies, with explicit variable definition and model validation.",
+        "syllabus_alignment": [
+          "Tema 4: Modelación cuantitativa — construcción de modelos de financiamiento",
+          "Tema 5: Aplicación de modelos en decisiones de inversión y financiamiento",
+          "Competencia C1: Análisis de argumentos financieros para decisiones de inversión"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
+      },
+      {
+        "rank": 16,
+        "scopus_id": "85210552682",
+        "title": "The Role of Digital Technologies in Corporate Sustainability: A Bibliometric Review and Future Research Agenda",
+        "authors": [
+          "Alshdaifat S.M."
+        ],
+        "year": 2024,
+        "journal": "Journal of Risk and Financial Management",
+        "quartile": "Q1",
+        "doi": "10.3390/jrfm17110509",
+        "key_finding": "Examines how digital tools including data analytics platforms (Python, BI tools) transform corporate financial sustainability reporting, strategic decision support, and data-driven financial management.",
+        "syllabus_alignment": [
+          "Tema 1: Rol de la analítica en el contexto financiero corporativo",
+          "Software: Power BI y herramientas digitales para finanzas corporativas",
+          "Competencia C2: Soluciones financieras innovadoras basadas en datos"
+        ],
+        "ra_relevance": [
+          "RA1"
+        ]
+      },
+      {
+        "rank": 17,
+        "scopus_id": "85165365032",
+        "title": "Global fintech trends and their impact on international business: a review",
+        "authors": [
+          "Cumming D."
+        ],
+        "year": 2023,
+        "journal": "Multinational Business Review",
+        "quartile": "Q1",
+        "doi": "10.1108/MBR-05-2023-0077",
+        "key_finding": "Analyzes global fintech data trends, digital financial analytics adoption patterns, and their strategic impact on international financial decision-making and organizational performance.",
+        "syllabus_alignment": [
+          "Tema 1: Fundamentos de ciencia de datos en el contexto financiero — rol de la analítica",
+          "Tema 5: Comunicación de resultados y toma de decisiones estratégicas",
+          "Competencia C2: Estrategias financieras innovadoras basadas en datos"
+        ],
+        "ra_relevance": [
+          "RA1"
+        ]
+      },
+      {
+        "rank": 18,
+        "scopus_id": "85191027927",
+        "title": "Fintech innovation: Is it beneficial or detrimental to financial inclusion and financial stability? A systematic literature review and research directions",
+        "authors": [
+          "Sant'Anna D.A.L.M."
+        ],
+        "year": 2024,
+        "journal": "Emerging Markets Review",
+        "quartile": "Q1",
+        "doi": "10.1016/j.ememar.2024.101140",
+        "key_finding": "Systematic review of fintech data-driven innovations and their quantitative impact on financial stability metrics and inclusion indicators, with scenario-based analysis of financial outcomes.",
+        "syllabus_alignment": [
+          "Tema 5: Aplicación de modelos — evaluación de escenarios e impacto financiero",
+          "Tema 1: Tipos de datos financieros en ecosistemas fintech",
+          "Competencia C3: Comprensión sistémica de mercados y variables macro-financieras"
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ]
+      },
+      {
+        "rank": 19,
+        "scopus_id": "85078471678",
+        "title": "Financial inclusion research around the world: A review",
+        "authors": [
+          "Ozili P.K."
+        ],
+        "year": 2021,
+        "journal": "Forum for Social Economics",
+        "quartile": "Q1",
+        "doi": "10.1080/07360932.2020.1715238",
+        "key_finding": "Reviews global financial data on inclusion metrics, analytical frameworks, and quantitative indicators used to assess financial access and socioeconomic impact, linking data analytics to responsible finance.",
+        "syllabus_alignment": [
+          "Tema 3: Estadística descriptiva y análisis de patrones en datos financieros globales",
+          "Tema 1: Tipos de datos financieros — indicadores de acceso e inclusión",
+          "Competencia C4: Asignación de capital socialmente responsable"
+        ],
+        "ra_relevance": [
+          "RA1"
+        ]
+      },
+      {
+        "rank": 20,
+        "scopus_id": "85123367807",
+        "title": "A Bibliometric Analysis of Fintech Trends and Digital Finance",
+        "authors": [
+          "Brika S.K.M."
+        ],
+        "year": 2022,
+        "journal": "Frontiers in Environmental Science",
+        "quartile": "Q1",
+        "doi": "10.3389/fenvs.2021.796495",
+        "key_finding": "Bibliometric mapping of digital finance and fintech research trends, identifying key analytical methodologies, data-driven financial innovation patterns, and emerging quantitative tools in financial analytics.",
+        "syllabus_alignment": [
+          "Tema 1: Fundamentos de ciencia de datos en el contexto financiero — evolución y tendencias",
+          "Tema 2: Gestión de datos financieros — integración de fuentes digitales",
+          "Competencia C2: Enfoques innovadores basados en datos financieros"
+        ],
+        "ra_relevance": [
+          "RA1"
+        ]
       }
     ],
-    "knowledge_matrix": []
+    "knowledge_matrix": [
+      {
+        "syllabus_topic": "Tema 1 — Fundamentos de ciencia de datos en el contexto financiero",
+        "key_concepts": [
+          "Tipos de datos financieros (estructurados, no estructurados, series temporales)",
+          "Rol de la analítica en instituciones financieras",
+          "Ecosistema fintech y transformación digital financiera",
+          "Big data como insumo para decisiones financieras"
+        ],
+        "methodologies": [
+          "Revisión sistemática de literatura financiera",
+          "Análisis bibliométrico de tendencias en finanzas digitales",
+          "Frameworks de analítica financiera aplicada"
+        ],
+        "supporting_papers": [
+          {
+            "scopus_id": "85129373077",
+            "title": "Big data, artificial intelligence and machine learning: A transformative symbiosis in favour of financial technology",
+            "authors": [
+              "Nguyen D.K."
+            ],
+            "year": 2023,
+            "journal": "European Financial Management",
+            "quartile": "Q1",
+            "contribution": "Establece el marco conceptual de cómo big data y analítica transforman los procesos financieros, cubriendo tipos de datos, preparación y soporte a decisiones en instituciones financieras."
+          },
+          {
+            "scopus_id": "85165365032",
+            "title": "Global fintech trends and their impact on international business: a review",
+            "authors": [
+              "Cumming D."
+            ],
+            "year": 2023,
+            "journal": "Multinational Business Review",
+            "quartile": "Q1",
+            "contribution": "Mapea tendencias globales de analítica financiera digital y su impacto estratégico en organizaciones, contextualizando el rol de la ciencia de datos en finanzas internacionales."
+          },
+          {
+            "scopus_id": "85123367807",
+            "title": "A Bibliometric Analysis of Fintech Trends and Digital Finance",
+            "authors": [
+              "Brika S.K.M."
+            ],
+            "year": 2022,
+            "journal": "Frontiers in Environmental Science",
+            "quartile": "Q1",
+            "contribution": "Identifica metodologías analíticas clave y patrones de innovación en finanzas digitales mediante análisis bibliométrico, útil para contextualizar la evolución del campo."
+          },
+          {
+            "scopus_id": "85210552682",
+            "title": "The Role of Digital Technologies in Corporate Sustainability",
+            "authors": [
+              "Alshdaifat S.M."
+            ],
+            "year": 2024,
+            "journal": "Journal of Risk and Financial Management",
+            "quartile": "Q1",
+            "contribution": "Examina cómo herramientas digitales (Python, BI) transforman la gestión financiera corporativa y el soporte a decisiones estratégicas basadas en datos."
+          }
+        ],
+        "ra_relevance": [
+          "RA1"
+        ],
+        "competency_alignment": [
+          "C2 — Pensamiento Innovador: soluciones financieras basadas en datos",
+          "C3 — Pensamiento Relacional: comprensión sistémica de mercados financieros"
+        ]
+      },
+      {
+        "syllabus_topic": "Tema 2 — Preparación y gestión de datos financieros",
+        "key_concepts": [
+          "Obtención e integración de fuentes de datos financieros",
+          "Limpieza y transformación de datos financieros",
+          "Calidad y gobernanza de datos en finanzas",
+          "Ética en el uso de datos financieros"
+        ],
+        "methodologies": [
+          "Pipelines de preprocesamiento de datos financieros",
+          "Técnicas de data wrangling con Python/Excel",
+          "Frameworks de calidad de datos para modelos financieros",
+          "Análisis de privacidad y cumplimiento en datos financieros"
+        ],
+        "supporting_papers": [
+          {
+            "scopus_id": "85172909522",
+            "title": "Building Trust in Fintech: An Analysis of Ethical and Privacy Considerations in the Intersection of Big Data, AI, and Customer Trust",
+            "authors": [
+              "Aldboush H.H.H."
+            ],
+            "year": 2023,
+            "journal": "International Journal of Financial Studies",
+            "quartile": "Q1",
+            "contribution": "Analiza dimensiones éticas del uso de datos financieros, transparencia en modelos algorítmicos y responsabilidad profesional en la toma de decisiones basada en datos."
+          },
+          {
+            "scopus_id": "85129373077",
+            "title": "Big data, artificial intelligence and machine learning: A transformative symbiosis in favour of financial technology",
+            "authors": [
+              "Nguyen D.K."
+            ],
+            "year": 2023,
+            "journal": "European Financial Management",
+            "quartile": "Q1",
+            "contribution": "Cubre procesos de preparación, integración y transformación de datos financieros como base para modelos analíticos en instituciones financieras."
+          },
+          {
+            "scopus_id": "85104889606",
+            "title": "Intelligent FinTech Data Mining by Advanced Deep Learning Approaches",
+            "authors": [
+              "Huang S.C."
+            ],
+            "year": 2022,
+            "journal": "Computational Economics",
+            "quartile": "Q1",
+            "contribution": "Demuestra flujos de trabajo de minería de datos financieros con Python, incluyendo preprocesamiento, transformación y extracción de patrones en datasets financieros."
+          },
+          {
+            "scopus_id": "85124651167",
+            "title": "How much should we trust staggered difference-in-differences estimates?",
+            "authors": [
+              "Baker A.C."
+            ],
+            "year": 2022,
+            "journal": "Journal of Financial Economics",
+            "quartile": "Q1",
+            "contribution": "Aborda la calidad y validez de datos financieros en panel, proponiendo métodos corregidos para garantizar la integridad de los datos en modelos cuantitativos corporativos."
+          }
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ],
+        "competency_alignment": [
+          "C4 — Pensamiento Ético: transparencia y cumplimiento en datos financieros",
+          "C1 — Pensamiento Crítico: análisis de calidad de información financiera"
+        ]
+      },
+      {
+        "syllabus_topic": "Tema 3 — Análisis exploratorio y visualización de datos financieros",
+        "key_concepts": [
+          "Estadística descriptiva aplicada a datos financieros",
+          "Identificación de patrones y tendencias en mercados financieros",
+          "Visualización financiera interactiva (dashboards)",
+          "Análisis distribucional de retornos financieros"
+        ],
+        "methodologies": [
+          "Análisis exploratorio de datos (EDA) financieros",
+          "Estadística descriptiva: media, varianza, asimetría, curtosis",
+          "Visualización con Power BI y Python (matplotlib, seaborn)",
+          "Análisis de series temporales financieras"
+        ],
+        "supporting_papers": [
+          {
+            "scopus_id": "105029062156",
+            "title": "QuantVisExplorer: a multi-perspective visual analytics system for quantitative investment",
+            "authors": [
+              "Huang X."
+            ],
+            "year": 2026,
+            "journal": "Journal of Visualization",
+            "quartile": "Q1",
+            "contribution": "Presenta un sistema de analítica visual multi-perspectiva para inversión cuantitativa, combinando visualización de datos financieros, exploración de patrones y dashboards interactivos para soporte a decisiones."
+          },
+          {
+            "scopus_id": "85144054036",
+            "title": "Can average skewness really predict financial returns? The euro area case",
+            "authors": [
+              "Annaert J."
+            ],
+            "year": 2023,
+            "journal": "Finance Research Letters",
+            "quartile": "Q1",
+            "contribution": "Aplica estadística descriptiva y análisis distribucional de datos de retornos financieros para evaluar el poder predictivo de la asimetría, ilustrando EDA en modelación financiera."
+          },
+          {
+            "scopus_id": "85079823443",
+            "title": "Financial time series forecasting with deep learning: A systematic literature review: 2005–2019",
+            "authors": [
+              "Sezer O.B."
+            ],
+            "year": 2020,
+            "journal": "Applied Soft Computing Journal",
+            "quartile": "Q1",
+            "contribution": "Revisa métodos de análisis de series temporales financieras, identificación de patrones y tendencias en datos de mercado, con benchmarks cuantitativos de rendimiento."
+          },
+          {
+            "scopus_id": "85083721681",
+            "title": "COVID-19 and finance: Agendas for future research",
+            "authors": [
+              "Goodell J.W."
+            ],
+            "year": 2020,
+            "journal": "Finance Research Letters",
+            "quartile": "Q1",
+            "contribution": "Identifica patrones de volatilidad y tendencias en datos financieros durante crisis, demostrando la importancia del análisis exploratorio para detectar anomalías y oportunidades."
+          }
+        ],
+        "ra_relevance": [
+          "RA1"
+        ],
+        "competency_alignment": [
+          "C1 — Pensamiento Crítico: interpretación de patrones financieros",
+          "C2 — Pensamiento Innovador: visualización avanzada para comunicación financiera"
+        ]
+      },
+      {
+        "syllabus_topic": "Tema 4 — Modelación cuantitativa para la toma de decisiones",
+        "key_concepts": [
+          "Construcción de modelos cuantitativos financieros",
+          "Definición de variables financieras y supuestos explícitos",
+          "Validación y robustez de modelos financieros",
+          "Optimización de portafolios y gestión de riesgo",
+          "Modelos de impacto financiero en organizaciones"
+        ],
+        "methodologies": [
+          "Regresión y modelos econométricos financieros",
+          "Optimización cuantitativa (programación cuadrática, algoritmos)",
+          "Modelos de panel de datos financieros",
+          "Validación cruzada y backtesting financiero",
+          "Simulación de escenarios financieros"
+        ],
+        "supporting_papers": [
+          {
+            "scopus_id": "85087552053",
+            "title": "Multivariate portfolio optimization under illiquid market prospects",
+            "authors": [
+              "Al Janabi M.A.M."
+            ],
+            "year": 2021,
+            "journal": "Journal of Modelling in Management",
+            "quartile": "Q1",
+            "contribution": "Revisa modelos cuantitativos de optimización de portafolios con variables de riesgo de liquidez, supuestos explícitos y técnicas de validación directamente aplicables a decisiones financieras."
+          },
+          {
+            "scopus_id": "85106274228",
+            "title": "Optimization algorithms and investment portfolio analytics with machine learning techniques",
+            "authors": [
+              "Al Janabi M.A.M."
+            ],
+            "year": 2022,
+            "journal": "Journal of Modelling in Management",
+            "quartile": "Q1",
+            "contribution": "Aplica algoritmos de optimización cuantitativa a analítica de portafolios de inversión, integrando variables financieras y evaluación basada en escenarios para decisiones estratégicas."
+          },
+          {
+            "scopus_id": "85124651167",
+            "title": "How much should we trust staggered difference-in-differences estimates?",
+            "authors": [
+              "Baker A.C."
+            ],
+            "year": 2022,
+            "journal": "Journal of Financial Economics",
+            "quartile": "Q1",
+            "contribution": "Propone métodos cuantitativos corregidos para modelos de datos financieros en panel, abordando supuestos explícitos y validación de estimadores en investigación corporativa."
+          },
+          {
+            "scopus_id": "105013149358",
+            "title": "Quantitative Models with Qualitative Scenarios: Simulation with Transformer and Large Language Models",
+            "authors": [
+              "Aldridge I."
+            ],
+            "year": 2025,
+            "journal": "Journal of Financial Data Science",
+            "quartile": "Q1",
+            "contribution": "Integra modelos cuantitativos financieros con simulación de escenarios cualitativos, demostrando cómo los supuestos explícitos y el análisis de escenarios mejoran la estimación de impacto financiero."
+          },
+          {
+            "scopus_id": "85123870870",
+            "title": "How does green finance affect green total factor productivity?",
+            "authors": [
+              "Lee C.C."
+            ],
+            "year": 2022,
+            "journal": "Energy Economics",
+            "quartile": "Q1",
+            "contribution": "Emplea modelos de datos de panel con variables financieras explícitas y supuestos definidos para estimar el impacto de las finanzas verdes en la productividad organizacional."
+          }
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ],
+        "competency_alignment": [
+          "C1 — Pensamiento Crítico: sustento de juicios financieros con modelos cuantitativos",
+          "C2 — Pensamiento Innovador: diseño de modelos financieros innovadores"
+        ]
+      },
+      {
+        "syllabus_topic": "Tema 5 — Aplicación de modelos en decisiones financieras",
+        "key_concepts": [
+          "Interpretación de resultados de modelos financieros",
+          "Evaluación de escenarios de inversión, financiamiento y riesgo",
+          "Comunicación de resultados financieros a stakeholders",
+          "Estimación de impacto financiero en organizaciones",
+          "Toma de decisiones estratégicas basada en datos"
+        ],
+        "methodologies": [
+          "Análisis de escenarios financieros (optimista, base, pesimista)",
+          "Interpretación de coeficientes y métricas de modelos financieros",
+          "Dashboards ejecutivos con Power BI para comunicación financiera",
+          "Backtesting y evaluación de desempeño de modelos",
+          "Análisis de sensibilidad de variables financieras clave"
+        ],
+        "supporting_papers": [
+          {
+            "scopus_id": "85100981551",
+            "title": "Corporate green bonds",
+            "authors": [
+              "Flammer C."
+            ],
+            "year": 2021,
+            "journal": "Journal of Financial Economics",
+            "quartile": "Q1",
+            "contribution": "Demuestra análisis cuantitativo del impacto de bonos verdes en el desempeño financiero corporativo, con evaluación de escenarios y comunicación de resultados a inversores."
+          },
+          {
+            "scopus_id": "85104058997",
+            "title": "Demand for green finance: Resolving financing constraints on green innovation in China",
+            "authors": [
+              "Yu C.H."
+            ],
+            "year": 2021,
+            "journal": "Energy Policy",
+            "quartile": "Q1",
+            "contribution": "Aplica modelos cuantitativos de restricciones de financiamiento para evaluar decisiones de inversión verde y estrategias de asignación de capital en organizaciones."
+          },
+          {
+            "scopus_id": "85191027927",
+            "title": "Fintech innovation: Is it beneficial or detrimental to financial inclusion and financial stability?",
+            "authors": [
+              "Sant'Anna D.A.L.M."
+            ],
+            "year": 2024,
+            "journal": "Emerging Markets Review",
+            "quartile": "Q1",
+            "contribution": "Revisión sistemática del impacto cuantitativo de innovaciones fintech en métricas de estabilidad financiera, con análisis de escenarios de resultados financieros."
+          },
+          {
+            "scopus_id": "85100062751",
+            "title": "Firms and social responsibility: A review of ESG and CSR research in corporate finance",
+            "authors": [
+              "Gillan S.L."
+            ],
+            "year": 2021,
+            "journal": "Journal of Corporate Finance",
+            "quartile": "Q1",
+            "contribution": "Revisa cómo la integración de datos ESG en modelos corporativos mejora la interpretación de resultados financieros y la comunicación de impacto a stakeholders."
+          },
+          {
+            "scopus_id": "85083721681",
+            "title": "COVID-19 and finance: Agendas for future research",
+            "authors": [
+              "Goodell J.W."
+            ],
+            "year": 2020,
+            "journal": "Finance Research Letters",
+            "quartile": "Q1",
+            "contribution": "Propone agenda de investigación en analítica financiera aplicada a crisis, incluyendo modelación de volatilidad, evaluación de escenarios de riesgo y toma de decisiones bajo incertidumbre."
+          },
+          {
+            "scopus_id": "85078471678",
+            "title": "Financial inclusion research around the world: A review",
+            "authors": [
+              "Ozili P.K."
+            ],
+            "year": 2021,
+            "journal": "Forum for Social Economics",
+            "quartile": "Q1",
+            "contribution": "Revisa indicadores cuantitativos de impacto financiero global, marcos analíticos para evaluar resultados de políticas financieras y comunicación de hallazgos a tomadores de decisiones."
+          }
+        ],
+        "ra_relevance": [
+          "RA1",
+          "RA2"
+        ],
+        "competency_alignment": [
+          "C1 — Pensamiento Crítico: toma de decisiones estratégicas de inversión y riesgo",
+          "C3 — Pensamiento Relacional: anticipar impactos de variables macro-financieras",
+          "C4 — Pensamiento Ético: asignación responsable del capital"
+        ]
+      }
+    ]
   },
   "instructional_design": {
     "learning_objectives": [
       {
         "objective_id": "OBJ-001",
-        "description": "Analizar los fundamentos teóricos y prácticos de la inteligencia artificial y el aprendizaje automático",
+        "description": "Identificar los fundamentos de la ciencia de datos en el contexto financiero, distinguiendo tipos de datos financieros y el rol de la analitica en la generacion de valor organizacional.",
+        "bloom_verb": "identificar",
+        "bloom_level": "RECORDAR",
+        "competency_ids": [
+          "C1",
+          "C3"
+        ],
+        "ra_ids": [
+          "RA1"
+        ],
+        "syllabus_topic": "Tema 1 - Fundamentos de ciencia de datos en el contexto financiero",
+        "supporting_papers": [
+          "P2",
+          "P10"
+        ],
+        "week": 1
+      },
+      {
+        "objective_id": "OBJ-002",
+        "description": "Aplicar procesos de obtencion, integracion, limpieza y transformacion de datos financieros utilizando Excel avanzado y Python para garantizar la calidad de los insumos analiticos.",
+        "bloom_verb": "aplicar",
+        "bloom_level": "APLICAR",
+        "competency_ids": [
+          "C1",
+          "C2"
+        ],
+        "ra_ids": [
+          "RA1"
+        ],
+        "syllabus_topic": "Tema 2 - Preparacion y gestion de datos financieros",
+        "supporting_papers": [
+          "P2",
+          "P10"
+        ],
+        "week": 2
+      },
+      {
+        "objective_id": "OBJ-003",
+        "description": "Analizar patrones, tendencias y distribuciones en datos financieros mediante estadistica descriptiva y herramientas de visualizacion (Power BI, Python) para interpretar el comportamiento de variables de mercado.",
         "bloom_verb": "analizar",
         "bloom_level": "ANALIZAR",
         "competency_ids": [
-          "C-02"
+          "C1",
+          "C2",
+          "C3"
         ],
         "ra_ids": [
-          "RA-01"
-        ]
+          "RA1"
+        ],
+        "syllabus_topic": "Tema 3 - Analisis exploratorio y visualizacion de datos",
+        "supporting_papers": [
+          "P7",
+          "P2"
+        ],
+        "week": 3
       },
       {
-        "objective_id": "OBJ-002",
-        "description": "Justificar la selección y aplicación de algoritmos de machine learning para resolver problemas del mundo real",
-        "bloom_verb": "justificar",
+        "objective_id": "OBJ-004",
+        "description": "Construir modelos cuantitativos con variables definidas y supuestos explicitos, validando su robustez metodologica para estimar resultados de impacto financiero en organizaciones y portafolios.",
+        "bloom_verb": "construir",
+        "bloom_level": "CREAR",
+        "competency_ids": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "ra_ids": [
+          "RA2"
+        ],
+        "syllabus_topic": "Tema 4 - Modelacion cuantitativa para la toma de decisiones",
+        "supporting_papers": [
+          "P1",
+          "P3",
+          "P4",
+          "P5"
+        ],
+        "week": 4
+      },
+      {
+        "objective_id": "OBJ-005",
+        "description": "Evaluar los resultados de modelos cuantitativos aplicados a decisiones financieras reales, comunicando hallazgos con criterios eticos, transparencia y responsabilidad profesional ante audiencias directivas.",
+        "bloom_verb": "evaluar",
         "bloom_level": "EVALUAR",
         "competency_ids": [
-          "C-01"
+          "C1",
+          "C2",
+          "C3",
+          "C4"
         ],
         "ra_ids": [
-          "RA-02"
-        ]
-      },
-      {
-        "objective_id": "OBJ-003",
-        "description": "Examinar modelos de aprendizaje automático utilizando métricas y técnicas de validación apropiadas",
-        "bloom_verb": "examinar",
-        "bloom_level": "ANALIZAR",
-        "competency_ids": [
-          "C-03"
+          "RA1",
+          "RA2"
         ],
-        "ra_ids": [
-          "RA-03"
-        ]
+        "syllabus_topic": "Tema 5 - Aplicacion de modelos en decisiones financieras",
+        "supporting_papers": [
+          "P6",
+          "P8",
+          "P9",
+          "P10"
+        ],
+        "week": 5
       }
     ],
-    "traceability_matrix": [
-      {
-        "objective_id": "OBJ-001",
-        "ra_ids": [
-          "RA-01"
+    "traceability_matrix": {
+      "description": "Matriz de trazabilidad que vincula cada objetivo de aprendizaje con resultados de aprendizaje (RA), competencias del programa (C) y semana de implementacion.",
+      "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
+      "subject_name": "Ciencia de datos aplicada a las finanzas",
+      "subject_type": "CONCENTRACION",
+      "program": "Maestria en Direccion y Tecnologia Financiera - Anahuac Online",
+      "entries": [
+        {
+          "objective_id": "OBJ-001",
+          "objective_summary": "Identificar fundamentos de ciencia de datos en finanzas",
+          "bloom_level": "RECORDAR",
+          "ra_ids": [
+            "RA1"
+          ],
+          "competency_ids": [
+            "C1",
+            "C3"
+          ],
+          "week": 1,
+          "syllabus_topic": "Tema 1",
+          "papers": [
+            "P2",
+            "P10"
+          ],
+          "tools": [
+            "Excel avanzado",
+            "Python"
+          ]
+        },
+        {
+          "objective_id": "OBJ-002",
+          "objective_summary": "Aplicar preparacion y gestion de datos financieros",
+          "bloom_level": "APLICAR",
+          "ra_ids": [
+            "RA1"
+          ],
+          "competency_ids": [
+            "C1",
+            "C2"
+          ],
+          "week": 2,
+          "syllabus_topic": "Tema 2",
+          "papers": [
+            "P2",
+            "P10"
+          ],
+          "tools": [
+            "Excel avanzado",
+            "Python"
+          ]
+        },
+        {
+          "objective_id": "OBJ-003",
+          "objective_summary": "Analizar patrones mediante estadistica descriptiva y visualizacion",
+          "bloom_level": "ANALIZAR",
+          "ra_ids": [
+            "RA1"
+          ],
+          "competency_ids": [
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "week": 3,
+          "syllabus_topic": "Tema 3",
+          "papers": [
+            "P7",
+            "P2"
+          ],
+          "tools": [
+            "Power BI",
+            "Python",
+            "Excel avanzado"
+          ]
+        },
+        {
+          "objective_id": "OBJ-004",
+          "objective_summary": "Construir modelos cuantitativos con supuestos explicitos y validacion",
+          "bloom_level": "CREAR",
+          "ra_ids": [
+            "RA2"
+          ],
+          "competency_ids": [
+            "C1",
+            "C2",
+            "C3"
+          ],
+          "week": 4,
+          "syllabus_topic": "Tema 4",
+          "papers": [
+            "P1",
+            "P3",
+            "P4",
+            "P5"
+          ],
+          "tools": [
+            "Python",
+            "Excel avanzado"
+          ]
+        },
+        {
+          "objective_id": "OBJ-005",
+          "objective_summary": "Evaluar y comunicar resultados de modelos en decisiones financieras con criterio etico",
+          "bloom_level": "EVALUAR",
+          "ra_ids": [
+            "RA1",
+            "RA2"
+          ],
+          "competency_ids": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "week": 5,
+          "syllabus_topic": "Tema 5",
+          "papers": [
+            "P6",
+            "P8",
+            "P9",
+            "P10"
+          ],
+          "tools": [
+            "Power BI",
+            "Python",
+            "Excel avanzado"
+          ]
+        }
+      ],
+      "competency_coverage_summary": {
+        "C1": [
+          "OBJ-001",
+          "OBJ-002",
+          "OBJ-003",
+          "OBJ-004",
+          "OBJ-005"
         ],
-        "competency_ids": [
-          "C-02"
+        "C2": [
+          "OBJ-002",
+          "OBJ-003",
+          "OBJ-004",
+          "OBJ-005"
         ],
-        "bloom_level": "ANALIZAR",
-        "topic_ids": [
-          "T-01"
+        "C3": [
+          "OBJ-001",
+          "OBJ-003",
+          "OBJ-004",
+          "OBJ-005"
         ],
-        "week_coverage": [
-          1,
-          2
-        ],
-        "alignment_notes": "El objetivo cubre los fundamentos de ML (T-01) y se alinea con la competencia de diseño e implementación de soluciones IA (C-02). Progresión desde RECORDAR (semana 1) hacia ANALIZAR (semana 2)."
+        "C4": [
+          "OBJ-005"
+        ]
       },
-      {
-        "objective_id": "OBJ-002",
-        "ra_ids": [
-          "RA-02"
+      "ra_coverage_summary": {
+        "RA1": [
+          "OBJ-001",
+          "OBJ-002",
+          "OBJ-003",
+          "OBJ-005"
         ],
-        "competency_ids": [
-          "C-01"
-        ],
-        "bloom_level": "EVALUAR",
-        "topic_ids": [
-          "T-02",
-          "T-03"
-        ],
-        "week_coverage": [
-          2,
-          3
-        ],
-        "alignment_notes": "Cubre algoritmos supervisados (T-02) y no supervisados (T-03). Vinculado al pensamiento computacional (C-01). Nivel EVALUAR alcanzado en semana 3 mediante justificación de selección algorítmica."
-      },
-      {
-        "objective_id": "OBJ-003",
-        "ra_ids": [
-          "RA-03"
-        ],
-        "competency_ids": [
-          "C-03"
-        ],
-        "bloom_level": "ANALIZAR",
-        "topic_ids": [
-          "T-04"
-        ],
-        "week_coverage": [
-          3,
-          4
-        ],
-        "alignment_notes": "Cubre evaluación y validación de modelos (T-04). Alineado con análisis crítico de modelos predictivos (C-03). Culmina en síntesis integradora en semana 4."
+        "RA2": [
+          "OBJ-004",
+          "OBJ-005"
+        ]
       }
-    ],
+    },
     "descriptive_card": {
       "version": "V1",
       "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
-      "subject_name": "Inteligencia Artificial y Machine Learning",
+      "subject_name": "Ciencia de datos aplicada a las finanzas",
       "subject_type": "CONCENTRACION",
-      "graduation_profile": "Profesional capaz de diseñar, implementar y evaluar soluciones basadas en inteligencia artificial y aprendizaje automático, con pensamiento crítico y ético para abordar problemas complejos del entorno tecnológico y social.",
-      "general_objective": "Justificar la selección y aplicación de algoritmos de machine learning para resolver problemas del mundo real, integrando fundamentos teóricos y técnicas de evaluación que respalden decisiones informadas en contextos profesionales.",
-      "specific_objectives": [
-        "Analizar los fundamentos teóricos y prácticos de la inteligencia artificial y el aprendizaje automático, identificando tipos de aprendizaje, el tradeoff bias-varianza y los fenómenos de overfitting/underfitting.",
-        "Justificar la selección y aplicación de algoritmos supervisados y no supervisados (Regresión, Árboles de Decisión, SVM, Redes Neuronales, K-Means, PCA) para resolver problemas del mundo real.",
-        "Examinar modelos de aprendizaje automático utilizando métricas de clasificación/regresión, cross-validation, curvas ROC/AUC y técnicas de tuning de hiperparámetros."
+      "program": "Maestria en Direccion y Tecnologia Financiera - Anahuac Online",
+      "credits": 5,
+      "duration_weeks": 5,
+      "modality": "Online",
+      "software_tools": [
+        "Excel avanzado",
+        "Python",
+        "Power BI"
       ],
-      "evaluation_criteria": {
-        "C-01_pensamiento_computacional": {
+      "graduation_profile_alignment": "El egresado es un profesional capaz de dirigir y sustentar decisiones financieras estrategicas orientadas a la creacion, preservacion y maximizacion de valor en organizaciones, proyectos y portafolios, integrando finanzas, tecnologia y analitica para actuar con eficacia en entornos complejos y dinamicos.",
+      "general_objective": "Desarrollar en el estudiante la capacidad de aplicar y construir modelos cuantitativos basados en ciencia de datos para interpretar patrones financieros, generar insumos de decision estrategica y evaluar su impacto organizacional con rigor metodologico y responsabilidad etica.",
+      "specific_objectives": [
+        {
+          "id": "OBJ-001",
+          "text": "Identificar los fundamentos de la ciencia de datos en el contexto financiero, distinguiendo tipos de datos financieros y el rol de la analitica en la generacion de valor organizacional.",
+          "bloom_level": "RECORDAR",
+          "week": 1
+        },
+        {
+          "id": "OBJ-002",
+          "text": "Aplicar procesos de obtencion, integracion, limpieza y transformacion de datos financieros utilizando Excel avanzado y Python para garantizar la calidad de los insumos analiticos.",
+          "bloom_level": "APLICAR",
+          "week": 2
+        },
+        {
+          "id": "OBJ-003",
+          "text": "Analizar patrones, tendencias y distribuciones en datos financieros mediante estadistica descriptiva y herramientas de visualizacion (Power BI, Python) para interpretar el comportamiento de variables de mercado.",
+          "bloom_level": "ANALIZAR",
+          "week": 3
+        },
+        {
+          "id": "OBJ-004",
+          "text": "Construir modelos cuantitativos con variables definidas y supuestos explicitos, validando su robustez metodologica para estimar resultados de impacto financiero en organizaciones y portafolios.",
+          "bloom_level": "CREAR",
+          "week": 4
+        },
+        {
+          "id": "OBJ-005",
+          "text": "Evaluar los resultados de modelos cuantitativos aplicados a decisiones financieras reales, comunicando hallazgos con criterios eticos, transparencia y responsabilidad profesional ante audiencias directivas.",
           "bloom_level": "EVALUAR",
-          "instrument": "Proyecto de implementación algorítmica con justificación técnica escrita",
-          "weight_percentage": 35
-        },
-        "C-02_diseno_soluciones_IA": {
-          "bloom_level": "ANALIZAR",
-          "instrument": "Análisis de casos y laboratorios prácticos con entregables en Jupyter Notebook",
-          "weight_percentage": 35
-        },
-        "C-03_analisis_critico_modelos": {
-          "bloom_level": "ANALIZAR",
-          "instrument": "Reporte de evaluación de modelos con interpretación de métricas y validación cruzada",
-          "weight_percentage": 30
+          "week": 5
         }
-      },
-      "case_studies_design": "Casos ejecutivos diseñados para vincular los contenidos de Inteligencia Artificial y Machine Learning con la práctica profesional del egresado. Incluyen: (1) Predicción de churn en telecomunicaciones usando algoritmos supervisados; (2) Segmentación de clientes con K-Means y PCA para retail; (3) Diagnóstico médico asistido con evaluación de modelos mediante ROC/AUC y validación cruzada."
+      ],
+      "evaluation_criteria": [
+        {
+          "component": "Actividades de aplicacion practica semanal",
+          "weight_pct": 30,
+          "description": "Ejercicios en Excel, Python y Power BI alineados a los temas de cada semana; evaluan RA1 y competencias C1, C2.",
+          "ra_ids": [
+            "RA1"
+          ],
+          "competency_ids": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "component": "Proyecto integrador de modelacion cuantitativa",
+          "weight_pct": 40,
+          "description": "Construccion y validacion de un modelo cuantitativo con datos financieros reales, supuestos explicitos y analisis de escenarios; evalua RA2 y competencias C1, C2, C3.",
+          "ra_ids": [
+            "RA2"
+          ],
+          "competency_ids": [
+            "C1",
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "component": "Presentacion ejecutiva de resultados",
+          "weight_pct": 20,
+          "description": "Comunicacion de hallazgos del modelo ante audiencia directiva simulada, incorporando criterios eticos y ESG; evalua RA1, RA2 y competencia C4.",
+          "ra_ids": [
+            "RA1",
+            "RA2"
+          ],
+          "competency_ids": [
+            "C4"
+          ]
+        },
+        {
+          "component": "Participacion en foros de discusion critica",
+          "weight_pct": 10,
+          "description": "Reflexion critica sobre lecturas academicas (papers Scopus) y su aplicacion al contexto financiero; evalua C1 y C3.",
+          "ra_ids": [
+            "RA1"
+          ],
+          "competency_ids": [
+            "C1",
+            "C3"
+          ]
+        }
+      ],
+      "case_studies_design": "Los casos ejecutivos de la materia Ciencia de datos aplicada a las finanzas estan disenados para vincular cada tema del programa con la practica profesional del egresado de la Maestria en Direccion y Tecnologia Financiera. Los casos incluyen: (1) Diagnostico de calidad de datos en una institucion financiera real usando Python y Excel; (2) Construccion de un dashboard de visualizacion de portafolio con Power BI referenciando el sistema QuantVisExplorer (P7); (3) Modelacion de riesgo de liquidez en portafolios multivariate con restricciones dinamicas (P3, P4); (4) Evaluacion de escenarios de inversion con modelos cuantitativos y LLMs (P6); (5) Analisis de impacto ESG y bonos verdes en decisiones de asignacion de capital (P8, P9)."
     },
     "content_map": {
-      "subject_name": "Inteligencia Artificial y Machine Learning",
-      "subject_type": "CONCENTRACION",
-      "total_weeks": 4,
+      "subject_name": "Ciencia de datos aplicada a las finanzas",
+      "total_weeks": 5,
+      "bloom_progression": "RECORDAR → APLICAR → ANALIZAR → CREAR → EVALUAR",
       "weeks": [
         {
           "week": 1,
-          "theme": "Fundamentos de Machine Learning",
-          "bloom_level": "RECORDAR / COMPRENDER",
-          "topic_ids": [
-            "T-01"
+          "theme": "Fundamentos de ciencia de datos en el contexto financiero",
+          "syllabus_reference": "Tema 1",
+          "bloom_level": "RECORDAR",
+          "objective_id": "OBJ-001",
+          "ra_ids": [
+            "RA1"
           ],
-          "subtopics": [
-            "Tipos de aprendizaje: supervisado, no supervisado, por refuerzo",
-            "Bias-Variance tradeoff: conceptos y visualización",
-            "Overfitting y Underfitting: diagnóstico y estrategias de mitigación"
+          "competency_ids": [
+            "C1",
+            "C3"
           ],
-          "objective_ids": [
-            "OBJ-001"
+          "key_concepts": [
+            "Concepto y alcance de la ciencia de datos en finanzas",
+            "Tipos de datos financieros: estructurados, no estructurados, series de tiempo",
+            "Rol de la analitica descriptiva, predictiva y prescriptiva",
+            "Ecosistema de herramientas: Excel avanzado, Python, Power BI",
+            "Etica en el uso de datos financieros y privacidad"
           ],
-          "activities": [
-            "Lectura guiada de fundamentos teóricos con mapa conceptual colaborativo",
-            "Laboratorio introductorio: exploración de datasets con Pandas y Scikit-learn",
-            "Quiz diagnóstico de conceptos clave (RECORDAR)"
+          "learning_activities": [
+            "Lectura y discusion: Big data, AI and ML in financial technology (P2) y Building Trust in Fintech (P10)",
+            "Mapa conceptual del ecosistema de ciencia de datos financieros elaborado en clase virtual",
+            "Ejercicio de identificacion y clasificacion de tipos de datos financieros en Excel"
           ],
-          "resources": [
-            "Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow – Aurélien Géron (Cap. 1-2)",
-            "Notebook: bias_variance_visualization.ipynb"
+          "tools": [
+            "Excel avanzado",
+            "Python (introduccion)"
+          ],
+          "supporting_papers": [
+            {
+              "paper_id": "P2",
+              "title": "Big data, artificial intelligence and machine learning: A transformative symbiosis in favour of financial technology",
+              "year": 2023
+            },
+            {
+              "paper_id": "P10",
+              "title": "Building Trust in Fintech: An Analysis of Ethical and Privacy Considerations in the Intersection of Big Data, AI, and Customer Trust",
+              "year": 2023
+            }
           ]
         },
         {
           "week": 2,
-          "theme": "Algoritmos Supervisados y No Supervisados",
-          "bloom_level": "APLICAR / ANALIZAR",
-          "topic_ids": [
-            "T-02",
-            "T-03"
+          "theme": "Preparacion y gestion de datos financieros",
+          "syllabus_reference": "Tema 2",
+          "bloom_level": "APLICAR",
+          "objective_id": "OBJ-002",
+          "ra_ids": [
+            "RA1"
           ],
-          "subtopics": [
-            "Regresión Lineal y Logística: implementación y supuestos",
-            "Árboles de Decisión y SVM: fronteras de decisión",
-            "Redes Neuronales básicas: arquitectura y forward pass",
-            "K-Means y DBSCAN: clustering y detección de anomalías",
-            "PCA y Autoencoders: reducción de dimensionalidad"
+          "competency_ids": [
+            "C1",
+            "C2"
           ],
-          "objective_ids": [
-            "OBJ-001",
-            "OBJ-002"
+          "key_concepts": [
+            "Fuentes de obtencion de datos financieros (APIs, bases de datos, web scraping)",
+            "Integracion y consolidacion de datasets financieros heterogeneos",
+            "Limpieza de datos: valores faltantes, outliers, duplicados",
+            "Transformacion y normalizacion de variables financieras",
+            "Criterios de calidad del dato: completitud, consistencia, oportunidad"
           ],
-          "activities": [
-            "Laboratorio comparativo: implementar Regresión Logística vs. Árbol de Decisión sobre el mismo dataset",
-            "Taller de clustering: segmentación de clientes con K-Means y visualización PCA",
-            "Discusión guiada: ¿cuándo usar supervisado vs. no supervisado? (ANALIZAR)"
+          "learning_activities": [
+            "Taller practico: pipeline de limpieza y transformacion de datos de precios de acciones en Python (pandas)",
+            "Ejercicio en Excel avanzado: consolidacion de estados financieros de multiples periodos",
+            "Foro de discusion: implicaciones eticas de la calidad del dato en decisiones de credito (P10)"
           ],
-          "resources": [
-            "Scikit-learn Documentation: Supervised & Unsupervised Learning",
-            "Notebook: supervised_vs_unsupervised_lab.ipynb",
-            "Caso ejecutivo: Segmentación de clientes en retail"
+          "tools": [
+            "Python (pandas, numpy)",
+            "Excel avanzado"
+          ],
+          "supporting_papers": [
+            {
+              "paper_id": "P2",
+              "title": "Big data, artificial intelligence and machine learning: A transformative symbiosis in favour of financial technology",
+              "year": 2023
+            },
+            {
+              "paper_id": "P10",
+              "title": "Building Trust in Fintech: An Analysis of Ethical and Privacy Considerations in the Intersection of Big Data, AI, and Customer Trust",
+              "year": 2023
+            }
           ]
         },
         {
           "week": 3,
-          "theme": "Evaluación Crítica de Modelos",
-          "bloom_level": "ANALIZAR / EVALUAR",
-          "topic_ids": [
-            "T-04"
+          "theme": "Analisis exploratorio y visualizacion de datos financieros",
+          "syllabus_reference": "Tema 3",
+          "bloom_level": "ANALIZAR",
+          "objective_id": "OBJ-003",
+          "ra_ids": [
+            "RA1"
           ],
-          "subtopics": [
-            "Métricas de clasificación: Accuracy, Precision, Recall, F1-Score, Matriz de Confusión",
-            "Métricas de regresión: MAE, MSE, RMSE, R²",
-            "Cross-validation: K-Fold, Stratified K-Fold",
-            "Curvas ROC y AUC: interpretación y comparación de modelos"
+          "competency_ids": [
+            "C1",
+            "C2",
+            "C3"
           ],
-          "objective_ids": [
-            "OBJ-002",
-            "OBJ-003"
+          "key_concepts": [
+            "Estadistica descriptiva aplicada a variables financieras: media, varianza, curtosis, sesgo",
+            "Identificacion de patrones y tendencias en series de tiempo financieras",
+            "Correlaciones y matrices de covarianza entre activos",
+            "Visualizacion financiera: dashboards, heatmaps, candlestick charts, scatter plots",
+            "Analitica visual multi-perspectiva para inversion cuantitativa"
           ],
-          "activities": [
-            "Laboratorio de métricas: calcular e interpretar métricas sobre modelos de la semana 2",
-            "Ejercicio de cross-validation: comparar K-Fold vs. Hold-out en datasets desbalanceados",
-            "Análisis crítico: identificar el mejor modelo para el caso de diagnóstico médico usando ROC/AUC"
+          "learning_activities": [
+            "Laboratorio Power BI: construccion de dashboard de analisis de portafolio con datos reales de mercado (referenciando QuantVisExplorer, P7)",
+            "Analisis exploratorio en Python (matplotlib, seaborn, plotly) de series de tiempo de indices bursatiles",
+            "Caso de analisis: interpretacion de patrones de volatilidad en mercados emergentes"
           ],
-          "resources": [
-            "Notebook: model_evaluation_metrics.ipynb",
-            "Caso ejecutivo: Diagnóstico médico asistido con evaluación ROC/AUC",
-            "Paper: 'A systematic analysis of performance measures for classification tasks' – Sokolova & Lapalme"
+          "tools": [
+            "Power BI",
+            "Python (matplotlib, seaborn, plotly)",
+            "Excel avanzado"
+          ],
+          "supporting_papers": [
+            {
+              "paper_id": "P7",
+              "title": "QuantVisExplorer: a multi-perspective visual analytics system for quantitative investment",
+              "year": 2026
+            },
+            {
+              "paper_id": "P2",
+              "title": "Big data, artificial intelligence and machine learning: A transformative symbiosis in favour of financial technology",
+              "year": 2023
+            }
           ]
         },
         {
           "week": 4,
-          "theme": "Síntesis, Tuning e Integración",
-          "bloom_level": "EVALUAR / CREAR",
-          "topic_ids": [
-            "T-02",
-            "T-03",
-            "T-04"
+          "theme": "Modelacion cuantitativa para la toma de decisiones financieras",
+          "syllabus_reference": "Tema 4",
+          "bloom_level": "CREAR",
+          "objective_id": "OBJ-004",
+          "ra_ids": [
+            "RA2"
           ],
-          "subtopics": [
-            "Hiperparámetros: definición y estrategias de búsqueda",
-            "Grid Search y Random Search: implementación práctica",
-            "Pipeline de ML end-to-end: preprocesamiento, entrenamiento, evaluación y despliegue básico",
-            "Integración de aprendizajes: proyecto integrador"
+          "competency_ids": [
+            "C1",
+            "C2",
+            "C3"
           ],
-          "objective_ids": [
-            "OBJ-001",
-            "OBJ-002",
-            "OBJ-003"
+          "key_concepts": [
+            "Construccion de modelos cuantitativos: definicion de variables dependientes e independientes",
+            "Formulacion de supuestos explicitos y restricciones del modelo",
+            "Modelos de regresion, series de tiempo (ARIMA) y optimizacion de portafolios",
+            "Validacion y backtesting de modelos financieros",
+            "Gestion de riesgo de liquidez en modelos multivariate"
           ],
-          "activities": [
-            "Taller de hyperparameter tuning: GridSearchCV y RandomizedSearchCV sobre SVM y Random Forest",
-            "Construcción de pipeline end-to-end con Scikit-learn Pipelines",
-            "Presentación del proyecto integrador: justificación de selección algorítmica, métricas y conclusiones (EVALUAR)"
+          "learning_activities": [
+            "Proyecto parcial: construccion de un modelo de optimizacion de portafolio con restricciones de liquidez en Python (P3, P4)",
+            "Taller de validacion: aplicacion de pruebas de robustez y analisis de sensibilidad a supuestos del modelo (P5)",
+            "Revision critica de literatura: revision sistematica de modelos de forecasting de series de tiempo financieras (P1)"
           ],
-          "resources": [
-            "Notebook: hyperparameter_tuning_pipeline.ipynb",
-            "Caso ejecutivo: Predicción de churn en telecomunicaciones (proyecto integrador)",
-            "Scikit-learn Documentation: Pipeline & GridSearchCV"
+          "tools": [
+            "Python (scikit-learn, statsmodels, scipy)",
+            "Excel avanzado (Solver)"
+          ],
+          "supporting_papers": [
+            {
+              "paper_id": "P1",
+              "title": "Financial time series forecasting with deep learning: A systematic literature review: 2005-2019",
+              "year": 2020
+            },
+            {
+              "paper_id": "P3",
+              "title": "Multivariate portfolio optimization under illiquid market prospects: a review of theoretical algorithms and practical techniques for liquidity risk management",
+              "year": 2021
+            },
+            {
+              "paper_id": "P4",
+              "title": "Optimization algorithms and investment portfolio analytics with machine learning techniques under time-varying liquidity constraints",
+              "year": 2022
+            },
+            {
+              "paper_id": "P5",
+              "title": "How much should we trust staggered difference-in-differences estimates?",
+              "year": 2022
+            }
+          ]
+        },
+        {
+          "week": 5,
+          "theme": "Aplicacion de modelos en decisiones financieras estrategicas",
+          "syllabus_reference": "Tema 5",
+          "bloom_level": "EVALUAR",
+          "objective_id": "OBJ-005",
+          "ra_ids": [
+            "RA1",
+            "RA2"
+          ],
+          "competency_ids": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ],
+          "key_concepts": [
+            "Interpretacion de resultados de modelos cuantitativos en contexto directivo",
+            "Evaluacion de escenarios: analisis what-if, stress testing y simulacion",
+            "Comunicacion ejecutiva de resultados analiticos a audiencias no tecnicas",
+            "Integracion de criterios ESG y bonos verdes en modelos de asignacion de capital",
+            "Etica, transparencia y responsabilidad en el uso de modelos de IA y datos financieros"
+          ],
+          "learning_activities": [
+            "Proyecto integrador final: aplicacion del modelo cuantitativo construido en semana 4 a un caso de decision financiera real con evaluacion de escenarios (P6)",
+            "Presentacion ejecutiva: comunicacion de hallazgos del modelo ante panel directivo simulado, incorporando analisis ESG (P8, P9)",
+            "Debate etico: implicaciones del uso de LLMs y big data en decisiones financieras (P10, P6)"
+          ],
+          "tools": [
+            "Python",
+            "Power BI",
+            "Excel avanzado"
+          ],
+          "supporting_papers": [
+            {
+              "paper_id": "P6",
+              "title": "Quantitative Models with Qualitative Scenarios: Simulation with Transformer and Large Language Models",
+              "year": 2025
+            },
+            {
+              "paper_id": "P8",
+              "title": "Firms and social responsibility: A review of ESG and CSR research in corporate finance",
+              "year": 2021
+            },
+            {
+              "paper_id": "P9",
+              "title": "Corporate green bonds",
+              "year": 2021
+            },
+            {
+              "paper_id": "P10",
+              "title": "Building Trust in Fintech: An Analysis of Ethical and Privacy Considerations in the Intersection of Big Data, AI, and Customer Trust",
+              "year": 2023
+            }
           ]
         }
       ]
@@ -571,281 +1538,132 @@
   },
   "content_package": {
     "executive_readings": {
-      "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
-      "subject_name": "Advanced Research Methods and Innovation",
-      "language": "BILINGUAL",
-      "total_weeks": 8,
       "readings": [
         {
           "week": 1,
-          "title": "Semana 1 / Week 1: Foundations of Research Methodology",
-          "bloom_level": "Remember & Understand",
-          "content_md": "# Lectura Ejecutiva — Semana 1: Foundations of Research Methodology\n\n## Conceptos Clave\n\n- Concepto 1 de Foundations of Research Methodology\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 1: Foundations of Research Methodology\n\n[English version]",
-          "language": "BILINGUAL",
-          "activities": [
-            "Introductory lecture",
-            "Concept mapping",
-            "Discussion forum"
-          ]
+          "title": "Semana 1: Fundamentos de ciencia de datos en el contexto fin",
+          "bloom_level": "RECORDAR",
+          "content_md": "# Lectura Ejecutiva — Semana 1: Fundamentos de ciencia de datos en el contexto fin\n\n**Nivel Bloom**: RECORDAR\n**Asignatura**: Ciencia de datos aplicada a las finanzas\n\n## Contenido Temático\n\n- Tema principal: Fundamentos de ciencia de datos en el contexto fin\n\n## Aplicación Profesional\n\nCaso de aplicación de Fundamentos de ciencia de datos en el contexto fin en el contexto de Ciencia de datos aplicada a las finanzas.",
+          "language": "ES",
+          "activities": []
         },
         {
           "week": 2,
-          "title": "Semana 2 / Week 2: Literature Review and State of the Art",
-          "bloom_level": "Understand & Analyze",
-          "content_md": "# Lectura Ejecutiva — Semana 2: Literature Review and State of the Art\n\n## Conceptos Clave\n\n- Concepto 1 de Literature Review and State of the Art\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 2: Literature Review and State of the Art\n\n[English version]",
-          "language": "BILINGUAL",
-          "activities": [
-            "Annotated bibliography",
-            "Peer review",
-            "Group discussion"
-          ]
+          "title": "Semana 2: Preparacion y gestion de datos financieros",
+          "bloom_level": "APLICAR",
+          "content_md": "# Lectura Ejecutiva — Semana 2: Preparacion y gestion de datos financieros\n\n**Nivel Bloom**: APLICAR\n**Asignatura**: Ciencia de datos aplicada a las finanzas\n\n## Contenido Temático\n\n- Tema principal: Preparacion y gestion de datos financieros\n\n## Aplicación Profesional\n\nCaso de aplicación de Preparacion y gestion de datos financieros en el contexto de Ciencia de datos aplicada a las finanzas.",
+          "language": "ES",
+          "activities": []
         },
         {
           "week": 3,
-          "title": "Semana 3 / Week 3: Quantitative Research Design",
-          "bloom_level": "Apply",
-          "content_md": "# Lectura Ejecutiva — Semana 3: Quantitative Research Design\n\n## Conceptos Clave\n\n- Concepto 1 de Quantitative Research Design\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 3: Quantitative Research Design\n\n[English version]",
-          "language": "BILINGUAL",
-          "activities": [
-            "Case study analysis",
-            "Statistical exercise",
-            "Lab session"
-          ]
+          "title": "Semana 3: Analisis exploratorio y visualizacion de datos fin",
+          "bloom_level": "ANALIZAR",
+          "content_md": "# Lectura Ejecutiva — Semana 3: Analisis exploratorio y visualizacion de datos fin\n\n**Nivel Bloom**: ANALIZAR\n**Asignatura**: Ciencia de datos aplicada a las finanzas\n\n## Contenido Temático\n\n- Tema principal: Analisis exploratorio y visualizacion de datos fin\n\n## Aplicación Profesional\n\nCaso de aplicación de Analisis exploratorio y visualizacion de datos fin en el contexto de Ciencia de datos aplicada a las finanzas.",
+          "language": "ES",
+          "activities": []
         },
         {
           "week": 4,
-          "title": "Semana 4 / Week 4: Qualitative Research Design",
-          "bloom_level": "Apply & Analyze",
-          "content_md": "# Lectura Ejecutiva — Semana 4: Qualitative Research Design\n\n## Conceptos Clave\n\n- Concepto 1 de Qualitative Research Design\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 4: Qualitative Research Design\n\n[English version]",
-          "language": "BILINGUAL",
-          "activities": [
-            "Interview simulation",
-            "Thematic analysis",
-            "Reflective journal"
-          ]
+          "title": "Semana 4: Modelacion cuantitativa para la toma de decisiones",
+          "bloom_level": "CREAR",
+          "content_md": "# Lectura Ejecutiva — Semana 4: Modelacion cuantitativa para la toma de decisiones\n\n**Nivel Bloom**: CREAR\n**Asignatura**: Ciencia de datos aplicada a las finanzas\n\n## Contenido Temático\n\n- Tema principal: Modelacion cuantitativa para la toma de decisiones\n\n## Aplicación Profesional\n\nCaso de aplicación de Modelacion cuantitativa para la toma de decisiones en el contexto de Ciencia de datos aplicada a las finanzas.",
+          "language": "ES",
+          "activities": []
         },
         {
           "week": 5,
-          "title": "Semana 5 / Week 5: Mixed Methods and Triangulation",
-          "bloom_level": "Analyze & Evaluate",
-          "content_md": "# Lectura Ejecutiva — Semana 5: Mixed Methods and Triangulation\n\n## Conceptos Clave\n\n- Concepto 1 de Mixed Methods and Triangulation\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 5: Mixed Methods and Triangulation\n\n[English version]",
-          "language": "BILINGUAL",
-          "activities": [
-            "Comparative study",
-            "Data integration workshop",
-            "Debate"
-          ]
-        },
-        {
-          "week": 6,
-          "title": "Semana 6 / Week 6: Data Analysis and Interpretation",
-          "bloom_level": "Evaluate",
-          "content_md": "# Lectura Ejecutiva — Semana 6: Data Analysis and Interpretation\n\n## Conceptos Clave\n\n- Concepto 1 de Data Analysis and Interpretation\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 6: Data Analysis and Interpretation\n\n[English version]",
-          "language": "BILINGUAL",
-          "activities": [
-            "Data analysis lab",
-            "Results presentation",
-            "Peer critique"
-          ]
-        },
-        {
-          "week": 7,
-          "title": "Semana 7 / Week 7: Research Ethics and Academic Integrity",
-          "bloom_level": "Evaluate & Create",
-          "content_md": "# Lectura Ejecutiva — Semana 7: Research Ethics and Academic Integrity\n\n## Conceptos Clave\n\n- Concepto 1 de Research Ethics and Academic Integrity\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 7: Research Ethics and Academic Integrity\n\n[English version]",
-          "language": "BILINGUAL",
-          "activities": [
-            "Ethics case review",
-            "Policy analysis",
-            "Written reflection"
-          ]
-        },
-        {
-          "week": 8,
-          "title": "Semana 8 / Week 8: Research Dissemination and Innovation",
-          "bloom_level": "Create",
-          "content_md": "# Lectura Ejecutiva — Semana 8: Research Dissemination and Innovation\n\n## Conceptos Clave\n\n- Concepto 1 de Research Dissemination and Innovation\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 8: Research Dissemination and Innovation\n\n[English version]",
-          "language": "BILINGUAL",
-          "activities": [
-            "Research proposal",
-            "Poster presentation",
-            "Final project submission"
-          ]
+          "title": "Semana 5: Aplicacion de modelos en decisiones financieras es",
+          "bloom_level": "EVALUAR",
+          "content_md": "# Lectura Ejecutiva — Semana 5: Aplicacion de modelos en decisiones financieras es\n\n**Nivel Bloom**: EVALUAR\n**Asignatura**: Ciencia de datos aplicada a las finanzas\n\n## Contenido Temático\n\n- Tema principal: Aplicacion de modelos en decisiones financieras es\n\n## Aplicación Profesional\n\nCaso de aplicación de Aplicacion de modelos en decisiones financieras es en el contexto de Ciencia de datos aplicada a las finanzas.",
+          "language": "ES",
+          "activities": []
         }
       ]
     },
     "quizzes": {
-      "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
-      "subject_name": "Advanced Research Methods and Innovation",
-      "language": "BILINGUAL",
-      "total_learning_outcomes": 4,
-      "total_questions": 12,
       "quizzes": [
         {
-          "ra_id": "RA-01",
-          "ra_description": "Critically evaluate and synthesize existing literature to identify research gaps and formulate original research questions within a specialized field.",
+          "ra_id": "RA1",
+          "ra_description": "Aplica tecnicas cuantitativas con apoyo de herramientas digitales y guias de mod",
           "questions": [
             {
-              "question_id": "RA01-Q1",
-              "question": "¿Cuál es el concepto central de 'Critically evaluate and synthesize existing literature to identify research gaps and formulate original research questions within a specialized field.'?",
+              "question_id": "RA1-Q1",
+              "question": "En el contexto de Ciencia de datos aplicada a las finanzas, ¿cuál es el objetivo principal de 'Aplica tecnicas cuantitativas con apoyo de herramientas digitales y guias de mod'?",
               "options": [
-                "Opción correcta sobre Critically evaluate and synthesize existing literature",
-                "Opción B",
-                "Opción C",
-                "Opción D"
+                "Aplicar técnicas cuantitativas con apoyo de herramientas digitales para la toma de decisiones",
+                "Memorizar definiciones teóricas sin aplicación práctica",
+                "Replicar modelos existentes sin análisis crítico",
+                "Delegar el análisis a herramientas automatizadas"
               ],
               "correct_answer": 0,
-              "feedback": "Correcto — concepto fundamental de Advanced Research Methods and Innovation."
+              "feedback": "Correcto — el resultado de aprendizaje RA1 se enfoca en la aplicación práctica en Ciencia de datos aplicada a las finanzas."
             },
             {
-              "question_id": "RA01-Q2",
-              "question": "¿Cómo se aplica 'Critically evaluate and synthesize existing literature to identify research gaps and formulate original research questions within a specialized field.' en contexto directivo?",
+              "question_id": "RA1-Q2",
+              "question": "¿Cómo se aplica 'Aplica tecnicas cuantitativas con apoyo de herramientas digitales' en un contexto profesional de Ciencia de datos aplicada a las finanzas?",
               "options": [
-                "Aplicación estratégica",
-                "Sin aplicación",
-                "Solo teórica",
-                "Irrelevante"
+                "Mediante análisis de datos y modelos para sustentar decisiones estratégicas",
+                "Solo a través de reportes descriptivos sin análisis",
+                "Exclusivamente con herramientas de ofimática básica",
+                "Sin considerar el contexto organizacional"
               ],
               "correct_answer": 0,
-              "feedback": "La aplicación directiva implica decisiones estratégicas."
+              "feedback": "La aplicación profesional de RA1 implica decisiones estratégicas basadas en evidencia."
             },
             {
-              "question_id": "RA01-Q3",
-              "question": "¿Qué evidencia respalda 'Critically evaluate and synthesize existing literature to identify research gaps and formulate original research questions within a specialized field.'?",
+              "question_id": "RA1-Q3",
+              "question": "¿Qué tipo de evidencia académica respalda las prácticas de 'Aplica tecnicas cuantitativas con apoyo de herramientas digitales'?",
               "options": [
-                "Investigación Q1/Q2",
-                "Solo opinión",
-                "Sin evidencia",
-                "Datos obsoletos"
+                "Investigación publicada en revistas Q1/Q2 con revisión por pares",
+                "Opiniones de expertos sin respaldo empírico",
+                "Artículos de divulgación general sin rigor metodológico",
+                "Datos anecdóticos de casos aislados"
               ],
               "correct_answer": 0,
-              "feedback": "Evidencia de investigación académica de alto impacto."
+              "feedback": "La evidencia de investigación académica de alto impacto (Q1/Q2) es el estándar para programas de maestría."
             }
           ]
         },
         {
-          "ra_id": "RA-02",
-          "ra_description": "Design and justify appropriate research methodologies (quantitative, qualitative, or mixed) aligned with specific research objectives and epistemological frameworks.",
+          "ra_id": "RA2",
+          "ra_description": "Construye modelos cuantitativos a partir de variables definidas y supuestos expl",
           "questions": [
             {
-              "question_id": "RA02-Q1",
-              "question": "¿Cuál es el concepto central de 'Design and justify appropriate research methodologies (quantitative, qualitative, or mixed) aligned with specific research objectives and epistemological frameworks.'?",
+              "question_id": "RA2-Q1",
+              "question": "En el contexto de Ciencia de datos aplicada a las finanzas, ¿cuál es el objetivo principal de 'Construye modelos cuantitativos a partir de variables definidas y supuestos expl'?",
               "options": [
-                "Opción correcta sobre Design and justify appropriate research methodologies",
-                "Opción B",
-                "Opción C",
-                "Opción D"
+                "Construir modelos cuantitativos a partir de variables definidas para la toma de decisiones",
+                "Memorizar definiciones teóricas sin aplicación práctica",
+                "Replicar modelos existentes sin análisis crítico",
+                "Delegar el análisis a herramientas automatizadas"
               ],
               "correct_answer": 0,
-              "feedback": "Correcto — concepto fundamental de Advanced Research Methods and Innovation."
+              "feedback": "Correcto — el resultado de aprendizaje RA2 se enfoca en la aplicación práctica en Ciencia de datos aplicada a las finanzas."
             },
             {
-              "question_id": "RA02-Q2",
-              "question": "¿Cómo se aplica 'Design and justify appropriate research methodologies (quantitative, qualitative, or mixed) aligned with specific research objectives and epistemological frameworks.' en contexto directivo?",
+              "question_id": "RA2-Q2",
+              "question": "¿Cómo se aplica 'Construye modelos cuantitativos a partir de variables definidas' en un contexto profesional de Ciencia de datos aplicada a las finanzas?",
               "options": [
-                "Aplicación estratégica",
-                "Sin aplicación",
-                "Solo teórica",
-                "Irrelevante"
+                "Mediante análisis de datos y modelos para sustentar decisiones estratégicas",
+                "Solo a través de reportes descriptivos sin análisis",
+                "Exclusivamente con herramientas de ofimática básica",
+                "Sin considerar el contexto organizacional"
               ],
               "correct_answer": 0,
-              "feedback": "La aplicación directiva implica decisiones estratégicas."
+              "feedback": "La aplicación profesional de RA2 implica decisiones estratégicas basadas en evidencia."
             },
             {
-              "question_id": "RA02-Q3",
-              "question": "¿Qué evidencia respalda 'Design and justify appropriate research methodologies (quantitative, qualitative, or mixed) aligned with specific research objectives and epistemological frameworks.'?",
+              "question_id": "RA2-Q3",
+              "question": "¿Qué tipo de evidencia académica respalda las prácticas de 'Construye modelos cuantitativos a partir de variables definidas'?",
               "options": [
-                "Investigación Q1/Q2",
-                "Solo opinión",
-                "Sin evidencia",
-                "Datos obsoletos"
+                "Investigación publicada en revistas Q1/Q2 con revisión por pares",
+                "Opiniones de expertos sin respaldo empírico",
+                "Artículos de divulgación general sin rigor metodológico",
+                "Datos anecdóticos de casos aislados"
               ],
               "correct_answer": 0,
-              "feedback": "Evidencia de investigación académica de alto impacto."
-            }
-          ]
-        },
-        {
-          "ra_id": "RA-03",
-          "ra_description": "Apply advanced data collection and analysis techniques to generate valid, reliable, and ethically sound research findings.",
-          "questions": [
-            {
-              "question_id": "RA03-Q1",
-              "question": "¿Cuál es el concepto central de 'Apply advanced data collection and analysis techniques to generate valid, reliable, and ethically sound research findings.'?",
-              "options": [
-                "Opción correcta sobre Apply advanced data collection and analysis techniques",
-                "Opción B",
-                "Opción C",
-                "Opción D"
-              ],
-              "correct_answer": 0,
-              "feedback": "Correcto — concepto fundamental de Advanced Research Methods and Innovation."
-            },
-            {
-              "question_id": "RA03-Q2",
-              "question": "¿Cómo se aplica 'Apply advanced data collection and analysis techniques to generate valid, reliable, and ethically sound research findings.' en contexto directivo?",
-              "options": [
-                "Aplicación estratégica",
-                "Sin aplicación",
-                "Solo teórica",
-                "Irrelevante"
-              ],
-              "correct_answer": 0,
-              "feedback": "La aplicación directiva implica decisiones estratégicas."
-            },
-            {
-              "question_id": "RA03-Q3",
-              "question": "¿Qué evidencia respalda 'Apply advanced data collection and analysis techniques to generate valid, reliable, and ethically sound research findings.'?",
-              "options": [
-                "Investigación Q1/Q2",
-                "Solo opinión",
-                "Sin evidencia",
-                "Datos obsoletos"
-              ],
-              "correct_answer": 0,
-              "feedback": "Evidencia de investigación académica de alto impacto."
-            }
-          ]
-        },
-        {
-          "ra_id": "RA-04",
-          "ra_description": "Communicate and disseminate research outcomes effectively through academic writing, presentations, and innovative knowledge transfer strategies.",
-          "questions": [
-            {
-              "question_id": "RA04-Q1",
-              "question": "¿Cuál es el concepto central de 'Communicate and disseminate research outcomes effectively through academic writing, presentations, and innovative knowledge transfer strategies.'?",
-              "options": [
-                "Opción correcta sobre Communicate and disseminate research outcomes",
-                "Opción B",
-                "Opción C",
-                "Opción D"
-              ],
-              "correct_answer": 0,
-              "feedback": "Correcto — concepto fundamental de Advanced Research Methods and Innovation."
-            },
-            {
-              "question_id": "RA04-Q2",
-              "question": "¿Cómo se aplica 'Communicate and disseminate research outcomes effectively through academic writing, presentations, and innovative knowledge transfer strategies.' en contexto directivo?",
-              "options": [
-                "Aplicación estratégica",
-                "Sin aplicación",
-                "Solo teórica",
-                "Irrelevante"
-              ],
-              "correct_answer": 0,
-              "feedback": "La aplicación directiva implica decisiones estratégicas."
-            },
-            {
-              "question_id": "RA04-Q3",
-              "question": "¿Qué evidencia respalda 'Communicate and disseminate research outcomes effectively through academic writing, presentations, and innovative knowledge transfer strategies.'?",
-              "options": [
-                "Investigación Q1/Q2",
-                "Solo opinión",
-                "Sin evidencia",
-                "Datos obsoletos"
-              ],
-              "correct_answer": 0,
-              "feedback": "Evidencia de investigación académica de alto impacto."
+              "feedback": "La evidencia de investigación académica de alto impacto (Q1/Q2) es el estándar para programas de maestría."
             }
           ]
         }
@@ -853,36 +1671,44 @@
     },
     "maestria_artifacts": {
       "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
-      "subject_name": "Advanced Research Methods and Innovation",
-      "language": "BILINGUAL",
+      "subject_name": "Ciencia de datos aplicada a las finanzas",
+      "language": "ES",
       "evidence_dashboard": {
-        "html_content": "| # | Título | Año | Revista | Hallazgo |\n|---|--------|-----|---------|----------|\n| 1 | The Logic of Scientific Discovery | 2002 |  |  |\n| 2 | The Structure of Scientific Revolutions | 2012 |  |  |\n| 3 | Research Design: Qualitative, Quantitative, and Mixed Methods Approaches | 2018 |  |  |\n| 4 | Constructing Grounded Theory | 2014 |  |  |\n| 5 | Case Study Research: Design and Methods | 2018 |  |  |\n| 6 | Qualitative Inquiry and Research Design | 2018 |  |  |\n| 7 | Designing Social Inquiry | 1994 |  |  |\n| 8 | The Craft of Research | 2016 |  |  |\n| 9 | Mixed Methods Research: A Guide to the Field | 2017 |  |  |\n| 10 | Practical Research: Planning and Design | 2019 |  |  |",
+        "html_content": "| # | Título | Año | Revista | Hallazgo |\n|---|--------|-----|---------|----------|\n| 1 | Financial time series forecasting with deep learning: A | 2020 | Applied Soft Computing Journal | Comprehensive systematic revie |\n| 2 | Big data, artificial intelligence and machine learning: | 2023 | European Financial Management | Examines how big data and AI t |\n| 3 | Multivariate portfolio optimization under illiquid mark | 2021 | Journal of Modelling in Manage | Reviews quantitative models fo |\n| 4 | Optimization algorithms and investment portfolio analyt | 2022 | Journal of Modelling in Manage | Applies quantitative optimizat |\n| 5 | How much should we trust staggered difference-in-differ | 2022 | Journal of Financial Economics | Demonstrates biases in stagger |\n| 6 | Quantitative Models with Qualitative Scenarios: Simulat | 2025 | Journal of Financial Data Scie | Integrates quantitative financ |\n| 7 | QuantVisExplorer: a multi-perspective visual analytics  | 2026 | Journal of Visualization | Presents a multi-perspective v |\n| 8 | Firms and social responsibility: A review of ESG and CS | 2021 | Journal of Corporate Finance | Reviews ESG and CSR data integ |\n| 9 | Corporate green bonds | 2021 | Journal of Financial Economics | Quantitative analysis of green |\n| 10 | Building Trust in Fintech: An Analysis of Ethical and P | 2023 | International Journal of Finan | Analyzes ethical dimensions of |\n| 11 | COVID-19 and finance: Agendas for future research | 2020 | Finance Research Letters | Identifies key financial data  |\n| 12 | Can average skewness really predict financial returns?  | 2023 | Finance Research Letters | Uses descriptive statistics an |\n| 13 | Intelligent FinTech Data Mining by Advanced Deep Learni | 2022 | Computational Economics | Applies advanced data mining a |\n| 14 | How does green finance affect green total factor produc | 2022 | Energy Economics | Employs quantitative panel dat |\n| 15 | Demand for green finance: Resolving financing constrain | 2021 | Energy Policy | Quantitative modeling of finan |\n| 16 | The Role of Digital Technologies in Corporate Sustainab | 2024 | Journal of Risk and Financial  | Examines how digital tools inc |\n| 17 | Global fintech trends and their impact on international | 2023 | Multinational Business Review | Analyzes global fintech data t |\n| 18 | Fintech innovation: Is it beneficial or detrimental to  | 2024 | Emerging Markets Review | Systematic review of fintech d |\n| 19 | Financial inclusion research around the world: A review | 2021 | Forum for Social Economics | Reviews global financial data  |\n| 20 | A Bibliometric Analysis of Fintech Trends and Digital F | 2022 | Frontiers in Environmental Sci | Bibliometric mapping of digita |",
         "papers_indexed": 20
       },
       "critical_path_map": {
-        "markdown_content": "| Semana | Actividad | Entregable | Criterio |\n|---|---|---|---|\n| 1 | Lectura de papers clave | Resumen ejecutivo | 3 conceptos clave |\n| 2 | Aplicación a caso real | Análisis de caso | 2 competencias vinculadas |\n| 3 | Síntesis e integración | Propuesta ejecutiva | Todos los RA cubiertos |"
+        "markdown_content": "| Semana | Actividad | Entregable | Criterio |\n|---|---|---|---|\n| 1 | Estudio: Fundamentos de ciencia de datos en el co | Análisis aplicado | Nivel RECORDAR alcanzado |\n| 2 | Estudio: Preparacion y gestion de datos financier | Análisis aplicado | Nivel APLICAR alcanzado |\n| 3 | Estudio: Analisis exploratorio y visualizacion de | Análisis aplicado | Nivel ANALIZAR alcanzado |\n| 4 | Estudio: Modelacion cuantitativa para la toma de  | Análisis aplicado | Nivel CREAR alcanzado |\n| 5 | Estudio: Aplicacion de modelos en decisiones fina | Análisis aplicado | Nivel EVALUAR alcanzado |"
       },
       "executive_cases_repository": {
         "cases": [
           {
             "case_id": "CASE-001",
-            "title": "Caso: Advanced Research Methods and Innovation",
-            "context": "Organización implementa Advanced Research Methods and Innovation",
-            "data": "Datos del caso",
+            "title": "Caso Ejecutivo: Aplicación de Ciencia de datos aplicada a las finanzas",
+            "context": "Una empresa del sector financiero necesita implementar un sistema de analítica de datos para optimizar decisiones de inversión y gestión de riesgo, aplicando técnicas de ciencia de datos aplicada a las finanzas.",
+            "data": "Datos financieros históricos (5 años), indicadores de mercado, variables macroeconómicas, estados financieros trimestrales.",
             "questions": [
-              "¿Cómo aplicar?",
-              "¿Qué métricas?",
-              "¿Qué riesgos?"
+              "¿Cómo aplicaría las técnicas de ciencia de datos aplicada a las finanzas para identificar patrones en los datos financieros?",
+              "¿Qué modelo cuantitativo seleccionaría y por qué? Justifique con criterios de validación.",
+              "¿Qué métricas utilizaría para evaluar la efectividad del modelo propuesto?",
+              "¿Cómo comunicaría los resultados y recomendaciones a la alta dirección?"
             ],
             "rubric": {
               "criteria": [
-                "Análisis (30%)",
-                "Aplicación (40%)",
-                "Propuesta (30%)"
+                "Análisis del problema (25%)",
+                "Selección metodológica (30%)",
+                "Propuesta de solución (25%)",
+                "Comunicación ejecutiva (20%)"
               ],
               "competency_ids": [
                 "C1",
-                "C2"
+                "C2",
+                "C3",
+                "C4"
+              ],
+              "ra_ids": [
+                "RA1",
+                "RA2"
               ]
             }
           }
@@ -893,110 +1719,162 @@
           {
             "week": 1,
             "duration_minutes": 90,
-            "objective": "Semana 1 de Advanced Research Methods and Innovation",
+            "objective": "Semana 1: Fundamentos de ciencia de datos en el contexto financiero — Nivel RECORDAR",
             "sequence": [
               {
                 "time": "0-10min",
-                "activity": "Apertura"
+                "activity": "Apertura y conexión con semana anterior"
               },
               {
-                "time": "10-40min",
-                "activity": "Exposición"
+                "time": "10-35min",
+                "activity": "Exposición: Fundamentos de ciencia de datos en el contexto financiero"
               },
               {
-                "time": "40-70min",
-                "activity": "Caso práctico"
+                "time": "35-65min",
+                "activity": "Caso práctico aplicado a Ciencia de datos aplicada a las finanzas"
               },
               {
-                "time": "70-90min",
-                "activity": "Cierre"
+                "time": "65-80min",
+                "activity": "Discusión y síntesis grupal"
+              },
+              {
+                "time": "80-90min",
+                "activity": "Cierre y asignación de trabajo independiente"
               }
             ],
             "trigger_questions": [
-              "¿Cómo conecta con su experiencia?"
+              "¿Cómo se relaciona fundamentos de ciencia de datos en el contexto financiero con su experiencia profesional?",
+              "¿Qué decisiones financieras podrían beneficiarse de fundamentos de ciencia de datos en el contexto financiero?"
             ],
-            "formative_criteria": "Participación y vinculación con competencias"
+            "formative_criteria": "Participación activa y vinculación con competencias C1, C2, C3, C4"
           },
           {
             "week": 2,
             "duration_minutes": 90,
-            "objective": "Semana 2 de Advanced Research Methods and Innovation",
+            "objective": "Semana 2: Preparacion y gestion de datos financieros — Nivel APLICAR",
             "sequence": [
               {
                 "time": "0-10min",
-                "activity": "Apertura"
+                "activity": "Apertura y conexión con semana anterior"
               },
               {
-                "time": "10-40min",
-                "activity": "Exposición"
+                "time": "10-35min",
+                "activity": "Exposición: Preparacion y gestion de datos financieros"
               },
               {
-                "time": "40-70min",
-                "activity": "Caso práctico"
+                "time": "35-65min",
+                "activity": "Caso práctico aplicado a Ciencia de datos aplicada a las finanzas"
               },
               {
-                "time": "70-90min",
-                "activity": "Cierre"
+                "time": "65-80min",
+                "activity": "Discusión y síntesis grupal"
+              },
+              {
+                "time": "80-90min",
+                "activity": "Cierre y asignación de trabajo independiente"
               }
             ],
             "trigger_questions": [
-              "¿Cómo conecta con su experiencia?"
+              "¿Cómo se relaciona preparacion y gestion de datos financieros con su experiencia profesional?",
+              "¿Qué decisiones financieras podrían beneficiarse de preparacion y gestion de datos financieros?"
             ],
-            "formative_criteria": "Participación y vinculación con competencias"
+            "formative_criteria": "Participación activa y vinculación con competencias C1, C2, C3, C4"
           },
           {
             "week": 3,
             "duration_minutes": 90,
-            "objective": "Semana 3 de Advanced Research Methods and Innovation",
+            "objective": "Semana 3: Analisis exploratorio y visualizacion de datos financieros — Nivel ANALIZAR",
             "sequence": [
               {
                 "time": "0-10min",
-                "activity": "Apertura"
+                "activity": "Apertura y conexión con semana anterior"
               },
               {
-                "time": "10-40min",
-                "activity": "Exposición"
+                "time": "10-35min",
+                "activity": "Exposición: Analisis exploratorio y visualizacion de datos financieros"
               },
               {
-                "time": "40-70min",
-                "activity": "Caso práctico"
+                "time": "35-65min",
+                "activity": "Caso práctico aplicado a Ciencia de datos aplicada a las finanzas"
               },
               {
-                "time": "70-90min",
-                "activity": "Cierre"
+                "time": "65-80min",
+                "activity": "Discusión y síntesis grupal"
+              },
+              {
+                "time": "80-90min",
+                "activity": "Cierre y asignación de trabajo independiente"
               }
             ],
             "trigger_questions": [
-              "¿Cómo conecta con su experiencia?"
+              "¿Cómo se relaciona analisis exploratorio y visualizacion de datos financieros con su experiencia profesional?",
+              "¿Qué decisiones financieras podrían beneficiarse de analisis exploratorio y visualizacion de datos financieros?"
             ],
-            "formative_criteria": "Participación y vinculación con competencias"
+            "formative_criteria": "Participación activa y vinculación con competencias C1, C2, C3, C4"
           },
           {
             "week": 4,
             "duration_minutes": 90,
-            "objective": "Semana 4 de Advanced Research Methods and Innovation",
+            "objective": "Semana 4: Modelacion cuantitativa para la toma de decisiones financieras — Nivel CREAR",
             "sequence": [
               {
                 "time": "0-10min",
-                "activity": "Apertura"
+                "activity": "Apertura y conexión con semana anterior"
               },
               {
-                "time": "10-40min",
-                "activity": "Exposición"
+                "time": "10-35min",
+                "activity": "Exposición: Modelacion cuantitativa para la toma de decisiones financieras"
               },
               {
-                "time": "40-70min",
-                "activity": "Caso práctico"
+                "time": "35-65min",
+                "activity": "Caso práctico aplicado a Ciencia de datos aplicada a las finanzas"
               },
               {
-                "time": "70-90min",
-                "activity": "Cierre"
+                "time": "65-80min",
+                "activity": "Discusión y síntesis grupal"
+              },
+              {
+                "time": "80-90min",
+                "activity": "Cierre y asignación de trabajo independiente"
               }
             ],
             "trigger_questions": [
-              "¿Cómo conecta con su experiencia?"
+              "¿Cómo se relaciona modelacion cuantitativa para la toma de decisiones financieras con su experiencia profesional?",
+              "¿Qué decisiones financieras podrían beneficiarse de modelacion cuantitativa para la toma de decisiones financieras?"
             ],
-            "formative_criteria": "Participación y vinculación con competencias"
+            "formative_criteria": "Participación activa y vinculación con competencias C1, C2, C3, C4"
+          },
+          {
+            "week": 5,
+            "duration_minutes": 90,
+            "objective": "Semana 5: Aplicacion de modelos en decisiones financieras estrategicas — Nivel EVALUAR",
+            "sequence": [
+              {
+                "time": "0-10min",
+                "activity": "Apertura y conexión con semana anterior"
+              },
+              {
+                "time": "10-35min",
+                "activity": "Exposición: Aplicacion de modelos en decisiones financieras estrategicas"
+              },
+              {
+                "time": "35-65min",
+                "activity": "Caso práctico aplicado a Ciencia de datos aplicada a las finanzas"
+              },
+              {
+                "time": "65-80min",
+                "activity": "Discusión y síntesis grupal"
+              },
+              {
+                "time": "80-90min",
+                "activity": "Cierre y asignación de trabajo independiente"
+              }
+            ],
+            "trigger_questions": [
+              "¿Cómo se relaciona aplicacion de modelos en decisiones financieras estrategicas con su experiencia profesional?",
+              "¿Qué decisiones financieras podrían beneficiarse de aplicacion de modelos en decisiones financieras estrategicas?"
+            ],
+            "formative_criteria": "Participación activa y vinculación con competencias C1, C2, C3, C4"
           }
         ]
       }
