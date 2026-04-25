@@ -111,7 +111,14 @@ def _get_agent():
         model=model,
         tools=[generate_learning_objectives, build_descriptive_card],
         system_prompt=(
-            "You are DI, an instructional design agent. "
+            "You are DI, an instructional design agent for university programs. "
+            "You receive the COMPLETE academic context: syllabus, competencies, learning outcomes, and research papers. "
+            "CRITICAL RULES: "
+            "1. Use the EXACT competency IDs from the input (C1, C2, C3, C4) — NEVER generate generic IDs like C-01, C-02. "
+            "2. Use the EXACT learning outcome IDs from the input (RA1, RA2) — NEVER generate generic IDs like RA-01, RA-02. "
+            "3. The subject_name in all outputs MUST match the input subject name EXACTLY. "
+            "4. The number of weeks MUST match the syllabus content (count the numbered topics). "
+            "5. Content themes MUST come from the actual syllabus, NOT from generic ML/AI topics. "
             "Use generate_learning_objectives first, then build_descriptive_card. "
             "CRITICAL: Your final response MUST be ONLY a single JSON code block with NO text before or after. "
             "Format: ```json\n{...}\n``` "
@@ -120,6 +127,77 @@ def _get_agent():
         ),
     )
     return _di_agent
+
+
+def _load_subject_context(subject_id: str) -> dict:
+    """Load the subject JSON from S3 to get academic inputs and research results."""
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    s3 = boto3.client("s3")
+    try:
+        obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
+        return json.loads(obj["Body"].read().decode("utf-8"))
+    except Exception:
+        return {}
+
+
+def _build_di_prompt(subject_id: str, sj: dict) -> str:
+    """Build a rich prompt with all academic context for the DI agent."""
+    meta = sj.get("metadata", {})
+    inputs = sj.get("academic_inputs", {})
+    research = sj.get("research", {})
+
+    # Extract key data
+    subject_name = meta.get("subject_name", "Unknown")
+    subject_type = meta.get("subject_type", "CONCENTRACION")
+    program_name = meta.get("program_name", "")
+    grad_profile = inputs.get("graduation_profile", "")
+    competencies = inputs.get("competencies", [])
+    learning_outcomes = inputs.get("learning_outcomes", [])
+    syllabus = inputs.get("syllabus", "")
+    papers = research.get("top20_papers", [])
+
+    # Format competencies
+    comp_text = "\n".join(f"  - {c['competency_id']}: {c['description']}" for c in competencies)
+
+    # Format learning outcomes
+    lo_text = "\n".join(f"  - {lo['ra_id']}: {lo['description']}" for lo in learning_outcomes)
+
+    # Format top papers (first 10)
+    papers_text = "\n".join(
+        f"  {i}. {p.get('title','')} ({p.get('year','')}, {p.get('journal','')[:40]})"
+        for i, p in enumerate(papers[:10], 1)
+    )
+
+    return f"""Design instructional content for the following subject. Use generate_learning_objectives and build_descriptive_card tools.
+
+SUBJECT: {subject_name}
+SUBJECT_ID: {subject_id}
+SUBJECT_TYPE: {subject_type}
+PROGRAM: {program_name}
+
+GRADUATION PROFILE:
+{grad_profile}
+
+PROGRAM COMPETENCIES (use these EXACT IDs — C1, C2, C3, C4 — NOT generic C-01, C-02):
+{comp_text}
+
+LEARNING OUTCOMES (use these EXACT IDs — RA1, RA2 — NOT generic RA-01, RA-02):
+{lo_text}
+
+SYLLABUS (use this to determine themes, weeks, and content — do NOT invent different topics):
+{syllabus}
+
+TOP RESEARCH PAPERS (from Scopus — reference these in the content map):
+{papers_text}
+
+CRITICAL INSTRUCTIONS:
+1. The learning objectives MUST align with the SYLLABUS topics above, NOT generic ML/AI topics
+2. Use the EXACT competency IDs from the program: {', '.join(c['competency_id'] for c in competencies)}
+3. Use the EXACT learning outcome IDs: {', '.join(lo['ra_id'] for lo in learning_outcomes)}
+4. The number of weeks MUST match the syllabus (count the numbered topics)
+5. Bloom taxonomy verbs must align competencies to objectives explicitly
+6. The Carta Descriptiva subject_name must be "{subject_name}" (NOT a generic name)
+"""
 
 
 @app.entrypoint
@@ -134,11 +212,15 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
     agent = _get_agent()
 
     if subject_id:
-        prompt = json.dumps({
-            "task": "Design instructional content for this subject",
-            "subject_id": subject_id,
-            "instructions": "Use generate_learning_objectives and build_descriptive_card tools",
-        })
+        sj = _load_subject_context(subject_id)
+        if sj:
+            prompt = _build_di_prompt(subject_id, sj)
+        else:
+            prompt = json.dumps({
+                "task": "Design instructional content for this subject",
+                "subject_id": subject_id,
+                "instructions": "Use generate_learning_objectives and build_descriptive_card tools",
+            })
 
     result = agent(prompt)
     result_str = str(result)

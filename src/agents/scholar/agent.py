@@ -128,7 +128,13 @@ def _get_agent():
         model=model,
         tools=[search_scopus_papers, build_knowledge_matrix],
         system_prompt=(
-            "You are Scholar, an academic research agent. "
+            "You are Scholar, an academic research agent for university programs. "
+            "You receive the COMPLETE academic context: subject name, syllabus, competencies, and learning outcomes. "
+            "CRITICAL RULES: "
+            "1. Generate search keywords DIRECTLY from the syllabus topics — NOT generic ML/data science terms. "
+            "2. Keywords must be DOMAIN-SPECIFIC (e.g., for finance subjects, use financial terms). "
+            "3. Combine domain terms with methodological terms from the syllabus. "
+            "4. After searching, filter out papers that are NOT relevant to the subject domain. "
             "Use search_scopus_papers to find Q1/Q2 papers, then build_knowledge_matrix to extract concepts. "
             "CRITICAL: Your final response MUST be ONLY a single JSON code block with NO text before or after. "
             "Format: ```json\n{...}\n``` "
@@ -137,6 +143,58 @@ def _get_agent():
         ),
     )
     return _scholar_agent
+
+
+def _load_subject_context(subject_id: str) -> dict:
+    """Load the subject JSON from S3 to get academic inputs."""
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    s3 = boto3.client("s3")
+    try:
+        obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
+        return json.loads(obj["Body"].read().decode("utf-8"))
+    except Exception:
+        return {}
+
+
+def _build_scholar_prompt(subject_id: str, sj: dict) -> str:
+    """Build a rich prompt with syllabus context for domain-specific keyword generation."""
+    meta = sj.get("metadata", {})
+    inputs = sj.get("academic_inputs", {})
+
+    subject_name = meta.get("subject_name", "Unknown")
+    subject_type = meta.get("subject_type", "CONCENTRACION")
+    program_name = meta.get("program_name", "")
+    syllabus = inputs.get("syllabus", "")
+    competencies = inputs.get("competencies", [])
+    learning_outcomes = inputs.get("learning_outcomes", [])
+
+    comp_text = "\n".join(f"  - {c['competency_id']}: {c['description']}" for c in competencies)
+    lo_text = "\n".join(f"  - {lo['ra_id']}: {lo['description']}" for lo in learning_outcomes)
+
+    return f"""Research academic papers for the following subject. Use search_scopus_papers and build_knowledge_matrix tools.
+
+SUBJECT: {subject_name}
+SUBJECT_ID: {subject_id}
+SUBJECT_TYPE: {subject_type}
+PROGRAM: {program_name}
+
+SYLLABUS (use this to derive DOMAIN-SPECIFIC search keywords):
+{syllabus}
+
+COMPETENCIES:
+{comp_text}
+
+LEARNING OUTCOMES:
+{lo_text}
+
+CRITICAL INSTRUCTIONS:
+1. Generate search keywords DIRECTLY from the syllabus topics above
+2. Keywords must be SPECIFIC to the subject domain (e.g., for a finance subject, use financial terms)
+3. Do NOT use generic keywords like "machine learning" or "data science" unless the syllabus explicitly mentions them
+4. Combine domain terms with methodological terms from the syllabus
+5. Search for papers that directly support the syllabus content
+6. Filter out papers that are not relevant to the subject domain
+"""
 
 
 @app.entrypoint
@@ -151,11 +209,15 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
     agent = _get_agent()
 
     if subject_id:
-        prompt = json.dumps({
-            "task": "Research academic papers for this subject",
-            "subject_id": subject_id,
-            "instructions": "Use search_scopus_papers and build_knowledge_matrix tools",
-        })
+        sj = _load_subject_context(subject_id)
+        if sj:
+            prompt = _build_scholar_prompt(subject_id, sj)
+        else:
+            prompt = json.dumps({
+                "task": "Research academic papers for this subject",
+                "subject_id": subject_id,
+                "instructions": "Use search_scopus_papers and build_knowledge_matrix tools",
+            })
 
     result = agent(prompt)
     result_str = str(result)

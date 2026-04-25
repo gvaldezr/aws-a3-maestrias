@@ -15,6 +15,8 @@ from src.infrastructure.state.models import StateMetadata, SubjectState
 from src.infrastructure.state.state_manager import get_subject_json, update_subject_state
 try:
     from models import ValidationDecision
+except ImportError:
+    from src.qa_checkpoint.models import ValidationDecision
 
 logger = get_logger(__name__)
 

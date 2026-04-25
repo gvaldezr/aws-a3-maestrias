@@ -1,0 +1,1005 @@
+{
+  "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
+  "schema_version": "1.0",
+  "created_at": "2026-04-25T00:33:35.765501+00:00",
+  "updated_at": "2026-04-25T00:44:24.629776+00:00",
+  "metadata": {
+    "subject_name": "Ciencia de datos aplicada a las finanzas",
+    "program_name": "Maestria en Direccion y Tecnologia Financiera - Anahuac Online",
+    "program_type": "MAESTRIA",
+    "subject_type": "CONCENTRACION",
+    "language": "ES",
+    "academic_period": "2026-2"
+  },
+  "academic_inputs": {
+    "graduation_profile": "El egresado es un profesional capaz de dirigir y sustentar decisiones financieras estrategicas orientadas a la creacion, preservacion y maximizacion de valor en organizaciones, proyectos y portafolios, integrando finanzas, tecnologia y analitica para actuar con eficacia en entornos complejos y dinamicos.",
+    "competencies": [
+      {
+        "competency_id": "C1",
+        "description": "PENSAMIENTO CRITICO - Analiza informacion y argumentos financieros en contextos corporativos y de mercado para sustentar juicios profesionales y tomar decisiones estrategicas de inversion, financiamiento y riesgo"
+      },
+      {
+        "competency_id": "C2",
+        "description": "PENSAMIENTO INNOVADOR - Disena soluciones y estrategias financieras en escenarios complejos para mejorar eficiencia y creacion de valor mediante enfoques innovadores basados en datos"
+      },
+      {
+        "competency_id": "C3",
+        "description": "PENSAMIENTO RELACIONAL - Integra comprension sistemica de mercados, organizaciones y variables macro financieras para anticipar impactos y orientar estrategias financieras sostenibles"
+      },
+      {
+        "competency_id": "C4",
+        "description": "PENSAMIENTO ETICO Y MORAL - Aplica criterios eticos y responsabilidad profesional en decisiones financieras para promover transparencia, cumplimiento y asignacion del capital socialmente responsable"
+      }
+    ],
+    "learning_outcomes": [
+      {
+        "ra_id": "RA1",
+        "description": "Aplica tecnicas cuantitativas con apoyo de herramientas digitales y guias de modelacion para interpretar patrones y generar insumos para la toma de decisiones financieras"
+      },
+      {
+        "ra_id": "RA2",
+        "description": "Construye modelos cuantitativos a partir de variables definidas y supuestos explicitos para estimar resultados de impacto financiero en las organizaciones"
+      }
+    ],
+    "syllabus": "Contenido tematico: 1) Fundamentos de ciencia de datos en el contexto financiero (concepto, tipos de datos financieros, rol de la analitica). 2) Preparacion y gestion de datos financieros (obtencion, integracion, limpieza, transformacion, calidad). 3) Analisis exploratorio y visualizacion de datos (estadistica descriptiva, patrones, tendencias, visualizacion financiera). 4) Modelacion cuantitativa para la toma de decisiones (construccion de modelos, variables, supuestos, validacion). 5) Aplicacion de modelos en decisiones financieras (interpretacion, evaluacion de escenarios, comunicacion de resultados). Software: Excel avanzado, Python, Power BI. Duracion: 5 semanas, 5 creditos. Tipo: Concentracion."
+  },
+  "pipeline_state": {
+    "current_state": "CONTENT_READY",
+    "state_history": [
+      {
+        "state": "KNOWLEDGE_MATRIX_READY",
+        "agent": "scholar-direct",
+        "timestamp": "2026-04-25T00:40:47.903640+00:00",
+        "llm_version": "scopus-api-direct",
+        "result_hash": ""
+      },
+      {
+        "state": "DI_READY",
+        "agent": "di-agent",
+        "timestamp": "2026-04-25T00:42:09.201798+00:00",
+        "llm_version": "claude-sonnet-4.6",
+        "result_hash": ""
+      },
+      {
+        "state": "CONTENT_READY",
+        "agent": "content-agent",
+        "timestamp": "2026-04-25T00:44:24.629776+00:00",
+        "llm_version": "claude-sonnet-4.6",
+        "result_hash": ""
+      }
+    ]
+  },
+  "research": {
+    "keywords": [
+      "financial data science",
+      "quantitative finance",
+      "machine learning financial forecasting",
+      "financial modeling data driven"
+    ],
+    "top20_papers": [
+      {
+        "scopus_id": "85082930228",
+        "title": "Quant GANs: deep generation of financial time series",
+        "authors": [
+          "Wiese M."
+        ],
+        "year": 2020,
+        "journal": "Quantitative Finance",
+        "quartile": "Q1",
+        "key_finding": "Cited 225 times",
+        "doi": "10.1080/14697688.2020.1730426"
+      },
+      {
+        "scopus_id": "85075727644",
+        "title": "Application and comparison of several machine learning algorithms and their integration models in regression problems",
+        "authors": [
+          "Huang J.C."
+        ],
+        "year": 2020,
+        "journal": "Neural Computing and Applications",
+        "quartile": "Q1",
+        "key_finding": "Cited 185 times",
+        "doi": "10.1007/s00521-019-04644-5"
+      },
+      {
+        "scopus_id": "85199768036",
+        "title": "Explainable artificial intelligence (XAI) in finance: a systematic literature review",
+        "authors": [
+          "Černevičienė J."
+        ],
+        "year": 2024,
+        "journal": "Artificial Intelligence Review",
+        "quartile": "Q1",
+        "key_finding": "Cited 152 times",
+        "doi": "10.1007/s10462-024-10854-8"
+      },
+      {
+        "scopus_id": "85094680770",
+        "title": "Comprehensive review of text-mining applications in finance",
+        "authors": [
+          "Gupta A."
+        ],
+        "year": 2020,
+        "journal": "Financial Innovation",
+        "quartile": "Q1",
+        "key_finding": "Cited 139 times",
+        "doi": "10.1186/s40854-020-00205-1"
+      },
+      {
+        "scopus_id": "85192916714",
+        "title": "Financial Sentiment Analysis: Techniques and Applications",
+        "authors": [
+          "Du K."
+        ],
+        "year": 2024,
+        "journal": "ACM Computing Surveys",
+        "quartile": "Q1",
+        "key_finding": "Cited 124 times",
+        "doi": "10.1145/3649451"
+      },
+      {
+        "scopus_id": "85186697185",
+        "title": "Leveraging Temporal Patterns with LSTMs Networks for Financial Forecasting: A New Stastical Machine Learning Approach",
+        "authors": [
+          "Thinakaran K."
+        ],
+        "year": 2023,
+        "journal": "2023 International Conference on Communication Security and Artificial Intelligence Iccsai 2023",
+        "quartile": "Q1",
+        "key_finding": "Cited 95 times",
+        "doi": "10.1109/ICCSAI59793.2023.10421705"
+      },
+      {
+        "scopus_id": "85089076507",
+        "title": "Special issue on ensemble learning and applications",
+        "authors": [
+          "Pintelas P."
+        ],
+        "year": 2020,
+        "journal": "Algorithms",
+        "quartile": "Q1",
+        "key_finding": "Cited 79 times",
+        "doi": "10.3390/A13060140"
+      },
+      {
+        "scopus_id": "85207834000",
+        "title": "Machine learning for financial forecasting, planning and analysis: recent developments and pitfalls",
+        "authors": [
+          "Wasserbacher H."
+        ],
+        "year": 2022,
+        "journal": "Digital Finance",
+        "quartile": "Q1",
+        "key_finding": "Cited 75 times",
+        "doi": "10.1007/s42521-021-00046-2"
+      },
+      {
+        "scopus_id": "85138617969",
+        "title": "Algorithmic Trading and Financial Forecasting Using Advanced Artificial Intelligence Methodologies",
+        "authors": [
+          "Cohen G."
+        ],
+        "year": 2022,
+        "journal": "Mathematics",
+        "quartile": "Q1",
+        "key_finding": "Cited 72 times",
+        "doi": "10.3390/math10183302"
+      },
+      {
+        "scopus_id": "85137738490",
+        "title": "Solar Photovoltaic Modules’ Performance Reliability and Degradation Analysis—A Review",
+        "authors": [
+          "Alimi O.A."
+        ],
+        "year": 2022,
+        "journal": "Energies",
+        "quartile": "Q1",
+        "key_finding": "Cited 72 times",
+        "doi": "10.3390/en15165964"
+      },
+      {
+        "scopus_id": "85123526727",
+        "title": "Investigating Explainability Methods in Recurrent Neural Network Architectures for Financial Time Series Data",
+        "authors": [
+          "Freeborough W."
+        ],
+        "year": 2022,
+        "journal": "Applied Sciences Switzerland",
+        "quartile": "Q1",
+        "key_finding": "Cited 56 times",
+        "doi": "10.3390/app12031427"
+      },
+      {
+        "scopus_id": "85198859265",
+        "title": "Financial data modeling: an analysis of factors influencing big data analytics-driven financial decision quality",
+        "authors": [
+          "Al-Okaily M."
+        ],
+        "year": 2025,
+        "journal": "Journal of Modelling in Management",
+        "quartile": "Q1",
+        "key_finding": "Cited 53 times",
+        "doi": "10.1108/JM2-08-2023-0183"
+      },
+      {
+        "scopus_id": "85117493044",
+        "title": "A comparison of the optimized LSTM, XGBOOST and ARIMA in Time Series forecasting",
+        "authors": [
+          "Paliari I."
+        ],
+        "year": 2021,
+        "journal": "Iisa 2021 12th International Conference on Information Intelligence Systems and Applications",
+        "quartile": "Q1",
+        "key_finding": "Cited 44 times",
+        "doi": "10.1109/IISA52424.2021.9555520"
+      },
+      {
+        "scopus_id": "85176099113",
+        "title": "Renovation in environmental, social and governance (ESG) research: the application of machine learning",
+        "authors": [
+          "Zhang A.Y."
+        ],
+        "year": 2024,
+        "journal": "Asian Review of Accounting",
+        "quartile": "Q1",
+        "key_finding": "Cited 43 times",
+        "doi": "10.1108/ARA-07-2023-0201"
+      },
+      {
+        "scopus_id": "85199506442",
+        "title": "A Review of Degradation and Reliability Analysis of a Solar PV Module",
+        "authors": [
+          "Ullah Khan Z."
+        ],
+        "year": 2024,
+        "journal": "IEEE Access",
+        "quartile": "Q1",
+        "key_finding": "Cited 42 times",
+        "doi": "10.1109/ACCESS.2024.3432394"
+      },
+      {
+        "scopus_id": "85097053428",
+        "title": "Significance, relevance and explainability in the machine learning age: an econometrics and financial data science perspective",
+        "authors": [
+          "Hoepner A.G.F."
+        ],
+        "year": 2021,
+        "journal": "European Journal of Finance",
+        "quartile": "Q1",
+        "key_finding": "Cited 33 times",
+        "doi": "10.1080/1351847X.2020.1847725"
+      },
+      {
+        "scopus_id": "85208737125",
+        "title": "Unlocking financial innovation through strategic investments in information management: a systematic review",
+        "authors": [
+          "Garad A."
+        ],
+        "year": 2024,
+        "journal": "Discover Sustainability",
+        "quartile": "Q1",
+        "key_finding": "Cited 18 times",
+        "doi": "10.1007/s43621-024-00542-6"
+      },
+      {
+        "scopus_id": "85197178295",
+        "title": "Data-Driven Sustainable Investment Strategies: Integrating ESG, Financial Data Science, and Time Series Analysis for Alpha Generation",
+        "authors": [
+          "Sorathiya A."
+        ],
+        "year": 2024,
+        "journal": "International Journal of Financial Studies",
+        "quartile": "Q1",
+        "key_finding": "Cited 10 times",
+        "doi": "10.3390/ijfs12020036"
+      },
+      {
+        "scopus_id": "85117153169",
+        "title": "Artificial intelligence based optimal functional link neural network for financial data Science",
+        "authors": [
+          "Hilal A.M."
+        ],
+        "year": 2022,
+        "journal": "Computers Materials and Continua",
+        "quartile": "Q1",
+        "key_finding": "Cited 8 times",
+        "doi": "10.32604/cmc.2022.021522"
+      },
+      {
+        "scopus_id": "105007279710",
+        "title": "Revolutionizing High-Frequency Trading: The Impacts of Financial Technology and Data Science Innovations",
+        "authors": [
+          "Balaji K."
+        ],
+        "year": 2025,
+        "journal": "Machine Learning and Modeling Techniques in Financial Data Science",
+        "quartile": "Q1",
+        "key_finding": "Cited 6 times",
+        "doi": "10.4018/979-8-3693-8186-1.ch004"
+      }
+    ],
+    "knowledge_matrix": []
+  },
+  "instructional_design": {
+    "learning_objectives": [
+      {
+        "objective_id": "OBJ-001",
+        "description": "Analizar los fundamentos teóricos y prácticos de la inteligencia artificial y el aprendizaje automático",
+        "bloom_verb": "analizar",
+        "bloom_level": "ANALIZAR",
+        "competency_ids": [
+          "C-02"
+        ],
+        "ra_ids": [
+          "RA-01"
+        ]
+      },
+      {
+        "objective_id": "OBJ-002",
+        "description": "Justificar la selección y aplicación de algoritmos de machine learning para resolver problemas del mundo real",
+        "bloom_verb": "justificar",
+        "bloom_level": "EVALUAR",
+        "competency_ids": [
+          "C-01"
+        ],
+        "ra_ids": [
+          "RA-02"
+        ]
+      },
+      {
+        "objective_id": "OBJ-003",
+        "description": "Examinar modelos de aprendizaje automático utilizando métricas y técnicas de validación apropiadas",
+        "bloom_verb": "examinar",
+        "bloom_level": "ANALIZAR",
+        "competency_ids": [
+          "C-03"
+        ],
+        "ra_ids": [
+          "RA-03"
+        ]
+      }
+    ],
+    "traceability_matrix": [
+      {
+        "objective_id": "OBJ-001",
+        "ra_ids": [
+          "RA-01"
+        ],
+        "competency_ids": [
+          "C-02"
+        ],
+        "bloom_level": "ANALIZAR",
+        "topic_ids": [
+          "T-01"
+        ],
+        "week_coverage": [
+          1,
+          2
+        ],
+        "alignment_notes": "El objetivo cubre los fundamentos de ML (T-01) y se alinea con la competencia de diseño e implementación de soluciones IA (C-02). Progresión desde RECORDAR (semana 1) hacia ANALIZAR (semana 2)."
+      },
+      {
+        "objective_id": "OBJ-002",
+        "ra_ids": [
+          "RA-02"
+        ],
+        "competency_ids": [
+          "C-01"
+        ],
+        "bloom_level": "EVALUAR",
+        "topic_ids": [
+          "T-02",
+          "T-03"
+        ],
+        "week_coverage": [
+          2,
+          3
+        ],
+        "alignment_notes": "Cubre algoritmos supervisados (T-02) y no supervisados (T-03). Vinculado al pensamiento computacional (C-01). Nivel EVALUAR alcanzado en semana 3 mediante justificación de selección algorítmica."
+      },
+      {
+        "objective_id": "OBJ-003",
+        "ra_ids": [
+          "RA-03"
+        ],
+        "competency_ids": [
+          "C-03"
+        ],
+        "bloom_level": "ANALIZAR",
+        "topic_ids": [
+          "T-04"
+        ],
+        "week_coverage": [
+          3,
+          4
+        ],
+        "alignment_notes": "Cubre evaluación y validación de modelos (T-04). Alineado con análisis crítico de modelos predictivos (C-03). Culmina en síntesis integradora en semana 4."
+      }
+    ],
+    "descriptive_card": {
+      "version": "V1",
+      "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
+      "subject_name": "Inteligencia Artificial y Machine Learning",
+      "subject_type": "CONCENTRACION",
+      "graduation_profile": "Profesional capaz de diseñar, implementar y evaluar soluciones basadas en inteligencia artificial y aprendizaje automático, con pensamiento crítico y ético para abordar problemas complejos del entorno tecnológico y social.",
+      "general_objective": "Justificar la selección y aplicación de algoritmos de machine learning para resolver problemas del mundo real, integrando fundamentos teóricos y técnicas de evaluación que respalden decisiones informadas en contextos profesionales.",
+      "specific_objectives": [
+        "Analizar los fundamentos teóricos y prácticos de la inteligencia artificial y el aprendizaje automático, identificando tipos de aprendizaje, el tradeoff bias-varianza y los fenómenos de overfitting/underfitting.",
+        "Justificar la selección y aplicación de algoritmos supervisados y no supervisados (Regresión, Árboles de Decisión, SVM, Redes Neuronales, K-Means, PCA) para resolver problemas del mundo real.",
+        "Examinar modelos de aprendizaje automático utilizando métricas de clasificación/regresión, cross-validation, curvas ROC/AUC y técnicas de tuning de hiperparámetros."
+      ],
+      "evaluation_criteria": {
+        "C-01_pensamiento_computacional": {
+          "bloom_level": "EVALUAR",
+          "instrument": "Proyecto de implementación algorítmica con justificación técnica escrita",
+          "weight_percentage": 35
+        },
+        "C-02_diseno_soluciones_IA": {
+          "bloom_level": "ANALIZAR",
+          "instrument": "Análisis de casos y laboratorios prácticos con entregables en Jupyter Notebook",
+          "weight_percentage": 35
+        },
+        "C-03_analisis_critico_modelos": {
+          "bloom_level": "ANALIZAR",
+          "instrument": "Reporte de evaluación de modelos con interpretación de métricas y validación cruzada",
+          "weight_percentage": 30
+        }
+      },
+      "case_studies_design": "Casos ejecutivos diseñados para vincular los contenidos de Inteligencia Artificial y Machine Learning con la práctica profesional del egresado. Incluyen: (1) Predicción de churn en telecomunicaciones usando algoritmos supervisados; (2) Segmentación de clientes con K-Means y PCA para retail; (3) Diagnóstico médico asistido con evaluación de modelos mediante ROC/AUC y validación cruzada."
+    },
+    "content_map": {
+      "subject_name": "Inteligencia Artificial y Machine Learning",
+      "subject_type": "CONCENTRACION",
+      "total_weeks": 4,
+      "weeks": [
+        {
+          "week": 1,
+          "theme": "Fundamentos de Machine Learning",
+          "bloom_level": "RECORDAR / COMPRENDER",
+          "topic_ids": [
+            "T-01"
+          ],
+          "subtopics": [
+            "Tipos de aprendizaje: supervisado, no supervisado, por refuerzo",
+            "Bias-Variance tradeoff: conceptos y visualización",
+            "Overfitting y Underfitting: diagnóstico y estrategias de mitigación"
+          ],
+          "objective_ids": [
+            "OBJ-001"
+          ],
+          "activities": [
+            "Lectura guiada de fundamentos teóricos con mapa conceptual colaborativo",
+            "Laboratorio introductorio: exploración de datasets con Pandas y Scikit-learn",
+            "Quiz diagnóstico de conceptos clave (RECORDAR)"
+          ],
+          "resources": [
+            "Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow – Aurélien Géron (Cap. 1-2)",
+            "Notebook: bias_variance_visualization.ipynb"
+          ]
+        },
+        {
+          "week": 2,
+          "theme": "Algoritmos Supervisados y No Supervisados",
+          "bloom_level": "APLICAR / ANALIZAR",
+          "topic_ids": [
+            "T-02",
+            "T-03"
+          ],
+          "subtopics": [
+            "Regresión Lineal y Logística: implementación y supuestos",
+            "Árboles de Decisión y SVM: fronteras de decisión",
+            "Redes Neuronales básicas: arquitectura y forward pass",
+            "K-Means y DBSCAN: clustering y detección de anomalías",
+            "PCA y Autoencoders: reducción de dimensionalidad"
+          ],
+          "objective_ids": [
+            "OBJ-001",
+            "OBJ-002"
+          ],
+          "activities": [
+            "Laboratorio comparativo: implementar Regresión Logística vs. Árbol de Decisión sobre el mismo dataset",
+            "Taller de clustering: segmentación de clientes con K-Means y visualización PCA",
+            "Discusión guiada: ¿cuándo usar supervisado vs. no supervisado? (ANALIZAR)"
+          ],
+          "resources": [
+            "Scikit-learn Documentation: Supervised & Unsupervised Learning",
+            "Notebook: supervised_vs_unsupervised_lab.ipynb",
+            "Caso ejecutivo: Segmentación de clientes en retail"
+          ]
+        },
+        {
+          "week": 3,
+          "theme": "Evaluación Crítica de Modelos",
+          "bloom_level": "ANALIZAR / EVALUAR",
+          "topic_ids": [
+            "T-04"
+          ],
+          "subtopics": [
+            "Métricas de clasificación: Accuracy, Precision, Recall, F1-Score, Matriz de Confusión",
+            "Métricas de regresión: MAE, MSE, RMSE, R²",
+            "Cross-validation: K-Fold, Stratified K-Fold",
+            "Curvas ROC y AUC: interpretación y comparación de modelos"
+          ],
+          "objective_ids": [
+            "OBJ-002",
+            "OBJ-003"
+          ],
+          "activities": [
+            "Laboratorio de métricas: calcular e interpretar métricas sobre modelos de la semana 2",
+            "Ejercicio de cross-validation: comparar K-Fold vs. Hold-out en datasets desbalanceados",
+            "Análisis crítico: identificar el mejor modelo para el caso de diagnóstico médico usando ROC/AUC"
+          ],
+          "resources": [
+            "Notebook: model_evaluation_metrics.ipynb",
+            "Caso ejecutivo: Diagnóstico médico asistido con evaluación ROC/AUC",
+            "Paper: 'A systematic analysis of performance measures for classification tasks' – Sokolova & Lapalme"
+          ]
+        },
+        {
+          "week": 4,
+          "theme": "Síntesis, Tuning e Integración",
+          "bloom_level": "EVALUAR / CREAR",
+          "topic_ids": [
+            "T-02",
+            "T-03",
+            "T-04"
+          ],
+          "subtopics": [
+            "Hiperparámetros: definición y estrategias de búsqueda",
+            "Grid Search y Random Search: implementación práctica",
+            "Pipeline de ML end-to-end: preprocesamiento, entrenamiento, evaluación y despliegue básico",
+            "Integración de aprendizajes: proyecto integrador"
+          ],
+          "objective_ids": [
+            "OBJ-001",
+            "OBJ-002",
+            "OBJ-003"
+          ],
+          "activities": [
+            "Taller de hyperparameter tuning: GridSearchCV y RandomizedSearchCV sobre SVM y Random Forest",
+            "Construcción de pipeline end-to-end con Scikit-learn Pipelines",
+            "Presentación del proyecto integrador: justificación de selección algorítmica, métricas y conclusiones (EVALUAR)"
+          ],
+          "resources": [
+            "Notebook: hyperparameter_tuning_pipeline.ipynb",
+            "Caso ejecutivo: Predicción de churn en telecomunicaciones (proyecto integrador)",
+            "Scikit-learn Documentation: Pipeline & GridSearchCV"
+          ]
+        }
+      ]
+    }
+  },
+  "content_package": {
+    "executive_readings": {
+      "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
+      "subject_name": "Advanced Research Methods and Innovation",
+      "language": "BILINGUAL",
+      "total_weeks": 8,
+      "readings": [
+        {
+          "week": 1,
+          "title": "Semana 1 / Week 1: Foundations of Research Methodology",
+          "bloom_level": "Remember & Understand",
+          "content_md": "# Lectura Ejecutiva — Semana 1: Foundations of Research Methodology\n\n## Conceptos Clave\n\n- Concepto 1 de Foundations of Research Methodology\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 1: Foundations of Research Methodology\n\n[English version]",
+          "language": "BILINGUAL",
+          "activities": [
+            "Introductory lecture",
+            "Concept mapping",
+            "Discussion forum"
+          ]
+        },
+        {
+          "week": 2,
+          "title": "Semana 2 / Week 2: Literature Review and State of the Art",
+          "bloom_level": "Understand & Analyze",
+          "content_md": "# Lectura Ejecutiva — Semana 2: Literature Review and State of the Art\n\n## Conceptos Clave\n\n- Concepto 1 de Literature Review and State of the Art\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 2: Literature Review and State of the Art\n\n[English version]",
+          "language": "BILINGUAL",
+          "activities": [
+            "Annotated bibliography",
+            "Peer review",
+            "Group discussion"
+          ]
+        },
+        {
+          "week": 3,
+          "title": "Semana 3 / Week 3: Quantitative Research Design",
+          "bloom_level": "Apply",
+          "content_md": "# Lectura Ejecutiva — Semana 3: Quantitative Research Design\n\n## Conceptos Clave\n\n- Concepto 1 de Quantitative Research Design\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 3: Quantitative Research Design\n\n[English version]",
+          "language": "BILINGUAL",
+          "activities": [
+            "Case study analysis",
+            "Statistical exercise",
+            "Lab session"
+          ]
+        },
+        {
+          "week": 4,
+          "title": "Semana 4 / Week 4: Qualitative Research Design",
+          "bloom_level": "Apply & Analyze",
+          "content_md": "# Lectura Ejecutiva — Semana 4: Qualitative Research Design\n\n## Conceptos Clave\n\n- Concepto 1 de Qualitative Research Design\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 4: Qualitative Research Design\n\n[English version]",
+          "language": "BILINGUAL",
+          "activities": [
+            "Interview simulation",
+            "Thematic analysis",
+            "Reflective journal"
+          ]
+        },
+        {
+          "week": 5,
+          "title": "Semana 5 / Week 5: Mixed Methods and Triangulation",
+          "bloom_level": "Analyze & Evaluate",
+          "content_md": "# Lectura Ejecutiva — Semana 5: Mixed Methods and Triangulation\n\n## Conceptos Clave\n\n- Concepto 1 de Mixed Methods and Triangulation\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 5: Mixed Methods and Triangulation\n\n[English version]",
+          "language": "BILINGUAL",
+          "activities": [
+            "Comparative study",
+            "Data integration workshop",
+            "Debate"
+          ]
+        },
+        {
+          "week": 6,
+          "title": "Semana 6 / Week 6: Data Analysis and Interpretation",
+          "bloom_level": "Evaluate",
+          "content_md": "# Lectura Ejecutiva — Semana 6: Data Analysis and Interpretation\n\n## Conceptos Clave\n\n- Concepto 1 de Data Analysis and Interpretation\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 6: Data Analysis and Interpretation\n\n[English version]",
+          "language": "BILINGUAL",
+          "activities": [
+            "Data analysis lab",
+            "Results presentation",
+            "Peer critique"
+          ]
+        },
+        {
+          "week": 7,
+          "title": "Semana 7 / Week 7: Research Ethics and Academic Integrity",
+          "bloom_level": "Evaluate & Create",
+          "content_md": "# Lectura Ejecutiva — Semana 7: Research Ethics and Academic Integrity\n\n## Conceptos Clave\n\n- Concepto 1 de Research Ethics and Academic Integrity\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 7: Research Ethics and Academic Integrity\n\n[English version]",
+          "language": "BILINGUAL",
+          "activities": [
+            "Ethics case review",
+            "Policy analysis",
+            "Written reflection"
+          ]
+        },
+        {
+          "week": 8,
+          "title": "Semana 8 / Week 8: Research Dissemination and Innovation",
+          "bloom_level": "Create",
+          "content_md": "# Lectura Ejecutiva — Semana 8: Research Dissemination and Innovation\n\n## Conceptos Clave\n\n- Concepto 1 de Research Dissemination and Innovation\n- Concepto 2 con aplicación directiva\n\n## Aplicación Profesional\n\nCaso de aplicación en contexto de Advanced Research Methods and Innovation.\n\n---\n# Executive Reading — Week 8: Research Dissemination and Innovation\n\n[English version]",
+          "language": "BILINGUAL",
+          "activities": [
+            "Research proposal",
+            "Poster presentation",
+            "Final project submission"
+          ]
+        }
+      ]
+    },
+    "quizzes": {
+      "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
+      "subject_name": "Advanced Research Methods and Innovation",
+      "language": "BILINGUAL",
+      "total_learning_outcomes": 4,
+      "total_questions": 12,
+      "quizzes": [
+        {
+          "ra_id": "RA-01",
+          "ra_description": "Critically evaluate and synthesize existing literature to identify research gaps and formulate original research questions within a specialized field.",
+          "questions": [
+            {
+              "question_id": "RA01-Q1",
+              "question": "¿Cuál es el concepto central de 'Critically evaluate and synthesize existing literature to identify research gaps and formulate original research questions within a specialized field.'?",
+              "options": [
+                "Opción correcta sobre Critically evaluate and synthesize existing literature",
+                "Opción B",
+                "Opción C",
+                "Opción D"
+              ],
+              "correct_answer": 0,
+              "feedback": "Correcto — concepto fundamental de Advanced Research Methods and Innovation."
+            },
+            {
+              "question_id": "RA01-Q2",
+              "question": "¿Cómo se aplica 'Critically evaluate and synthesize existing literature to identify research gaps and formulate original research questions within a specialized field.' en contexto directivo?",
+              "options": [
+                "Aplicación estratégica",
+                "Sin aplicación",
+                "Solo teórica",
+                "Irrelevante"
+              ],
+              "correct_answer": 0,
+              "feedback": "La aplicación directiva implica decisiones estratégicas."
+            },
+            {
+              "question_id": "RA01-Q3",
+              "question": "¿Qué evidencia respalda 'Critically evaluate and synthesize existing literature to identify research gaps and formulate original research questions within a specialized field.'?",
+              "options": [
+                "Investigación Q1/Q2",
+                "Solo opinión",
+                "Sin evidencia",
+                "Datos obsoletos"
+              ],
+              "correct_answer": 0,
+              "feedback": "Evidencia de investigación académica de alto impacto."
+            }
+          ]
+        },
+        {
+          "ra_id": "RA-02",
+          "ra_description": "Design and justify appropriate research methodologies (quantitative, qualitative, or mixed) aligned with specific research objectives and epistemological frameworks.",
+          "questions": [
+            {
+              "question_id": "RA02-Q1",
+              "question": "¿Cuál es el concepto central de 'Design and justify appropriate research methodologies (quantitative, qualitative, or mixed) aligned with specific research objectives and epistemological frameworks.'?",
+              "options": [
+                "Opción correcta sobre Design and justify appropriate research methodologies",
+                "Opción B",
+                "Opción C",
+                "Opción D"
+              ],
+              "correct_answer": 0,
+              "feedback": "Correcto — concepto fundamental de Advanced Research Methods and Innovation."
+            },
+            {
+              "question_id": "RA02-Q2",
+              "question": "¿Cómo se aplica 'Design and justify appropriate research methodologies (quantitative, qualitative, or mixed) aligned with specific research objectives and epistemological frameworks.' en contexto directivo?",
+              "options": [
+                "Aplicación estratégica",
+                "Sin aplicación",
+                "Solo teórica",
+                "Irrelevante"
+              ],
+              "correct_answer": 0,
+              "feedback": "La aplicación directiva implica decisiones estratégicas."
+            },
+            {
+              "question_id": "RA02-Q3",
+              "question": "¿Qué evidencia respalda 'Design and justify appropriate research methodologies (quantitative, qualitative, or mixed) aligned with specific research objectives and epistemological frameworks.'?",
+              "options": [
+                "Investigación Q1/Q2",
+                "Solo opinión",
+                "Sin evidencia",
+                "Datos obsoletos"
+              ],
+              "correct_answer": 0,
+              "feedback": "Evidencia de investigación académica de alto impacto."
+            }
+          ]
+        },
+        {
+          "ra_id": "RA-03",
+          "ra_description": "Apply advanced data collection and analysis techniques to generate valid, reliable, and ethically sound research findings.",
+          "questions": [
+            {
+              "question_id": "RA03-Q1",
+              "question": "¿Cuál es el concepto central de 'Apply advanced data collection and analysis techniques to generate valid, reliable, and ethically sound research findings.'?",
+              "options": [
+                "Opción correcta sobre Apply advanced data collection and analysis techniques",
+                "Opción B",
+                "Opción C",
+                "Opción D"
+              ],
+              "correct_answer": 0,
+              "feedback": "Correcto — concepto fundamental de Advanced Research Methods and Innovation."
+            },
+            {
+              "question_id": "RA03-Q2",
+              "question": "¿Cómo se aplica 'Apply advanced data collection and analysis techniques to generate valid, reliable, and ethically sound research findings.' en contexto directivo?",
+              "options": [
+                "Aplicación estratégica",
+                "Sin aplicación",
+                "Solo teórica",
+                "Irrelevante"
+              ],
+              "correct_answer": 0,
+              "feedback": "La aplicación directiva implica decisiones estratégicas."
+            },
+            {
+              "question_id": "RA03-Q3",
+              "question": "¿Qué evidencia respalda 'Apply advanced data collection and analysis techniques to generate valid, reliable, and ethically sound research findings.'?",
+              "options": [
+                "Investigación Q1/Q2",
+                "Solo opinión",
+                "Sin evidencia",
+                "Datos obsoletos"
+              ],
+              "correct_answer": 0,
+              "feedback": "Evidencia de investigación académica de alto impacto."
+            }
+          ]
+        },
+        {
+          "ra_id": "RA-04",
+          "ra_description": "Communicate and disseminate research outcomes effectively through academic writing, presentations, and innovative knowledge transfer strategies.",
+          "questions": [
+            {
+              "question_id": "RA04-Q1",
+              "question": "¿Cuál es el concepto central de 'Communicate and disseminate research outcomes effectively through academic writing, presentations, and innovative knowledge transfer strategies.'?",
+              "options": [
+                "Opción correcta sobre Communicate and disseminate research outcomes",
+                "Opción B",
+                "Opción C",
+                "Opción D"
+              ],
+              "correct_answer": 0,
+              "feedback": "Correcto — concepto fundamental de Advanced Research Methods and Innovation."
+            },
+            {
+              "question_id": "RA04-Q2",
+              "question": "¿Cómo se aplica 'Communicate and disseminate research outcomes effectively through academic writing, presentations, and innovative knowledge transfer strategies.' en contexto directivo?",
+              "options": [
+                "Aplicación estratégica",
+                "Sin aplicación",
+                "Solo teórica",
+                "Irrelevante"
+              ],
+              "correct_answer": 0,
+              "feedback": "La aplicación directiva implica decisiones estratégicas."
+            },
+            {
+              "question_id": "RA04-Q3",
+              "question": "¿Qué evidencia respalda 'Communicate and disseminate research outcomes effectively through academic writing, presentations, and innovative knowledge transfer strategies.'?",
+              "options": [
+                "Investigación Q1/Q2",
+                "Solo opinión",
+                "Sin evidencia",
+                "Datos obsoletos"
+              ],
+              "correct_answer": 0,
+              "feedback": "Evidencia de investigación académica de alto impacto."
+            }
+          ]
+        }
+      ]
+    },
+    "maestria_artifacts": {
+      "subject_id": "a480cf2a-e547-4473-ae75-c2fc400fd32b",
+      "subject_name": "Advanced Research Methods and Innovation",
+      "language": "BILINGUAL",
+      "evidence_dashboard": {
+        "html_content": "| # | Título | Año | Revista | Hallazgo |\n|---|--------|-----|---------|----------|\n| 1 | The Logic of Scientific Discovery | 2002 |  |  |\n| 2 | The Structure of Scientific Revolutions | 2012 |  |  |\n| 3 | Research Design: Qualitative, Quantitative, and Mixed Methods Approaches | 2018 |  |  |\n| 4 | Constructing Grounded Theory | 2014 |  |  |\n| 5 | Case Study Research: Design and Methods | 2018 |  |  |\n| 6 | Qualitative Inquiry and Research Design | 2018 |  |  |\n| 7 | Designing Social Inquiry | 1994 |  |  |\n| 8 | The Craft of Research | 2016 |  |  |\n| 9 | Mixed Methods Research: A Guide to the Field | 2017 |  |  |\n| 10 | Practical Research: Planning and Design | 2019 |  |  |",
+        "papers_indexed": 20
+      },
+      "critical_path_map": {
+        "markdown_content": "| Semana | Actividad | Entregable | Criterio |\n|---|---|---|---|\n| 1 | Lectura de papers clave | Resumen ejecutivo | 3 conceptos clave |\n| 2 | Aplicación a caso real | Análisis de caso | 2 competencias vinculadas |\n| 3 | Síntesis e integración | Propuesta ejecutiva | Todos los RA cubiertos |"
+      },
+      "executive_cases_repository": {
+        "cases": [
+          {
+            "case_id": "CASE-001",
+            "title": "Caso: Advanced Research Methods and Innovation",
+            "context": "Organización implementa Advanced Research Methods and Innovation",
+            "data": "Datos del caso",
+            "questions": [
+              "¿Cómo aplicar?",
+              "¿Qué métricas?",
+              "¿Qué riesgos?"
+            ],
+            "rubric": {
+              "criteria": [
+                "Análisis (30%)",
+                "Aplicación (40%)",
+                "Propuesta (30%)"
+              ],
+              "competency_ids": [
+                "C1",
+                "C2"
+              ]
+            }
+          }
+        ]
+      },
+      "facilitator_guide": {
+        "sessions": [
+          {
+            "week": 1,
+            "duration_minutes": 90,
+            "objective": "Semana 1 de Advanced Research Methods and Innovation",
+            "sequence": [
+              {
+                "time": "0-10min",
+                "activity": "Apertura"
+              },
+              {
+                "time": "10-40min",
+                "activity": "Exposición"
+              },
+              {
+                "time": "40-70min",
+                "activity": "Caso práctico"
+              },
+              {
+                "time": "70-90min",
+                "activity": "Cierre"
+              }
+            ],
+            "trigger_questions": [
+              "¿Cómo conecta con su experiencia?"
+            ],
+            "formative_criteria": "Participación y vinculación con competencias"
+          },
+          {
+            "week": 2,
+            "duration_minutes": 90,
+            "objective": "Semana 2 de Advanced Research Methods and Innovation",
+            "sequence": [
+              {
+                "time": "0-10min",
+                "activity": "Apertura"
+              },
+              {
+                "time": "10-40min",
+                "activity": "Exposición"
+              },
+              {
+                "time": "40-70min",
+                "activity": "Caso práctico"
+              },
+              {
+                "time": "70-90min",
+                "activity": "Cierre"
+              }
+            ],
+            "trigger_questions": [
+              "¿Cómo conecta con su experiencia?"
+            ],
+            "formative_criteria": "Participación y vinculación con competencias"
+          },
+          {
+            "week": 3,
+            "duration_minutes": 90,
+            "objective": "Semana 3 de Advanced Research Methods and Innovation",
+            "sequence": [
+              {
+                "time": "0-10min",
+                "activity": "Apertura"
+              },
+              {
+                "time": "10-40min",
+                "activity": "Exposición"
+              },
+              {
+                "time": "40-70min",
+                "activity": "Caso práctico"
+              },
+              {
+                "time": "70-90min",
+                "activity": "Cierre"
+              }
+            ],
+            "trigger_questions": [
+              "¿Cómo conecta con su experiencia?"
+            ],
+            "formative_criteria": "Participación y vinculación con competencias"
+          },
+          {
+            "week": 4,
+            "duration_minutes": 90,
+            "objective": "Semana 4 de Advanced Research Methods and Innovation",
+            "sequence": [
+              {
+                "time": "0-10min",
+                "activity": "Apertura"
+              },
+              {
+                "time": "10-40min",
+                "activity": "Exposición"
+              },
+              {
+                "time": "40-70min",
+                "activity": "Caso práctico"
+              },
+              {
+                "time": "70-90min",
+                "activity": "Cierre"
+              }
+            ],
+            "trigger_questions": [
+              "¿Cómo conecta con su experiencia?"
+            ],
+            "formative_criteria": "Participación y vinculación con competencias"
+          }
+        ]
+      }
+    }
+  }
+}

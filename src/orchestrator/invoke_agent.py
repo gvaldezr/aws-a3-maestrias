@@ -104,13 +104,12 @@ def _invoke_runtime(runtime_arn: str, payload: dict) -> dict:
 
 
 def invoke_scholar(event: dict, context: Any) -> dict:
-    """Step 1: Invoke Scholar Agent."""
+    """Step 1: Invoke Scholar Agent — passes subject_id so agent loads context from S3."""
     subject_id = event["subject_id"]
     logger.info("orchestrator_scholar_start", extra={"subject_id": subject_id})
 
     result = _invoke_runtime(SCHOLAR_ARN, {
         "subject_id": subject_id,
-        "prompt": f"Research academic papers for subject {subject_id}. Use search_scopus_papers and build_knowledge_matrix tools.",
     })
 
     logger.info("orchestrator_scholar_complete", extra={"subject_id": subject_id})
@@ -118,13 +117,12 @@ def invoke_scholar(event: dict, context: Any) -> dict:
 
 
 def invoke_di(event: dict, context: Any) -> dict:
-    """Step 2: Invoke DI Agent."""
+    """Step 2: Invoke DI Agent — passes subject_id so agent loads context from S3."""
     subject_id = event.get("subject_id") or event.get("scholar", {}).get("subject_id", "")
     logger.info("orchestrator_di_start", extra={"subject_id": subject_id})
 
     result = _invoke_runtime(DI_ARN, {
         "subject_id": subject_id,
-        "prompt": f"Design instructional content for subject {subject_id}. Use generate_learning_objectives and build_descriptive_card tools.",
     })
 
     logger.info("orchestrator_di_complete", extra={"subject_id": subject_id})
@@ -132,13 +130,12 @@ def invoke_di(event: dict, context: Any) -> dict:
 
 
 def invoke_content(event: dict, context: Any) -> dict:
-    """Step 3: Invoke Content Agent."""
+    """Step 3: Invoke Content Agent — passes subject_id so agent loads context from S3."""
     subject_id = event.get("subject_id") or event.get("di", {}).get("subject_id", "")
     logger.info("orchestrator_content_start", extra={"subject_id": subject_id})
 
     result = _invoke_runtime(CONTENT_ARN, {
         "subject_id": subject_id,
-        "prompt": f"Generate complete content package for subject {subject_id}. This is a MAESTRIA program. Use all tools.",
     })
 
     logger.info("orchestrator_content_complete", extra={"subject_id": subject_id})
