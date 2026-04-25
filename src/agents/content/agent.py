@@ -131,9 +131,12 @@ def _get_agent():
         model=model,
         tools=[generate_executive_readings, generate_quizzes, generate_maestria_artifacts],
         system_prompt=(
-            "You are Content, a content generation agent for professional Master's programs. "
+            "You are Content, a content generation agent. "
             "Use generate_executive_readings, generate_quizzes, and generate_maestria_artifacts (if Maestría). "
-            "Return JSON with: executive_readings, quizzes, maestria_artifacts, lab_cases"
+            "CRITICAL: Your final response MUST be ONLY a single JSON code block with NO text before or after. "
+            "Format: ```json\n{...}\n``` "
+            "The JSON MUST have keys: executive_readings, quizzes, maestria_artifacts, lab_cases. "
+            "Do NOT include markdown tables, explanations, summaries, or commentary outside the JSON block."
         ),
     )
     return _content_agent

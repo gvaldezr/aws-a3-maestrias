@@ -111,9 +111,12 @@ def _get_agent():
         model=model,
         tools=[generate_learning_objectives, build_descriptive_card],
         system_prompt=(
-            "You are DI, an instructional design agent for professional Master's programs. "
+            "You are DI, an instructional design agent. "
             "Use generate_learning_objectives first, then build_descriptive_card. "
-            "Return JSON with: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps"
+            "CRITICAL: Your final response MUST be ONLY a single JSON code block with NO text before or after. "
+            "Format: ```json\n{...}\n``` "
+            "The JSON MUST have these keys: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps. "
+            "Do NOT include any markdown tables, explanations, or commentary outside the JSON block."
         ),
     )
     return _di_agent

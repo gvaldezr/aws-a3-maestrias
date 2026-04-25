@@ -32,7 +32,7 @@ agents:
     bedrock_agentcore:
       agent_id: AcademicPipelineScholarDev-7S4W3RBBi0
       agent_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:runtime/AcademicPipelineScholarDev-7S4W3RBBi0
-      agent_session_id: 357c74de-f399-4232-8ea3-63265c81655a
+      agent_session_id: 38aff3f0-5b94-4a05-981c-9173632ddfed
     codebuild:
       project_name: null
       execution_role: null
@@ -92,7 +92,7 @@ agents:
     bedrock_agentcore:
       agent_id: AcademicPipelineDIDev-Rp1Oj57gGL
       agent_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:runtime/AcademicPipelineDIDev-Rp1Oj57gGL
-      agent_session_id: 1361925c-70b3-4026-a085-23c5b7157ec6
+      agent_session_id: b2e48f54-2149-4632-a84c-393d0bb8b3b5
     codebuild:
       project_name: null
       execution_role: null
@@ -152,7 +152,7 @@ agents:
     bedrock_agentcore:
       agent_id: AcademicPipelineContentDev-fX2AEsCaMw
       agent_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:runtime/AcademicPipelineContentDev-fX2AEsCaMw
-      agent_session_id: e4357761-f758-45c0-b1de-fa66c1fffa40
+      agent_session_id: 457a3764-e2e3-4ab3-bcff-4aa9f307a9b0
     codebuild:
       project_name: null
       execution_role: null
