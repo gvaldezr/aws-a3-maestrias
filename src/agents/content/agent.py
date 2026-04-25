@@ -475,13 +475,16 @@ def _self_persist_content(subject_id: str, result_text: str) -> None:
     if parsed.get("lab_cases"):
         sj["content_package"]["lab_cases"] = parsed["lab_cases"]
 
-    now = datetime.now(timezone.utc).isoformat()
-    sj["pipeline_state"]["current_state"] = "CONTENT_READY"
-    sj["pipeline_state"]["state_history"].append({"state": "CONTENT_READY", "agent": "content-agent", "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": ""})
+    # Only advance state if not already past CONTENT_READY
+    current = sj["pipeline_state"]["current_state"]
+    advanced_states = {"PENDING_APPROVAL", "APPROVED", "REJECTED", "PUBLISHED"}
+    if current not in advanced_states:
+        sj["pipeline_state"]["current_state"] = "CONTENT_READY"
+        sj["pipeline_state"]["state_history"].append({"state": "CONTENT_READY", "agent": "content-agent", "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": ""})
+        ddb.Table(table_name).put_item(Item={"subject_id": subject_id, "SK": "STATE", "current_state": "CONTENT_READY", "subject_name": sj["metadata"]["subject_name"], "program_name": sj["metadata"]["program_name"], "updated_at": now, "s3_key": f"subjects/{subject_id}/subject.json"})
     sj["updated_at"] = now
 
     s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json", Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"), ContentType="application/json")
-    ddb.Table(table_name).put_item(Item={"subject_id": subject_id, "SK": "STATE", "current_state": "CONTENT_READY", "subject_name": sj["metadata"]["subject_name"], "program_name": sj["metadata"]["program_name"], "updated_at": now, "s3_key": f"subjects/{subject_id}/subject.json"})
 
 
 if __name__ == "__main__":

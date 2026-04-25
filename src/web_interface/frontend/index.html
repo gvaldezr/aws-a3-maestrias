@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pipeline Académico — Anáhuac Mérida</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f0f4f8; color: #2d3748; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 0.6rem 0.75rem; background: #edf2f7; border-bottom: 2px solid #cbd5e0; font-weight: 600; font-size: 0.8rem; color: #4a5568; }
+    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #e2e8f0; }
+    tr:hover { background: #f7fafc; }
+    button { transition: opacity 0.15s; }
+    button:hover:not(:disabled) { opacity: 0.85; }
+    .status-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+    .status-pending_approval { background: #fefcbf; color: #744210; }
+    .status-approved { background: #c6f6d5; color: #22543d; }
+    .status-content_ready { background: #bee3f8; color: #2a4365; }
+    .status-published { background: #c6f6d5; color: #22543d; }
+    .status-rejected { background: #fed7d7; color: #742a2a; }
+    .status-failed, .status-qa_failed { background: #fed7d7; color: #742a2a; }
+    .status-knowledge_matrix_ready { background: #e9d8fd; color: #44337a; }
+    .status-di_ready { background: #b2f5ea; color: #234e52; }
+    .status-uploaded { background: #e2e8f0; color: #4a5568; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

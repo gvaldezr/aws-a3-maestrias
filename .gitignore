@@ -30,3 +30,7 @@ htmlcov/
 .cache/
 .pytest_cache/
 node_modules/
+
+# Academic documents (root only)
+/*.pdf
+/*.docx

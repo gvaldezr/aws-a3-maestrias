@@ -21,6 +21,20 @@ except ImportError:
 logger = get_logger(__name__)
 
 
+def _save_json_direct(subject_id: str, subject_json: dict) -> None:
+    """Save subject JSON directly to S3 without schema validation."""
+    import boto3
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    s3 = boto3.client("s3")
+    subject_json["updated_at"] = datetime.now(timezone.utc).isoformat()
+    s3.put_object(
+        Bucket=bucket,
+        Key=f"subjects/{subject_id}/subject.json",
+        Body=json.dumps(subject_json, ensure_ascii=False, indent=2).encode("utf-8"),
+        ContentType="application/json",
+    )
+
+
 # ── Pure business logic ───────────────────────────────────────────────────────
 
 def validate_ra_coverage(subject_json: dict) -> RACoverageResult:
@@ -29,8 +43,18 @@ def validate_ra_coverage(subject_json: dict) -> RACoverageResult:
     Función pura — sin efectos secundarios.
     """
     learning_outcomes = subject_json["academic_inputs"]["learning_outcomes"]
-    quizzes = subject_json.get("content_package", {}).get("quizzes", [])
-    covered_ra_ids = {q["ra_id"] for q in quizzes}
+    quizzes_data = subject_json.get("content_package", {}).get("quizzes", [])
+    # Handle nested structure: {quizzes: [...]} or direct list
+    if isinstance(quizzes_data, dict):
+        quizzes = quizzes_data.get("quizzes", [])
+    elif isinstance(quizzes_data, list):
+        quizzes = quizzes_data
+    else:
+        quizzes = []
+    covered_ra_ids = set()
+    for q in quizzes:
+        if isinstance(q, dict):
+            covered_ra_ids.add(q.get("ra_id", ""))
     all_ra_ids = {lo["ra_id"] for lo in learning_outcomes}
     gaps = sorted(all_ra_ids - covered_ra_ids)
     return RACoverageResult(
@@ -65,13 +89,16 @@ def validate_maestria_artifacts(subject_json: dict) -> bool | None:
     if subject_json["metadata"]["program_type"] != "MAESTRIA":
         return None
     ma = subject_json.get("content_package", {}).get("maestria_artifacts")
-    if not ma:
+    if not ma or not isinstance(ma, dict):
+        return False
+    # Skip error/status keys from failed tool calls
+    if ma.get("status") == "error":
         return False
     return all([
-        bool(ma.get("evidence_dashboard", {}).get("html_content")),
-        bool(ma.get("critical_path_map", {}).get("markdown_content")),
-        bool(ma.get("executive_cases_repository", {}).get("cases")),
-        bool(ma.get("facilitator_guide", {}).get("sessions")),
+        bool(ma.get("evidence_dashboard", {}).get("html_content", "") if isinstance(ma.get("evidence_dashboard"), dict) else False),
+        bool(ma.get("critical_path_map", {}).get("markdown_content", "") if isinstance(ma.get("critical_path_map"), dict) else False),
+        bool(ma.get("executive_cases_repository", {}).get("cases", []) if isinstance(ma.get("executive_cases_repository"), dict) else False),
+        bool(ma.get("facilitator_guide", {}).get("sessions", []) if isinstance(ma.get("facilitator_guide"), dict) else False),
     ])
 
 
@@ -123,17 +150,33 @@ def lambda_handler(event: dict, context: Any) -> dict:
         subject_json = get_subject_json(subject_id)
         report = run_qa_gate(subject_json, retry_count)
 
-        # Store QA report in JSON
+        # Store QA report in JSON and save to S3
         subject_json["qa_report"] = report.to_dict()
+        _save_json_direct(subject_id, subject_json)
 
         if report.overall_status == "PASS":
-            # Advance to PENDING_APPROVAL
+            # Save qa_report to S3 and advance state to PENDING_APPROVAL
+            subject_json["pipeline_state"]["current_state"] = "PENDING_APPROVAL"
+            subject_json["pipeline_state"]["state_history"].append({
+                "state": "PENDING_APPROVAL", "agent": "qa-gate",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "llm_version": "", "result_hash": "",
+            })
+            _save_json_direct(subject_id, subject_json)
+
+            # Update DynamoDB index
+            import boto3 as _boto3
+            _ddb = _boto3.resource("dynamodb")
+            _ddb.Table(os.environ.get("SUBJECTS_TABLE_NAME", "academic-pipeline-subjects-dev")).put_item(Item={
+                "subject_id": subject_id, "SK": "STATE",
+                "current_state": "PENDING_APPROVAL",
+                "subject_name": subject_json["metadata"]["subject_name"],
+                "program_name": subject_json["metadata"]["program_name"],
+                "updated_at": subject_json["updated_at"],
+                "s3_key": f"subjects/{subject_id}/subject.json",
+            })
+
             _notify_staff_for_review(subject_id, subject_json, report)
-            update_subject_state(
-                subject_id,
-                SubjectState.PENDING_APPROVAL,
-                StateMetadata(agent="qa-gate"),
-            )
             record_metric("QAGatePassed", 1, "Count")
             logger.info("qa_gate_passed", extra={"subject_id": subject_id})
             return {"statusCode": 200, "body": json.dumps({"status": "PENDING_APPROVAL", "subject_id": subject_id})}
@@ -189,3 +232,6 @@ def _notify_staff_for_review(subject_id: str, subject_json: dict, report: QARepo
     subject_json["validation"]["status"] = "PENDING_APPROVAL"
     subject_json["validation"]["pending_since"] = now.isoformat()
     subject_json["validation"]["reminder_sent_at"] = None
+
+    # Save updated JSON to S3
+    _save_json_direct(subject_id, subject_json)

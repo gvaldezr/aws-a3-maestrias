@@ -127,6 +127,23 @@ class QACheckpointStack(cdk.Stack):
                 allow_headers=["Authorization", "Content-Type", "X-Amz-Date", "X-Api-Key"],
             ),
         )
+        # Add CORS headers to error responses (401, 403, etc.)
+        api.add_gateway_response("CorsDefault4xx",
+            type=apigateway.ResponseType.DEFAULT_4_XX,
+            response_headers={
+                "Access-Control-Allow-Origin": "'*'",
+                "Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+                "Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+            },
+        )
+        api.add_gateway_response("CorsDefault5xx",
+            type=apigateway.ResponseType.DEFAULT_5_XX,
+            response_headers={
+                "Access-Control-Allow-Origin": "'*'",
+                "Access-Control-Allow-Headers": "'Content-Type,Authorization'",
+                "Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+            },
+        )
         authorizer = apigateway.CognitoUserPoolsAuthorizer(self, "CognitoAuth",
             cognito_user_pools=[self.user_pool],
         )
@@ -141,7 +158,7 @@ class QACheckpointStack(cdk.Stack):
         )
         checkpoint_res = subject_res.add_resource("checkpoint")
         checkpoint_res.add_method("GET",
-            apigateway.LambdaIntegration(qa_lambda),
+            apigateway.LambdaIntegration(checkpoint_lambda),
             authorizer=authorizer,
             authorization_type=apigateway.AuthorizationType.COGNITO,
         )

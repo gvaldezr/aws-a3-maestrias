@@ -69,9 +69,20 @@ def detect_program_type(text: str) -> str:
 def detect_subject_type(text: str) -> str:
     """Detecta el tipo de materia. Función pura."""
     text_lower = text.lower()
-    if any(kw in text_lower for kw in ["proyecto", "project", "tesis", "thesis"]):
+    # Check for explicit "Bloque:" label first (Anáhuac format)
+    bloque_match = re.search(r"[Bb]loque[:\s]+(\w+)", text)
+    if bloque_match:
+        bloque = bloque_match.group(1).lower()
+        if bloque in ("profesional", "fundamentos", "básico", "basico"):
+            return "FUNDAMENTOS"
+        if bloque in ("concentración", "concentracion", "especialización"):
+            return "CONCENTRACION"
+        if bloque in ("proyecto", "integrador", "terminal"):
+            return "PROYECTO"
+    # Fallback to keyword detection
+    if any(kw in text_lower for kw in ["tipo: proyecto", "bloque: proyecto", "tesis", "thesis"]):
         return "PROYECTO"
-    if any(kw in text_lower for kw in ["concentración", "concentracion", "especialización", "advanced"]):
+    if any(kw in text_lower for kw in ["tipo: concentracion", "concentración", "especialización", "advanced"]):
         return "CONCENTRACION"
     return "FUNDAMENTOS"
 
@@ -128,36 +139,76 @@ def parse_text_to_document(
 ) -> ParsedDocument:
     """
     Parsea texto extraído de un documento a ParsedDocument.
+    Maneja formato Anáhuac (tablas con labels) y texto plano.
     Función pura — sin efectos secundarios.
-    Invariante: siempre retorna ParsedDocument con subject_id válido.
     """
-    lines = [l.strip() for l in text.split("\n") if l.strip()]
-    subject_name = lines[0][:255] if lines else "Asignatura sin nombre"
-    program_name = lines[1][:255] if len(lines) > 1 else "Programa sin nombre"
+    # Try structured extraction first (Anáhuac DOCX format)
+    subject_name = _extract_field(text, [
+        r"[Dd]enominaci[oó]n\s+de\s+la\s+asignatura[:\s|]+(.+?)(?:\n|\|)",
+        r"[Nn]ombre\s+de\s+la\s+asignatura[:\s|]+(.+?)(?:\n|\|)",
+        r"[Aa]signatura[:\s|]+(.+?)(?:\n|\|)",
+    ])
+    if not subject_name:
+        # Fallback: first non-empty line
+        lines = [l.strip() for l in text.split("\n") if l.strip()]
+        subject_name = lines[0][:255] if lines else "Asignatura sin nombre"
+
+    # Program name from filename or text
+    program_name = _extract_field(text, [
+        r"[Pp]rograma[:\s|]+(.+?)(?:\n|\|)",
+        r"[Mm]aestr[ií]a\s+en\s+(.+?)(?:\n|\|)",
+    ])
+    if not program_name:
+        # Try to extract from filename: OK_PA001_MADTFIN_...
+        fn_match = re.search(r"MADTFIN|MADIA|MADCI", source_file)
+        if fn_match:
+            program_name = "Maestria en Direccion y Tecnologia Financiera - Anahuac Online"
+        else:
+            program_name = "Programa sin nombre"
 
     program_type = detect_program_type(text)
     subject_type = detect_subject_type(text)
 
-    # Detectar idioma
+    # Detect language
     language = "ES"
     if re.search(r"\b(learning outcome|competency|syllabus)\b", text, re.IGNORECASE):
         language = "EN" if not re.search(r"\b(resultado|competencia|temario)\b", text, re.IGNORECASE) else "BILINGUAL"
 
-    # Extraer perfil de egreso
+    # Extract graduation profile
     profile_match = re.search(
-        r"(?:perfil\s+de\s+egreso|graduation\s+profile)[:\s]+(.+?)(?=\n\n|\Z)",
+        r"(?:perfil\s+de\s+egreso|graduation\s+profile|[Pp]erfil\s+m[ií]nimo)[:\s]+(.+?)(?=\n\n|\Z)",
         text, re.IGNORECASE | re.DOTALL
     )
-    graduation_profile = " ".join(profile_match.group(1).split())[:1000] if profile_match else program_name
+    graduation_profile = " ".join(profile_match.group(1).split())[:1000] if profile_match else ""
 
-    learning_outcomes = extract_learning_outcomes(text)
+    # Extract learning outcomes — Anáhuac format: "Fines de aprendizaje / Resultados de aprendizaje:"
+    learning_outcomes = _extract_learning_outcomes_structured(text)
+    if not learning_outcomes:
+        learning_outcomes = extract_learning_outcomes(text)
+
+    # Extract competencies
     competencies = extract_competencies(text)
 
-    # Fallback: si no se detectaron RA, crear uno genérico
+    # Extract syllabus — Anáhuac format: "Contenido temático:"
+    syllabus = _extract_syllabus(text)
+
+    # Fallbacks
     if not learning_outcomes:
         learning_outcomes = [{"ra_id": "RA1", "description": f"Desarrollar competencias en {subject_name}"}]
     if not competencies:
-        competencies = [{"competency_id": "C1", "description": f"Competencia profesional en {program_name}"}]
+        # Use program-level competencies for MADTFIN
+        if "MADTFIN" in source_file or "financ" in text.lower():
+            competencies = [
+                {"competency_id": "C1", "description": "PENSAMIENTO CRITICO - Analiza informacion y argumentos financieros para sustentar juicios profesionales"},
+                {"competency_id": "C2", "description": "PENSAMIENTO INNOVADOR - Disena soluciones financieras mediante enfoques innovadores basados en datos"},
+                {"competency_id": "C3", "description": "PENSAMIENTO RELACIONAL - Integra comprension sistemica de mercados y variables macro financieras"},
+                {"competency_id": "C4", "description": "PENSAMIENTO ETICO Y MORAL - Aplica criterios eticos en decisiones financieras"},
+            ]
+        else:
+            competencies = [{"competency_id": "C1", "description": f"Competencia profesional en {program_name}"}]
+
+    if not graduation_profile:
+        graduation_profile = f"Profesional capaz de aplicar conocimientos de {subject_name} en contextos organizacionales."
 
     return ParsedDocument(
         subject_id=subject_id,
@@ -169,5 +220,75 @@ def parse_text_to_document(
         graduation_profile=graduation_profile,
         competencies=competencies,
         learning_outcomes=learning_outcomes,
+        syllabus=syllabus,
         source_file=source_file,
     )
+
+
+def _extract_field(text: str, patterns: list[str]) -> str:
+    """Try multiple regex patterns and return the first match."""
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            value = match.group(1).strip()
+            # Clean up pipe separators and extra whitespace
+            value = re.sub(r'\s*\|\s*', ' ', value).strip()
+            if len(value) > 5:
+                return value[:255]
+    return ""
+
+
+def _extract_learning_outcomes_structured(text: str) -> list[dict]:
+    """Extract learning outcomes from Anáhuac structured format."""
+    # Find the "Fines de aprendizaje" or "Resultados de aprendizaje" section
+    ra_match = re.search(
+        r"(?:Fines\s+de\s+aprendizaje|Resultados\s+de\s+aprendizaje)[^:]*:\s*(?:El\s+estudiante:?)?\s*(.+?)(?=Contenido\s+tem[aá]tico|Actividades\s+de\s+aprendizaje|\Z)",
+        text, re.IGNORECASE | re.DOTALL
+    )
+    if not ra_match:
+        return []
+
+    ra_text = ra_match.group(1).strip()
+    # Split by sentences that start with a verb (Bloom taxonomy)
+    bloom_verbs = r"(?:Aplica|Analiza|Evalúa|Evalua|Crea|Diseña|Disena|Construye|Identifica|Describe|Compara|Justifica|Examina|Interpreta|Desarrolla|Integra|Propone|Selecciona|Argumenta|Demuestra)"
+    sentences = re.split(rf"(?={bloom_verbs})", ra_text)
+    sentences = [s.strip() for s in sentences if s.strip() and len(s.strip()) > 20]
+
+    outcomes = []
+    for i, sentence in enumerate(sentences):
+        clean = " ".join(sentence.split())[:500]
+        outcomes.append({"ra_id": f"RA{i+1}", "description": clean})
+
+    return outcomes
+
+
+def _extract_syllabus(text: str) -> str:
+    """Extract syllabus/content topics from Anáhuac structured format."""
+    syllabus_match = re.search(
+        r"[Cc]ontenido\s+tem[aá]tico[:\s]*(.+?)(?=Actividades\s+de\s+aprendizaje|Criterios\s+de\s+evaluaci[oó]n|Software|Recursos\s+[Bb]ibliogr[aá]ficos|\Z)",
+        text, re.IGNORECASE | re.DOTALL
+    )
+    if not syllabus_match:
+        return ""
+
+    raw = syllabus_match.group(1).strip()
+    # Clean up: remove pipe separators, normalize whitespace
+    raw = re.sub(r'\s*\|\s*', '\n', raw)
+    lines = [l.strip() for l in raw.split("\n") if l.strip() and len(l.strip()) > 3]
+
+    # Group into numbered topics
+    topics = []
+    current_topic = []
+    for line in lines:
+        # New topic starts with a line that looks like a heading (no verb prefix, often capitalized)
+        if current_topic and len(current_topic) >= 3 and not line[0].islower():
+            topics.append(" — ".join(current_topic))
+            current_topic = [line]
+        else:
+            current_topic.append(line)
+    if current_topic:
+        topics.append(" — ".join(current_topic))
+
+    # Build syllabus string
+    numbered = [f"{i+1}) {t}" for i, t in enumerate(topics)]
+    return "Contenido tematico: " + ". ".join(numbered)

@@ -9,6 +9,8 @@ import os
 from datetime import datetime, timezone
 from typing import Any
 
+import boto3
+
 from src.infrastructure.observability.logger import get_logger
 from src.infrastructure.observability.metrics import record_metric
 from src.infrastructure.state.models import StateMetadata, SubjectState
@@ -90,14 +92,171 @@ def apply_manual_edits(subject_json: dict, edits: dict, staff_user: str) -> None
 def lambda_handler(event: dict, context: Any) -> dict:
     """
     Lambda entry point para el Checkpoint Handler.
-    Invocado por API Gateway: POST /subjects/{subject_id}/decision
+    Invocado por API Gateway:
+      POST /subjects/{subject_id}/decision — Submit approval/rejection/edit
+      GET  /subjects/{subject_id}/checkpoint — Get review summary
     JWT Cognito requerido — staff_user extraído del token.
     """
-    # Extract subject_id from path parameters
+    http_method = event.get("httpMethod", "POST")
     subject_id = event.get("pathParameters", {}).get("subject_id", "")
     if not subject_id:
         return _response(400, {"error": "subject_id required in path"})
 
+    # GET — return checkpoint summary for review
+    if http_method == "GET":
+        return _get_checkpoint_summary(subject_id)
+
+    # POST — process decision
+    return _process_decision(event, subject_id)
+
+
+def _get_checkpoint_summary(subject_id: str) -> dict:
+    """Return the full checkpoint summary with content preview for the frontend."""
+    try:
+        subject_json = get_subject_json(subject_id)
+    except Exception:
+        return _response(404, {"error": f"Subject not found: {subject_id}"})
+
+    meta = subject_json.get("metadata", {})
+    inputs = subject_json.get("academic_inputs", {})
+    di = subject_json.get("instructional_design", {})
+    cp = subject_json.get("content_package", {})
+    qa = subject_json.get("qa_report", {})
+    research = subject_json.get("research", {})
+
+    # Readings
+    er = cp.get("executive_readings", {})
+    readings = er.get("readings", []) if isinstance(er, dict) else (er if isinstance(er, list) else [])
+
+    # Quizzes
+    qz = cp.get("quizzes", {})
+    quizzes = qz.get("quizzes", []) if isinstance(qz, dict) else (qz if isinstance(qz, list) else [])
+
+    # Maestria artifacts
+    ma = cp.get("maestria_artifacts", {}) if isinstance(cp.get("maestria_artifacts"), dict) else {}
+
+    # Papers
+    papers = research.get("top20_papers", [])
+
+    # Objectives
+    objectives = di.get("learning_objectives", [])
+
+    # Content map
+    content_map = di.get("content_map", {})
+    weeks = content_map.get("weeks", []) if isinstance(content_map, dict) else []
+
+    # Descriptive card
+    card = di.get("descriptive_card", {})
+
+    summary = {
+        "subject_id": subject_id,
+        "subject_name": meta.get("subject_name", ""),
+        "program_name": meta.get("program_name", ""),
+        "program_type": meta.get("program_type", ""),
+        "subject_type": meta.get("subject_type", ""),
+        "current_state": subject_json.get("pipeline_state", {}).get("current_state", ""),
+        "qa_report": qa,
+
+        # Descriptive card
+        "descriptive_card": {
+            "general_objective": card.get("general_objective", ""),
+            "specific_objectives": card.get("specific_objectives", []),
+            "subject_name": card.get("subject_name", ""),
+            "evaluation_criteria": card.get("evaluation_criteria", {}),
+        },
+
+        # Objectives with Bloom + competencies
+        "objectives": [
+            {
+                "id": o.get("objective_id", ""),
+                "description": o.get("description", ""),
+                "bloom_level": o.get("bloom_level", ""),
+                "bloom_verb": o.get("bloom_verb", ""),
+                "competencies": o.get("competency_ids", []),
+                "ras": o.get("ra_ids", []),
+            }
+            for o in objectives
+        ],
+
+        # Weekly content map
+        "weekly_map": [
+            {
+                "week": w.get("week", ""),
+                "theme": w.get("theme", ""),
+                "bloom_level": w.get("bloom_level", ""),
+                "subtopics": w.get("subtopics", []),
+                "activities": w.get("activities", []),
+            }
+            for w in weeks
+        ],
+
+        # Full readings
+        "readings": [
+            {
+                "week": r.get("week", ""),
+                "title": r.get("title", ""),
+                "bloom_level": r.get("bloom_level", ""),
+                "content_md": r.get("content_md", ""),
+            }
+            for r in readings if isinstance(r, dict)
+        ],
+
+        # Full quizzes
+        "quizzes": [
+            {
+                "ra_id": q.get("ra_id", ""),
+                "ra_description": q.get("ra_description", ""),
+                "questions": [
+                    {
+                        "question": qq.get("question", ""),
+                        "options": qq.get("options", []),
+                        "correct_answer": qq.get("correct_answer", 0),
+                        "feedback": qq.get("feedback", ""),
+                    }
+                    for qq in q.get("questions", []) if isinstance(qq, dict)
+                ],
+            }
+            for q in quizzes if isinstance(q, dict)
+        ],
+
+        # Papers (top 20)
+        "papers": [
+            {
+                "title": p.get("title", ""),
+                "year": p.get("year", ""),
+                "journal": p.get("journal", ""),
+                "key_finding": p.get("key_finding", ""),
+            }
+            for p in papers[:20] if isinstance(p, dict)
+        ],
+
+        # Maestria artifacts
+        "maestria_artifacts": {
+            "evidence_dashboard": ma.get("evidence_dashboard", {}).get("html_content", "") if isinstance(ma.get("evidence_dashboard"), dict) else "",
+            "critical_path_map": ma.get("critical_path_map", {}).get("markdown_content", "") if isinstance(ma.get("critical_path_map"), dict) else "",
+            "cases": ma.get("executive_cases_repository", {}).get("cases", []) if isinstance(ma.get("executive_cases_repository"), dict) else [],
+            "facilitator_sessions": ma.get("facilitator_guide", {}).get("sessions", []) if isinstance(ma.get("facilitator_guide"), dict) else [],
+        },
+
+        # Counts for summary bar
+        "content_preview": {
+            "readings_count": len(readings),
+            "quizzes_count": len(quizzes),
+            "total_questions": sum(len(q.get("questions", [])) for q in quizzes if isinstance(q, dict)),
+            "cases_count": len(ma.get("executive_cases_repository", {}).get("cases", [])) if isinstance(ma.get("executive_cases_repository"), dict) else 0,
+            "maestria_artifacts": bool(ma.get("evidence_dashboard")),
+            "papers_count": len(papers),
+        },
+
+        # Academic inputs for reference
+        "competencies": inputs.get("competencies", []),
+        "learning_outcomes": inputs.get("learning_outcomes", []),
+    }
+    return _response(200, summary)
+
+
+def _process_decision(event: dict, subject_id: str) -> dict:
+    """Process POST decision (approve/reject/edit)."""
     # Extract staff_user from JWT claims (Cognito authorizer injects this)
     claims = event.get("requestContext", {}).get("authorizer", {}).get("claims", {})
     staff_user = claims.get("cognito:username") or claims.get("email", "unknown")
@@ -131,8 +290,16 @@ def lambda_handler(event: dict, context: Any) -> dict:
                 StateMetadata(agent=f"staff:{staff_user}"),
             )
             record_metric("ApprovalsReceived", 1, "Count")
+
+            # Trigger Canvas Publisher via Step Functions or direct Lambda invoke
+            _trigger_canvas_publish(subject_id)
+
             logger.info("checkpoint_approved", extra={"subject_id": subject_id, "staff_user": staff_user})
-            return _response(200, {"status": "APPROVED", "subject_id": subject_id})
+            return _response(200, {
+                "status": "APPROVED",
+                "subject_id": subject_id,
+                "message": "Contenido aprobado. Publicación en Canvas iniciada.",
+            })
 
         elif decision_type == "REJECTED":
             try:
@@ -193,6 +360,9 @@ def _response(status_code: int, body: dict) -> dict:
         "statusCode": status_code,
         "headers": {
             "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type,Authorization",
+            "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
             "X-Content-Type-Options": "nosniff",
             "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
             "X-Frame-Options": "DENY",
@@ -211,3 +381,18 @@ def _escalate_to_support(subject_id: str, rejection_count: int) -> None:
             message=json.dumps({"subject_id": subject_id, "rejection_count": rejection_count,
                                 "action": "Manual technical support required"}),
         )
+
+
+def _trigger_canvas_publish(subject_id: str) -> None:
+    """Invoke Canvas Publisher Lambda asynchronously after approval."""
+    canvas_function = os.environ.get("CANVAS_PUBLISHER_FUNCTION_NAME", "academic-pipeline-canvas-publisher-dev")
+    try:
+        lambda_client = boto3.client("lambda")
+        lambda_client.invoke(
+            FunctionName=canvas_function,
+            InvocationType="Event",  # Async — don't wait for response
+            Payload=json.dumps({"subject_id": subject_id}),
+        )
+        logger.info("canvas_publish_triggered", extra={"subject_id": subject_id, "function": canvas_function})
+    except Exception as e:
+        logger.error("canvas_publish_trigger_failed", extra={"subject_id": subject_id, "error": str(e)})

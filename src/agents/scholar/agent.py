@@ -275,29 +275,34 @@ def _self_persist(subject_id: str, result_text: str, section: str, new_state: st
         if parsed.get("keywords_used"):
             sj["research"]["keywords"] = parsed["keywords_used"]
 
-    # Update state
+    # Update state — only if not already past this state
     now = datetime.now(timezone.utc).isoformat()
-    sj["pipeline_state"]["current_state"] = new_state
-    sj["pipeline_state"]["state_history"].append({
-        "state": new_state, "agent": agent_name,
-        "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": "",
-    })
+    current = sj["pipeline_state"]["current_state"]
+    advanced_states = {"PENDING_APPROVAL", "APPROVED", "REJECTED", "PUBLISHED"}
+    state_order = ["INGESTED", "UPLOADED", "KNOWLEDGE_MATRIX_READY", "DI_READY", "CONTENT_READY"]
+    current_idx = state_order.index(current) if current in state_order else -1
+    new_idx = state_order.index(new_state) if new_state in state_order else -1
+
+    if current not in advanced_states and (new_idx >= current_idx):
+        sj["pipeline_state"]["current_state"] = new_state
+        sj["pipeline_state"]["state_history"].append({
+            "state": new_state, "agent": agent_name,
+            "timestamp": now, "llm_version": "claude-sonnet-4.6", "result_hash": "",
+        })
+        ddb.Table(table_name).put_item(Item={
+            "subject_id": subject_id, "SK": "STATE",
+            "current_state": new_state,
+            "subject_name": sj["metadata"]["subject_name"],
+            "program_name": sj["metadata"]["program_name"],
+            "updated_at": now,
+            "s3_key": f"subjects/{subject_id}/subject.json",
+        })
     sj["updated_at"] = now
 
-    # Write back to S3
+    # Write back to S3 (always — to persist the data even if state didn't change)
     s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json",
                   Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"),
                   ContentType="application/json")
-
-    # Update DynamoDB
-    ddb.Table(table_name).put_item(Item={
-        "subject_id": subject_id, "SK": "STATE",
-        "current_state": new_state,
-        "subject_name": sj["metadata"]["subject_name"],
-        "program_name": sj["metadata"]["program_name"],
-        "updated_at": now,
-        "s3_key": f"subjects/{subject_id}/subject.json",
-    })
 
 
 if __name__ == "__main__":
