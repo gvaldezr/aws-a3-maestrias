@@ -34,3 +34,6 @@ node_modules/
 # Academic documents (root only)
 /*.pdf
 /*.docx
+
+# Local readme copy
+readme_local.md
