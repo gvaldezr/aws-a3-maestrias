@@ -33,7 +33,7 @@ export function App() {
       });
       const data = await resp.json();
       if (data.AuthenticationResult) {
-        const t = data.AuthenticationResult.AccessToken;
+        const t = data.AuthenticationResult.IdToken;
         localStorage.setItem("access_token", t);
         setToken(t);
       } else if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
