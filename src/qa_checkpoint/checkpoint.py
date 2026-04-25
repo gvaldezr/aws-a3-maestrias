@@ -251,8 +251,26 @@ def _get_checkpoint_summary(subject_id: str) -> dict:
         # Academic inputs for reference
         "competencies": inputs.get("competencies", []),
         "learning_outcomes": inputs.get("learning_outcomes", []),
+
+        # Canvas preview — pre-rendered HTML as it would appear in Canvas LMS
+        "canvas_preview": _build_canvas_preview_safe(subject_json),
     }
     return _response(200, summary)
+
+
+def _build_canvas_preview_safe(subject_json: dict) -> dict:
+    """Build canvas preview, catching errors gracefully."""
+    try:
+        from canvas_preview import build_canvas_preview
+    except ImportError:
+        try:
+            from src.qa_checkpoint.canvas_preview import build_canvas_preview
+        except ImportError:
+            return {"pages": [], "total_pages": 0, "error": "preview module not available"}
+    try:
+        return build_canvas_preview(subject_json)
+    except Exception as e:
+        return {"pages": [], "total_pages": 0, "error": str(e)}
 
 
 def _process_decision(event: dict, subject_id: str) -> dict:

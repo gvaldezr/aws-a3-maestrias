@@ -10,7 +10,7 @@ interface Props {
   onDecisionComplete: () => void;
 }
 
-type Tab = "overview" | "objectives" | "readings" | "quizzes" | "papers" | "maestria";
+type Tab = "overview" | "objectives" | "readings" | "quizzes" | "papers" | "maestria" | "canvas";
 
 export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
   const [summary, setSummary] = useState<Record<string, any> | null>(null);
@@ -54,6 +54,7 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
     { key: "quizzes", label: "❓ Quizzes", count: summary.quizzes?.length },
     { key: "papers", label: "📚 Papers", count: summary.papers?.length },
     { key: "maestria", label: "🎓 Maestría" },
+    { key: "canvas", label: "👁️ Preview Canvas", count: summary.canvas_preview?.total_pages },
   ];
 
   return (
@@ -89,6 +90,7 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
         {activeTab === "quizzes" && <QuizzesTab quizzes={summary.quizzes || []} />}
         {activeTab === "papers" && <PapersTab papers={summary.papers || []} />}
         {activeTab === "maestria" && <MaestriaTab artifacts={summary.maestria_artifacts} />}
+        {activeTab === "canvas" && <CanvasPreviewTab preview={summary.canvas_preview} />}
       </div>
 
       {/* Decision Panel */}
@@ -315,6 +317,72 @@ function MaestriaTab({ artifacts }: { artifacts: any }) {
           </div>
         )) || <p>No disponible</p>}
       </Section>
+    </div>
+  );
+}
+
+function CanvasPreviewTab({ preview }: { preview: any }) {
+  const [selectedPage, setSelectedPage] = useState(0);
+  if (!preview?.pages?.length) return <p>No hay preview disponible.</p>;
+
+  const pages = preview.pages;
+  const current = pages[selectedPage];
+
+  const canvasCSS = `
+    body { font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #2D3B45; line-height: 1.5; padding: 1rem; }
+    h1 { color: #2D3B45; font-size: 1.6rem; border-bottom: 1px solid #C7CDD1; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+    h2 { color: #2D3B45; font-size: 1.25rem; margin-top: 1.5rem; }
+    h3 { color: #394B58; font-size: 1.05rem; margin-top: 1rem; }
+    p { margin: 0.5rem 0; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    th { background: #394B58; color: white; padding: 0.5rem; text-align: left; }
+    td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #C7CDD1; }
+    tr:nth-child(even) { background: #F5F5F5; }
+    ul, ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+    li { margin: 0.3rem 0; }
+    em { color: #6B7B8D; }
+    strong { color: #2D3B45; }
+  `;
+
+  return (
+    <div>
+      <h3 style={{marginTop:0}}>👁️ Preview Canvas LMS ({pages.length} páginas)</h3>
+      <p style={{fontSize:"0.8rem",color:"#718096",marginBottom:"1rem"}}>
+        Así se verá el contenido en Canvas LMS. Navegue entre páginas para revisar cada recurso.
+      </p>
+
+      {/* Page selector */}
+      <div style={{display:"flex",gap:"0.25rem",marginBottom:"1rem",flexWrap:"wrap"}}>
+        {pages.map((p: any, i: number) => (
+          <button key={i} onClick={() => setSelectedPage(i)}
+            style={{
+              padding:"0.4rem 0.75rem",border:"1px solid #cbd5e0",borderRadius:"4px",cursor:"pointer",
+              fontSize:"0.75rem",
+              background: i === selectedPage ? "#2b6cb0" : "white",
+              color: i === selectedPage ? "white" : "#4a5568",
+              fontWeight: i === selectedPage ? 600 : 400,
+            }}>
+            {p.type === "quiz" ? "❓" : "📄"} {p.title?.substring(0, 30)}{p.title?.length > 30 ? "..." : ""}
+          </button>
+        ))}
+      </div>
+
+      {/* Canvas-styled preview */}
+      <div style={{
+        border:"1px solid #C7CDD1",borderRadius:"4px",background:"white",
+        boxShadow:"0 1px 3px rgba(0,0,0,0.1)",overflow:"hidden",
+      }}>
+        {/* Canvas header bar */}
+        <div style={{background:"#394B58",color:"white",padding:"0.5rem 1rem",fontSize:"0.8rem",display:"flex",justifyContent:"space-between"}}>
+          <span>📄 {current.title}</span>
+          <span style={{opacity:0.7}}>Página {selectedPage + 1} de {pages.length}</span>
+        </div>
+        {/* Content area */}
+        <div
+          style={{padding:"1.5rem",maxHeight:"600px",overflow:"auto"}}
+          dangerouslySetInnerHTML={{__html: `<style>${canvasCSS}</style>${current.html || "<p>Sin contenido</p>"}`}}
+        />
+      </div>
     </div>
   );
 }
