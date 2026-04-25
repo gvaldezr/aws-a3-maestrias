@@ -164,7 +164,7 @@ Cada asignatura pasa por 7 fases secuenciales:
 ## Despliegue
 
 ### Prerrequisitos
-- AWS CLI configurado (cuenta 254508868459, us-east-1)
+- AWS CLI configurado (con cuenta y región apropiadas)
 - Node.js 18+ (para CDK)
 - Python 3.11
 - AgentCore CLI (`pip install bedrock-agentcore-starter-toolkit`)
@@ -193,26 +193,28 @@ agentcore deploy --agent AcademicPipelineContentDev
 ```bash
 cd src/web_interface/frontend
 npm install && npx vite build
-aws s3 sync dist/ s3://academic-pipeline-frontend-254508868459-dev/ --delete
+aws s3 sync dist/ s3://<FRONTEND_BUCKET>/ --delete
 ```
 
 ## URLs de Producción (dev)
 
-| Recurso | URL |
-|---------|-----|
-| Frontend | http://academic-pipeline-frontend-254508868459-dev.s3-website-us-east-1.amazonaws.com |
-| Web API | https://z1px5977b8.execute-api.us-east-1.amazonaws.com/prod/ |
-| Checkpoint API | https://zcf0tiic2e.execute-api.us-east-1.amazonaws.com/prod/ |
-| Cognito User Pool | us-east-1_29oR1qoVo |
-| Staff User | staff-admin / Pipeline2026Edu! |
+Estas URLs se generan durante el despliegue con CDK. Consultar los outputs de cada stack.
+
+| Recurso | Descripción |
+|---------|-------------|
+| Frontend | S3 Static Website (output de WebInterface stack) |
+| Web API | API Gateway REST (output de WebInterface stack) |
+| Checkpoint API | API Gateway REST (output de QACheckpoint stack) |
+| Cognito User Pool | Output de QACheckpoint stack |
+| Staff User | Crear via Cognito console o CLI |
 
 ## Credenciales y Secretos
 
 | Secreto | Ubicación |
 |---------|-----------|
-| Scopus API Key | Secrets Manager: `academic-pipeline/dev/scopus-api-key` |
-| Canvas OAuth Token | Secrets Manager: `academic-pipeline/dev/canvas-oauth-token` |
-| Canvas URL | https://anahuacmerida.instructure.com |
+| Scopus API Key | Secrets Manager: `academic-pipeline/<env>/scopus-api-key` |
+| Canvas OAuth Token | Secrets Manager: `academic-pipeline/<env>/canvas-oauth-token` |
+| Canvas URL | Configurar en variable de entorno del Canvas Publisher Lambda |
 
 ## Testing
 
@@ -232,11 +234,11 @@ python test-data/review_content.py
 ```bash
 # Mock mode (default) — no hace llamadas reales a Canvas
 aws lambda update-function-configuration \
-  --function-name academic-pipeline-canvas-publisher-dev \
+  --function-name academic-pipeline-canvas-publisher-<env> \
   --environment "Variables={CANVAS_MOCK_MODE=true,...}"
 
 # Real mode — publica en Canvas LMS
 aws lambda update-function-configuration \
-  --function-name academic-pipeline-canvas-publisher-dev \
+  --function-name academic-pipeline-canvas-publisher-<env> \
   --environment "Variables={CANVAS_MOCK_MODE=false,...}"
 ```
