@@ -9,8 +9,6 @@ import os
 import time
 
 import boto3
-import httpx
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from src.infrastructure.observability.logger import get_logger
 
@@ -38,32 +36,36 @@ class CanvasClient:
 
     @staticmethod
     def _get_token(secret_arn: str) -> str:
-        """Obtiene el OAuth Token desde Secrets Manager (BR-CV07, SECURITY-12)."""
         client = boto3.client("secretsmanager")
         resp = client.get_secret_value(SecretId=secret_arn)
         secret = json.loads(resp["SecretString"])
         return secret["oauth_token"]
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=4),
-        retry=retry_if_exception_type(CanvasAPIError),
-        reraise=True,
-    )
     def _request(self, method: str, path: str, payload: dict | None = None) -> dict:
-        """Ejecuta una llamada a Canvas API con retry/backoff (BR-CV06)."""
+        """Ejecuta una llamada a Canvas API con retry."""
+        import httpx
         url = f"{self._base_url}/api/v1{path}"
-        with httpx.Client(timeout=30.0) as client:
-            response = getattr(client, method)(url, headers=self._headers, json=payload)
-
-        if response.status_code >= 500:
-            raise CanvasAPIError(f"Canvas server error {response.status_code}: {path}")
-        if response.status_code == 401:
-            raise CanvasAPIError("Canvas authentication failed — check OAuth token")
-        if response.status_code >= 400:
-            raise CanvasAPIError(f"Canvas client error {response.status_code}: {response.text[:200]}")
-
-        return response.json() if response.content else {}
+        last_error = None
+        for attempt in range(3):
+            try:
+                with httpx.Client(timeout=30.0) as client:
+                    response = getattr(client, method)(url, headers=self._headers, json=payload)
+                if response.status_code >= 500:
+                    raise CanvasAPIError(f"Canvas server error {response.status_code}: {path}")
+                if response.status_code == 401:
+                    raise CanvasAPIError("Canvas authentication failed")
+                if response.status_code >= 400:
+                    raise CanvasAPIError(f"Canvas error {response.status_code}: {response.text[:200]}")
+                return response.json() if response.content else {}
+            except CanvasAPIError:
+                raise
+            except Exception as e:
+                last_error = e
+                if attempt < 2:
+                    time.sleep(2 ** attempt)
+                    continue
+                raise CanvasAPIError(f"Canvas request failed: {e}") from e
+        raise CanvasAPIError(f"Canvas request failed after retries: {last_error}")
 
     # ── Course ────────────────────────────────────────────────────────────────
 

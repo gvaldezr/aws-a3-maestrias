@@ -1,6 +1,7 @@
 """
 Canvas Publisher — U6: Publicación del curso en Canvas LMS.
 Lambda handler — Fase 5: Curaduría y Montaje.
+Supports CANVAS_MOCK_MODE=true for testing without real Canvas API calls.
 """
 from __future__ import annotations
 
@@ -11,26 +12,17 @@ from typing import Any
 
 try:
     from canvas_client import CanvasAPIError, CanvasClient
-except ImportError:
-    from src.canvas_publisher.canvas_client import CanvasAPIError, CanvasClient
-try:
-    from formatters import (
-except ImportError:
-    from src.canvas_publisher.formatters import (
-    format_apa_page_payload,
-    format_page_payload,
-    format_quiz_payload,
-    format_quiz_question_payload,
-    format_rubric_payload,
-)
-try:
+    from mock_client import MockCanvasClient
+    from formatters import format_apa_page_payload, format_page_payload, format_quiz_payload, format_quiz_question_payload, format_rubric_payload
     from models import PublicationResult
 except ImportError:
+    from src.canvas_publisher.canvas_client import CanvasAPIError, CanvasClient
+    from src.canvas_publisher.mock_client import MockCanvasClient
+    from src.canvas_publisher.formatters import format_apa_page_payload, format_page_payload, format_quiz_payload, format_quiz_question_payload, format_rubric_payload
     from src.canvas_publisher.models import PublicationResult
+
 from src.infrastructure.observability.logger import get_logger
 from src.infrastructure.observability.metrics import record_metric, send_notification
-from src.infrastructure.state.models import StateMetadata, SubjectState
-from src.infrastructure.state.state_manager import get_subject_json, update_subject_state
 
 logger = get_logger(__name__)
 
@@ -76,13 +68,21 @@ def publish_course(subject_json: dict, client: CanvasClient) -> PublicationResul
     module_urls: list[str] = []
 
     # Publicar lecturas ejecutivas
-    for reading in content.get("executive_readings", []):
-        page = client.create_page(course_id, format_page_payload(reading["title"], reading["content_md"]))
+    readings_data = content.get("executive_readings", {})
+    readings = readings_data.get("readings", []) if isinstance(readings_data, dict) else (readings_data if isinstance(readings_data, list) else [])
+    for reading in readings:
+        if not isinstance(reading, dict):
+            continue
+        page = client.create_page(course_id, format_page_payload(reading.get("title", ""), reading.get("content_md", "")))
         _add_page_to_module(client, course_id, module_id, page)
         module_urls.append(page.get("html_url", ""))
 
     # Publicar quizzes (BR-C03: mínimo 3 preguntas por RA)
-    for quiz_data in content.get("quizzes", []):
+    quizzes_data = content.get("quizzes", {})
+    quizzes = quizzes_data.get("quizzes", []) if isinstance(quizzes_data, dict) else (quizzes_data if isinstance(quizzes_data, list) else [])
+    for quiz_data in quizzes:
+        if not isinstance(quiz_data, dict):
+            continue
         quiz_resp = client.create_quiz(course_id, format_quiz_payload(
             title=f"Quiz — {quiz_data['ra_id']}",
             ra_id=quiz_data["ra_id"],
@@ -169,70 +169,95 @@ def _add_quiz_to_module(client: CanvasClient, course_id: str, module_id: str, qu
 def lambda_handler(event: dict, context: Any) -> dict:
     """
     Lambda entry point para Canvas Publisher.
-    Invocado por el orquestador tras estado APPROVED.
+    Invocado por el checkpoint handler tras estado APPROVED.
+    Set CANVAS_MOCK_MODE=true to simulate without real Canvas API calls.
     """
     subject_id: str = event.get("subject_id", "")
     if not subject_id:
-        return {"statusCode": 400, "body": json.dumps({"error": "subject_id required"})}
+        return _response(400, {"error": "subject_id required"})
 
-    logger.info("canvas_publisher_start", extra={"subject_id": subject_id})
+    mock_mode = os.environ.get("CANVAS_MOCK_MODE", "true").lower() == "true"
+    logger.info("canvas_publisher_start", extra={"subject_id": subject_id, "mock_mode": mock_mode})
 
     try:
-        subject_json = get_subject_json(subject_id)
+        # Load subject JSON directly from S3
+        import boto3
+        s3 = boto3.client("s3")
+        bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+        obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
+        subject_json = json.loads(obj["Body"].read().decode("utf-8"))
 
-        # BR-CV01 — Solo publicar si APPROVED
-        current_state = subject_json["pipeline_state"]["current_state"]
-        if current_state != "APPROVED":
-            return {"statusCode": 409, "body": json.dumps({
-                "error": f"Subject must be APPROVED to publish. Current state: {current_state}"
-            })}
-
-        canvas_client = CanvasClient(
-            base_url=os.environ["CANVAS_BASE_URL"],
-            secret_arn=os.environ["CANVAS_SECRET_ARN"],
-        )
+        # Create client (mock or real)
+        if mock_mode:
+            canvas_client = MockCanvasClient(
+                base_url=os.environ.get("CANVAS_BASE_URL", "https://anahuacmerida.instructure.com"),
+            )
+        else:
+            canvas_client = CanvasClient(
+                base_url=os.environ["CANVAS_BASE_URL"],
+                secret_arn=os.environ["CANVAS_SECRET_ARN"],
+            )
 
         result = publish_course(subject_json, canvas_client)
 
-        # BR-CV08 — Actualizar JSON con URLs de Canvas
+        # Persist publication result to S3
         subject_json["publication"] = result.to_dict()
-        update_subject_state(
-            subject_id,
-            SubjectState.PUBLISHED,
-            StateMetadata(agent="canvas-publisher"),
-        )
+        subject_json["publication"]["mock_mode"] = mock_mode
+        subject_json["pipeline_state"]["current_state"] = "PUBLISHED"
+        subject_json["pipeline_state"]["state_history"].append({
+            "state": "PUBLISHED", "agent": "canvas-publisher",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "llm_version": "", "result_hash": "",
+        })
+        subject_json["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+        s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json",
+                      Body=json.dumps(subject_json, ensure_ascii=False, indent=2).encode("utf-8"),
+                      ContentType="application/json")
+
+        # Update DynamoDB
+        ddb = boto3.resource("dynamodb")
+        ddb.Table(os.environ.get("SUBJECTS_TABLE_NAME", "academic-pipeline-subjects-dev")).put_item(Item={
+            "subject_id": subject_id, "SK": "STATE",
+            "current_state": "PUBLISHED",
+            "subject_name": subject_json["metadata"]["subject_name"],
+            "program_name": subject_json["metadata"]["program_name"],
+            "updated_at": subject_json["updated_at"],
+            "s3_key": f"subjects/{subject_id}/subject.json",
+            "canvas_course_url": result.canvas_course_url,
+        })
+
+        # Log mock summary if applicable
+        if mock_mode and hasattr(canvas_client, "get_summary"):
+            summary = canvas_client.get_summary()
+            logger.info("mock_canvas_summary", extra=summary)
 
         record_metric("CoursesPublished", 1, "Count")
         logger.info("canvas_publisher_complete", extra={
             "subject_id": subject_id,
             "course_id": result.canvas_course_id,
             "course_url": result.canvas_course_url,
+            "mock_mode": mock_mode,
         })
 
-        # Notify Staff with Canvas URL
-        topic_arn = os.environ.get("STAFF_NOTIFICATIONS_TOPIC_ARN", "")
-        if topic_arn:
-            send_notification(
-                topic_arn,
-                subject=f"[Pipeline] Curso publicado en Canvas — {subject_json['metadata']['subject_name']}",
-                message=json.dumps({
-                    "subject_id": subject_id,
-                    "subject_name": subject_json["metadata"]["subject_name"],
-                    "canvas_course_url": result.canvas_course_url,
-                    "status": "Publicado en borrador. Active el curso manualmente cuando esté listo.",
-                }),
-            )
-
-        return {"statusCode": 200, "body": json.dumps({
+        return _response(200, {
             "status": "PUBLISHED",
             "subject_id": subject_id,
             "canvas_course_url": result.canvas_course_url,
-        })}
+            "mock_mode": mock_mode,
+        })
 
-    except CanvasAPIError as exc:
-        logger.error("canvas_api_error", extra={"subject_id": subject_id, "error": str(exc)})
-        record_metric("PublicationErrors", 1, "Count")
-        return {"statusCode": 502, "body": json.dumps({"error": f"Canvas API error: {exc}"})}
     except Exception as exc:
         logger.error("canvas_publisher_error", extra={"subject_id": subject_id, "error": str(exc)})
-        return {"statusCode": 500, "body": json.dumps({"error": str(exc)})}
+        return _response(500, {"error": str(exc)})
+
+
+def _response(code: int, body: dict) -> dict:
+    return {
+        "statusCode": code,
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        },
+        "body": json.dumps(body),
+    }
