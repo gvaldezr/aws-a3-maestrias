@@ -3,7 +3,8 @@
  * Todas las llamadas incluyen el JWT de Cognito en el header Authorization.
  */
 
-const API_BASE = process.env.REACT_APP_API_URL ?? "";
+const API_BASE = (window as any).__API_BASE__ ?? "https://z1px5977b8.execute-api.us-east-1.amazonaws.com/prod";
+const CHECKPOINT_API = (window as any).__CHECKPOINT_API__ ?? "https://zcf0tiic2e.execute-api.us-east-1.amazonaws.com/prod";
 
 async function authHeaders(): Promise<HeadersInit> {
   // En producción, obtener el token de Cognito (Amplify Auth)
@@ -74,7 +75,7 @@ export async function uploadFileToS3(uploadUrl: string, file: File): Promise<voi
 }
 
 export async function getCheckpointSummary(subjectId: string): Promise<Record<string, unknown>> {
-  const res = await fetch(`${API_BASE}/api/subjects/${subjectId}/checkpoint`, {
+  const res = await fetch(`${CHECKPOINT_API}/subjects/${subjectId}/checkpoint`, {
     headers: await authHeaders(),
   });
   if (!res.ok) throw new Error(`Checkpoint error: ${res.status}`);
@@ -87,7 +88,7 @@ export async function submitDecision(
   comments?: string,
   manualEdits?: Record<string, unknown>
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/subjects/${subjectId}/decision`, {
+  const res = await fetch(`${CHECKPOINT_API}/subjects/${subjectId}/decision`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify({ decision, comments, manual_edits: manualEdits }),

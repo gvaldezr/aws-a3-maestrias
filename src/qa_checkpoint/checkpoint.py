@@ -111,62 +111,146 @@ def lambda_handler(event: dict, context: Any) -> dict:
 
 
 def _get_checkpoint_summary(subject_id: str) -> dict:
-    """Return the checkpoint summary for the CheckpointPage frontend."""
+    """Return the full checkpoint summary with content preview for the frontend."""
     try:
         subject_json = get_subject_json(subject_id)
     except Exception:
         return _response(404, {"error": f"Subject not found: {subject_id}"})
 
     meta = subject_json.get("metadata", {})
+    inputs = subject_json.get("academic_inputs", {})
     di = subject_json.get("instructional_design", {})
     cp = subject_json.get("content_package", {})
     qa = subject_json.get("qa_report", {})
+    research = subject_json.get("research", {})
 
-    # Count readings
+    # Readings
     er = cp.get("executive_readings", {})
-    readings_count = len(er.get("readings", [])) if isinstance(er, dict) else (len(er) if isinstance(er, list) else 0)
+    readings = er.get("readings", []) if isinstance(er, dict) else (er if isinstance(er, list) else [])
 
-    # Count quizzes
+    # Quizzes
     qz = cp.get("quizzes", {})
-    quizzes_list = qz.get("quizzes", []) if isinstance(qz, dict) else (qz if isinstance(qz, list) else [])
-    quizzes_count = len(quizzes_list)
-    total_questions = sum(len(q.get("questions", [])) for q in quizzes_list if isinstance(q, dict))
+    quizzes = qz.get("quizzes", []) if isinstance(qz, dict) else (qz if isinstance(qz, list) else [])
 
     # Maestria artifacts
-    ma = cp.get("maestria_artifacts", {})
-    has_maestria = isinstance(ma, dict) and bool(ma.get("evidence_dashboard", {}).get("html_content", ""))
+    ma = cp.get("maestria_artifacts", {}) if isinstance(cp.get("maestria_artifacts"), dict) else {}
+
+    # Papers
+    papers = research.get("top20_papers", [])
+
+    # Objectives
+    objectives = di.get("learning_objectives", [])
+
+    # Content map
+    content_map = di.get("content_map", {})
+    weeks = content_map.get("weeks", []) if isinstance(content_map, dict) else []
 
     # Descriptive card
     card = di.get("descriptive_card", {})
-    objectives = di.get("learning_objectives", [])
 
     summary = {
         "subject_id": subject_id,
         "subject_name": meta.get("subject_name", ""),
         "program_name": meta.get("program_name", ""),
         "program_type": meta.get("program_type", ""),
+        "subject_type": meta.get("subject_type", ""),
         "current_state": subject_json.get("pipeline_state", {}).get("current_state", ""),
         "qa_report": qa,
-        "descriptive_card_preview": card.get("general_objective", "No disponible"),
-        "content_preview": {
-            "readings_count": readings_count,
-            "quizzes_count": quizzes_count,
-            "total_questions": total_questions,
-            "cases_count": len(ma.get("executive_cases_repository", {}).get("cases", [])) if isinstance(ma, dict) else 0,
-            "maestria_artifacts": has_maestria,
+
+        # Descriptive card
+        "descriptive_card": {
+            "general_objective": card.get("general_objective", ""),
+            "specific_objectives": card.get("specific_objectives", []),
+            "subject_name": card.get("subject_name", ""),
+            "evaluation_criteria": card.get("evaluation_criteria", {}),
         },
+
+        # Objectives with Bloom + competencies
         "objectives": [
             {
                 "id": o.get("objective_id", ""),
                 "description": o.get("description", ""),
                 "bloom_level": o.get("bloom_level", ""),
+                "bloom_verb": o.get("bloom_verb", ""),
                 "competencies": o.get("competency_ids", []),
                 "ras": o.get("ra_ids", []),
             }
             for o in objectives
         ],
-        "weekly_map": di.get("content_map", {}).get("weeks", []),
-        "papers_count": len(subject_json.get("research", {}).get("top20_papers", [])),
+
+        # Weekly content map
+        "weekly_map": [
+            {
+                "week": w.get("week", ""),
+                "theme": w.get("theme", ""),
+                "bloom_level": w.get("bloom_level", ""),
+                "subtopics": w.get("subtopics", []),
+                "activities": w.get("activities", []),
+            }
+            for w in weeks
+        ],
+
+        # Full readings
+        "readings": [
+            {
+                "week": r.get("week", ""),
+                "title": r.get("title", ""),
+                "bloom_level": r.get("bloom_level", ""),
+                "content_md": r.get("content_md", ""),
+            }
+            for r in readings if isinstance(r, dict)
+        ],
+
+        # Full quizzes
+        "quizzes": [
+            {
+                "ra_id": q.get("ra_id", ""),
+                "ra_description": q.get("ra_description", ""),
+                "questions": [
+                    {
+                        "question": qq.get("question", ""),
+                        "options": qq.get("options", []),
+                        "correct_answer": qq.get("correct_answer", 0),
+                        "feedback": qq.get("feedback", ""),
+                    }
+                    for qq in q.get("questions", []) if isinstance(qq, dict)
+                ],
+            }
+            for q in quizzes if isinstance(q, dict)
+        ],
+
+        # Papers (top 20)
+        "papers": [
+            {
+                "title": p.get("title", ""),
+                "year": p.get("year", ""),
+                "journal": p.get("journal", ""),
+                "key_finding": p.get("key_finding", ""),
+            }
+            for p in papers[:20] if isinstance(p, dict)
+        ],
+
+        # Maestria artifacts
+        "maestria_artifacts": {
+            "evidence_dashboard": ma.get("evidence_dashboard", {}).get("html_content", "") if isinstance(ma.get("evidence_dashboard"), dict) else "",
+            "critical_path_map": ma.get("critical_path_map", {}).get("markdown_content", "") if isinstance(ma.get("critical_path_map"), dict) else "",
+            "cases": ma.get("executive_cases_repository", {}).get("cases", []) if isinstance(ma.get("executive_cases_repository"), dict) else [],
+            "facilitator_sessions": ma.get("facilitator_guide", {}).get("sessions", []) if isinstance(ma.get("facilitator_guide"), dict) else [],
+        },
+
+        # Counts for summary bar
+        "content_preview": {
+            "readings_count": len(readings),
+            "quizzes_count": len(quizzes),
+            "total_questions": sum(len(q.get("questions", [])) for q in quizzes if isinstance(q, dict)),
+            "cases_count": len(ma.get("executive_cases_repository", {}).get("cases", [])) if isinstance(ma.get("executive_cases_repository"), dict) else 0,
+            "maestria_artifacts": bool(ma.get("evidence_dashboard")),
+            "papers_count": len(papers),
+        },
+
+        # Academic inputs for reference
+        "competencies": inputs.get("competencies", []),
+        "learning_outcomes": inputs.get("learning_outcomes", []),
     }
     return _response(200, summary)
 
