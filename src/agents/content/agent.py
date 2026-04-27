@@ -504,34 +504,303 @@ def _build_content_prompt(subject_id: str, sj: dict) -> str:
 
 @app.entrypoint
 def invoke(payload: dict, context: RequestContext = None) -> dict:
-    """AgentCore Runtime entrypoint for Content Agent."""
-    prompt = payload.get("prompt", "")
+    """AgentCore Runtime entrypoint for Content Agent.
+    
+    Calls tools directly instead of using the agent loop to avoid MaxTokensReachedException.
+    The tools generate all content deterministically from the subject data.
+    """
     subject_id = payload.get("subject_id", "")
 
-    if not prompt and not subject_id:
-        return {"result": "Content Agent ready. Send a prompt or subject_id to begin content generation."}
+    if not subject_id:
+        return {"result": "Content Agent ready. Send a subject_id to begin content generation."}
 
-    agent = _get_agent()
+    sj = _load_subject_context(subject_id)
+    if not sj:
+        return {"result": f"Subject {subject_id} not found in S3."}
 
-    if subject_id:
-        sj = _load_subject_context(subject_id)
-        if sj:
-            prompt = _build_content_prompt(subject_id, sj)
-        else:
-            prompt = json.dumps({
-                "task": "Generate educational content for this subject",
-                "subject_id": subject_id,
-                "instructions": "Use all available tools to generate the complete content package",
-            })
+    meta = sj.get("metadata", {})
+    inputs = sj.get("academic_inputs", {})
+    research = sj.get("research", {})
+    di = sj.get("instructional_design", {})
 
-    result = agent(prompt)
-    result_str = str(result)
+    subject_name = meta.get("subject_name", "Unknown")
+    language = meta.get("language", "ES")
+    competencies = inputs.get("competencies", [])
+    learning_outcomes = inputs.get("learning_outcomes", [])
+    papers = research.get("top20_papers", [])
+    knowledge_matrix = research.get("knowledge_matrix", [])
+    objectives = di.get("learning_objectives", [])
+    content_map = di.get("content_map", {})
+    weeks = content_map.get("weeks", []) if isinstance(content_map, dict) else []
 
-    if subject_id:
-        try:
-            _self_persist_content(subject_id, result_str)
-        except Exception:
-            pass
+    # Initialize tools (lazy init the agent just to define tools)
+    _get_agent()
+
+    # Call tools directly — no agent loop, no token accumulation
+    import logging
+    log = logging.getLogger(__name__)
+
+    log.info(f"CONTENT_DIRECT: Generating content for {subject_name} ({subject_id})")
+
+    # 1. Executive readings
+    from strands import tool as _tool_decorator
+    readings_result = _call_generate_readings(weeks, subject_name, language, papers, knowledge_matrix)
+    log.info(f"CONTENT_DIRECT: Readings generated: {len(readings_result.get('readings', []))}")
+
+    # 2. Quizzes
+    quizzes_result = _call_generate_quizzes(learning_outcomes, subject_name, language, objectives)
+    log.info(f"CONTENT_DIRECT: Quizzes generated: {len(quizzes_result.get('quizzes', []))}")
+
+    # 3. Maestria artifacts
+    maestria_result = _call_generate_maestria(papers, subject_name, competencies, language, weeks, learning_outcomes)
+    log.info(f"CONTENT_DIRECT: Maestria artifacts generated")
+
+    # Assemble result
+    content_package = {
+        "executive_readings": readings_result,
+        "quizzes": quizzes_result,
+        "maestria_artifacts": maestria_result,
+    }
+
+    # Persist directly to S3
+    _direct_persist_content(subject_id, sj, content_package)
+    log.info(f"CONTENT_DIRECT: Persisted to S3 for {subject_id}")
+
+    return {"result": json.dumps(content_package, ensure_ascii=False)[:500]}
+
+
+def _call_generate_readings(weeks, subject_name, language, papers, knowledge_matrix):
+    """Call the readings generation logic directly."""
+    def _ensure_dicts(items):
+        result = []
+        for item in (items or []):
+            if isinstance(item, dict):
+                result.append(item)
+            elif isinstance(item, str):
+                try:
+                    p = json.loads(item)
+                    if isinstance(p, dict):
+                        result.append(p)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        return result
+
+    weeks = _ensure_dicts(weeks)
+    papers = _ensure_dicts(papers)
+    km = _ensure_dicts(knowledge_matrix) if isinstance(knowledge_matrix, list) else []
+
+    # Reuse the same logic from generate_executive_readings tool
+    # (imported from the tool definition inside _get_agent)
+    # We duplicate the core logic here to avoid tool decorator issues
+    import re as _re
+
+    km_by_topic = {}
+    for km_entry in km:
+        for topic in km_entry.get("syllabus_topics_covered", []):
+            km_by_topic.setdefault(topic.lower().strip(), []).append(km_entry)
+
+    readings = []
+    total_weeks = len(weeks)
+
+    for week in weeks:
+        w = week.get("week", 1)
+        theme = week.get("theme", "")
+        bloom = week.get("bloom_level", "")
+        subtopics = week.get("subtopics", [])
+        activities = week.get("activities", [])
+
+        # Find relevant KM
+        theme_lower = theme.lower().strip()
+        relevant_km = km_by_topic.get(theme_lower, [])
+        if not relevant_km:
+            theme_words = {wd for wd in theme_lower.split() if len(wd) > 4}
+            for topic_key, entries in km_by_topic.items():
+                if theme_words & {wd for wd in topic_key.split() if len(wd) > 4}:
+                    relevant_km.extend(entries)
+
+        concepts = []
+        methodologies = []
+        for km_entry in relevant_km:
+            for c in km_entry.get("core_concepts", []):
+                if isinstance(c, dict):
+                    concepts.append(c)
+            for m in km_entry.get("key_methodologies", []):
+                if isinstance(m, str):
+                    methodologies.append(m)
+
+        # Find relevant papers
+        theme_words = [wd.lower() for wd in theme.split() if len(wd) > 4]
+        relevant_papers = [p for p in papers if any(wd in p.get("title", "").lower() for wd in theme_words)][:4] or papers[:3]
+
+        bloom_action = {"RECORDAR": "identificar y reconocer", "COMPRENDER": "comprender y explicar",
+                        "APLICAR": "aplicar en contextos reales", "ANALIZAR": "examinar criticamente",
+                        "EVALUAR": "juzgar y fundamentar", "CREAR": "disenar soluciones"}.get(bloom, "desarrollar")
+
+        sections = [
+            f"# Lectura Ejecutiva, Semana {w} de {total_weeks}: {theme}",
+            f"\n**Asignatura**: {subject_name}\n**Nivel cognitivo**: {bloom} (Bloom)\n**Semana**: {w} de {total_weeks}\n",
+            "## Introduccion",
+            f"Esta semana aborda {theme} dentro de {subject_name}. El nivel cognitivo es {bloom}, lo que implica {bloom_action} los conceptos presentados.\n",
+        ]
+
+        if concepts:
+            sections.append("## Conceptos Clave")
+            for i, c in enumerate(concepts[:5], 1):
+                sections.append(f"\n### {i}. {c.get('concept', '')}")
+                if c.get("definition"):
+                    sections.append(f"\n{c['definition']}\n")
+                if c.get("supporting_papers"):
+                    for sp in c["supporting_papers"][:2]:
+                        sections.append(f"- {sp}")
+        elif subtopics:
+            sections.append("## Contenido Tematico")
+            for st in subtopics:
+                sections.append(f"\n### {st}\nConcepto fundamental en {subject_name.lower()}.\n")
+
+        if methodologies:
+            sections.append("## Metodologias")
+            for m in methodologies[:6]:
+                sections.append(f"- {m}")
+
+        if relevant_papers:
+            sections.append("\n## Evidencia Academica")
+            for p in relevant_papers[:3]:
+                auth = p.get("authors", [""])[0] if isinstance(p.get("authors"), list) else str(p.get("authors", ""))
+                sections.append(f"- **{p.get('title','')}** ({auth}, {p.get('year','')}). *{p.get('journal','')}*.")
+
+        sections.append(f"\n## Aplicacion Profesional\nLos conceptos de {theme.lower()} se aplican en la toma de decisiones estrategicas.\n")
+        sections.append(f"## Preguntas de Reflexion\n1. Como se relaciona {theme.lower()} con su experiencia?\n2. Que decisiones se beneficiarian de estos conceptos?\n")
+
+        if relevant_papers:
+            sections.append("## Referencias")
+            for p in relevant_papers[:4]:
+                auth = p.get("authors", [""])[0] if isinstance(p.get("authors"), list) else str(p.get("authors", ""))
+                sections.append(f"- {auth} ({p.get('year','')}). *{p.get('title','')}*. {p.get('journal','')}.")
+
+        readings.append({"week": w, "title": f"Semana {w}: {theme}", "bloom_level": bloom,
+                         "content_md": "\n".join(sections), "language": language, "activities": activities})
+
+    return {"readings": readings}
+
+
+def _call_generate_quizzes(learning_outcomes, subject_name, language, objectives):
+    """Call quiz generation logic directly."""
+    def _ensure_dicts(items):
+        result = []
+        for item in (items or []):
+            if isinstance(item, dict):
+                result.append(item)
+            elif isinstance(item, str):
+                try:
+                    p = json.loads(item)
+                    if isinstance(p, dict):
+                        result.append(p)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        return result
+
+    learning_outcomes = _ensure_dicts(learning_outcomes)
+    objectives = _ensure_dicts(objectives)
+    quizzes = []
+    for lo in learning_outcomes:
+        ra_id = lo.get("ra_id", "RA1")
+        ra_desc = lo.get("description", "")
+        related_objs = [o for o in objectives if ra_id in o.get("ra_ids", [])]
+        obj_context = related_objs[0].get("description", "") if related_objs else ra_desc
+
+        questions = [
+            {"question_id": f"{ra_id}-Q1", "question": f"En el contexto de {subject_name}, cual es el objetivo principal de '{ra_desc[:60]}'?",
+             "options": [f"Aplicar {obj_context[:50]} para la toma de decisiones", "Memorizar definiciones teoricas sin aplicacion", "Replicar modelos sin analisis critico", "Delegar el analisis a herramientas automatizadas"],
+             "correct_answer": 0, "feedback": f"El resultado de aprendizaje {ra_id} se enfoca en la aplicacion practica en {subject_name}."},
+            {"question_id": f"{ra_id}-Q2", "question": f"Como se aplica '{ra_desc[:50]}' en un contexto profesional?",
+             "options": ["Mediante analisis de datos y modelos para sustentar decisiones", "Solo reportes descriptivos", "Exclusivamente ofimatica basica", "Sin considerar contexto organizacional"],
+             "correct_answer": 0, "feedback": f"La aplicacion profesional de {ra_id} implica decisiones estrategicas basadas en evidencia."},
+            {"question_id": f"{ra_id}-Q3", "question": f"Que evidencia academica respalda '{ra_desc[:50]}'?",
+             "options": ["Investigacion Q1/Q2 con revision por pares", "Opiniones sin respaldo empirico", "Articulos de divulgacion general", "Datos anecdoticos aislados"],
+             "correct_answer": 0, "feedback": "La evidencia de investigacion academica de alto impacto (Q1/Q2) es el estandar para maestria."},
+        ]
+        quizzes.append({"ra_id": ra_id, "ra_description": ra_desc, "questions": questions})
+    return {"quizzes": quizzes}
+
+
+def _call_generate_maestria(papers, subject_name, competencies, language, weeks, learning_outcomes):
+    """Call maestria artifacts generation directly."""
+    def _ensure_dicts(items):
+        result = []
+        for item in (items or []):
+            if isinstance(item, dict):
+                result.append(item)
+            elif isinstance(item, str):
+                try:
+                    p = json.loads(item)
+                    if isinstance(p, dict):
+                        result.append(p)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        return result
+
+    papers = _ensure_dicts(papers)
+    competencies = _ensure_dicts(competencies)
+    weeks = _ensure_dicts(weeks)
+    learning_outcomes = _ensure_dicts(learning_outcomes)
+
+    # Dashboard
+    rows = ["| # | Titulo | Ano | Revista | Hallazgo |", "|---|--------|-----|---------|----------|"]
+    for i, p in enumerate(papers[:20], 1):
+        rows.append(f"| {i} | {p.get('title','')[:55]} | {p.get('year','')} | {p.get('journal','')[:30]} | {p.get('key_finding','')[:40]} |")
+
+    # Critical path
+    cp_rows = ["| Semana | Actividad | Entregable | Criterio |", "|---|---|---|---|"]
+    for w in weeks:
+        cp_rows.append(f"| {w.get('week','')} | Estudio: {w.get('theme','')[:35]} | Analisis aplicado | Nivel {w.get('bloom_level','')} |")
+
+    # Cases
+    comp_ids = [c.get("competency_id", "") for c in competencies]
+    ra_ids = [lo.get("ra_id", "") for lo in learning_outcomes]
+    cases = [{"case_id": "CASE-001", "title": f"Caso: {subject_name}",
+              "context": f"Organizacion financiera requiere {subject_name.lower()} para decisiones estrategicas.",
+              "questions": [f"Como aplicaria {subject_name.lower()}?", "Que metricas usaria?", "Que riesgos identifica?"],
+              "rubric": {"criteria": ["Analisis (25%)", "Metodologia (30%)", "Propuesta (25%)", "Comunicacion (20%)"], "competency_ids": comp_ids, "ra_ids": ra_ids}}]
+
+    # Facilitator guide
+    sessions = [{"week": w.get("week", 1), "duration_minutes": 90,
+                 "objective": f"Semana {w.get('week','')}: {w.get('theme','')}",
+                 "sequence": [{"time": "0-10min", "activity": "Apertura"}, {"time": "10-35min", "activity": f"Exposicion: {w.get('theme','')[:30]}"},
+                              {"time": "35-65min", "activity": f"Caso practico"}, {"time": "65-80min", "activity": "Discusion"}, {"time": "80-90min", "activity": "Cierre"}],
+                 "trigger_questions": [f"Como se relaciona {w.get('theme','').lower()[:30]} con su experiencia?"]} for w in weeks]
+
+    return {
+        "subject_name": subject_name, "language": language,
+        "evidence_dashboard": {"html_content": "\n".join(rows), "papers_indexed": len(papers)},
+        "critical_path_map": {"markdown_content": "\n".join(cp_rows)},
+        "executive_cases_repository": {"cases": cases},
+        "facilitator_guide": {"sessions": sessions},
+    }
+
+
+def _direct_persist_content(subject_id: str, sj: dict, content_package: dict) -> None:
+    """Persist content directly to S3 without agent loop."""
+    from datetime import datetime, timezone
+
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    table_name = os.environ.get("SUBJECTS_TABLE_NAME", "academic-pipeline-subjects-dev")
+    s3 = boto3.client("s3")
+    ddb = boto3.resource("dynamodb")
+
+    sj["content_package"] = content_package
+    now = datetime.now(timezone.utc).isoformat()
+
+    current = sj["pipeline_state"]["current_state"]
+    advanced_states = {"PENDING_APPROVAL", "APPROVED", "REJECTED", "PUBLISHED"}
+    if current not in advanced_states:
+        sj["pipeline_state"]["current_state"] = "CONTENT_READY"
+        sj["pipeline_state"]["state_history"].append({"state": "CONTENT_READY", "agent": "content-agent-direct", "timestamp": now, "llm_version": "deterministic", "result_hash": ""})
+        ddb.Table(table_name).put_item(Item={"subject_id": subject_id, "SK": "STATE", "current_state": "CONTENT_READY",
+                                              "subject_name": sj["metadata"]["subject_name"], "program_name": sj["metadata"]["program_name"],
+                                              "updated_at": now, "s3_key": f"subjects/{subject_id}/subject.json"})
+    sj["updated_at"] = now
+    s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json",
+                  Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"), ContentType="application/json")
 
     return {"result": result_str}
 
