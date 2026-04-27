@@ -36,7 +36,7 @@ def _get_agent():
     )
 
     @tool
-    def generate_executive_readings(weekly_map: list, subject_name: str, language: str, papers: list = None) -> dict:
+    def generate_executive_readings(weekly_map: list, subject_name: str, language: str, papers: list = None, knowledge_matrix: list = None) -> dict:
         """Generate executive readings for each week of the course map.
 
         Args:
@@ -44,6 +44,7 @@ def _get_agent():
             subject_name: Name of the subject
             language: Content language: ES, EN, or BILINGUAL
             papers: Optional list of research papers to reference in readings
+            knowledge_matrix: Optional knowledge matrix with core_concepts and methodologies
         """
         def _ensure_dicts(items):
             result = []
@@ -61,8 +62,15 @@ def _get_agent():
 
         weekly_map = _ensure_dicts(weekly_map)
         papers = _ensure_dicts(papers)
+        knowledge_matrix = _ensure_dicts(knowledge_matrix) if knowledge_matrix else []
         readings = []
         total_weeks = len(weekly_map)
+
+        # Index KM concepts by syllabus topic for matching
+        km_by_topic = {}
+        for km_entry in knowledge_matrix:
+            for topic in km_entry.get("syllabus_topics_covered", []):
+                km_by_topic.setdefault(topic.lower().strip(), []).append(km_entry)
 
         for week in weekly_map:
             w = week.get("week", 1)
@@ -71,95 +79,150 @@ def _get_agent():
             subtopics = week.get("subtopics", [])
             activities = week.get("activities", [])
 
-            # Find relevant papers for this week
+            # Find relevant KM entries for this week's theme
+            theme_lower = theme.lower().strip()
+            relevant_km = km_by_topic.get(theme_lower, [])
+            if not relevant_km:
+                # Fuzzy match: find KM entries whose topics share words with this theme
+                theme_words = {w for w in theme_lower.split() if len(w) > 4}
+                for topic_key, entries in km_by_topic.items():
+                    topic_words = {w for w in topic_key.split() if len(w) > 4}
+                    if theme_words & topic_words:
+                        relevant_km.extend(entries)
+                # Deduplicate
+                seen = set()
+                unique_km = []
+                for e in relevant_km:
+                    eid = e.get("ra_id", "")
+                    if eid not in seen:
+                        seen.add(eid)
+                        unique_km.append(e)
+                relevant_km = unique_km
+
+            # Collect concepts and methodologies from KM
+            concepts = []
+            methodologies = []
+            for km_entry in relevant_km:
+                for c in km_entry.get("core_concepts", []):
+                    if isinstance(c, dict):
+                        concepts.append(c)
+                for m in km_entry.get("key_methodologies", []):
+                    if isinstance(m, str):
+                        methodologies.append(m)
+
+            # Find relevant papers
             theme_words = [word.lower() for word in theme.split() if len(word) > 4]
             relevant_papers = []
             for p in papers:
                 title_lower = p.get("title", "").lower()
-                if any(word in title_lower for word in theme_words):
+                syllabus_topic = p.get("syllabus_topic", "").lower()
+                if any(word in title_lower or word in syllabus_topic for word in theme_words):
                     relevant_papers.append(p)
             relevant_papers = relevant_papers[:5] or papers[:3]
 
-            # Build rich content sections
+            # Build rich content
             sections = []
 
-            # 1. Header and introduction
+            # Header
             sections.append(f"# Lectura Ejecutiva — Semana {w} de {total_weeks}: {theme}")
             sections.append(f"\n**Asignatura**: {subject_name}")
             sections.append(f"**Nivel cognitivo**: {bloom} (Taxonomía de Bloom)")
             sections.append(f"**Semana**: {w} de {total_weeks}\n")
 
-            # 2. Introducción ejecutiva
+            # Introduction
             sections.append("## Introducción")
+            bloom_action = {
+                "RECORDAR": "identificar y reconocer los conceptos fundamentales",
+                "COMPRENDER": "comprender y explicar las relaciones entre conceptos",
+                "APLICAR": "aplicar los conceptos en contextos profesionales reales",
+                "ANALIZAR": "descomponer y examinar críticamente las variables involucradas",
+                "EVALUAR": "juzgar, fundamentar y defender decisiones con evidencia",
+                "CREAR": "diseñar y proponer soluciones originales e integradoras",
+            }.get(bloom, "desarrollar competencias en")
             sections.append(
                 f"Esta semana aborda **{theme}** dentro del programa de {subject_name}. "
                 f"El nivel cognitivo esperado es **{bloom}**, lo que implica que el estudiante "
-                f"deberá ir más allá de la memorización para {'identificar y reconocer' if bloom == 'RECORDAR' else 'comprender y explicar' if bloom == 'COMPRENDER' else 'aplicar en contextos reales' if bloom == 'APLICAR' else 'descomponer y examinar críticamente' if bloom == 'ANALIZAR' else 'juzgar y fundamentar decisiones' if bloom == 'EVALUAR' else 'diseñar y proponer soluciones originales'} "
-                f"los conceptos presentados.\n"
+                f"deberá {bloom_action} presentados en esta lectura.\n"
             )
 
-            # 3. Contenido temático detallado
-            sections.append("## Contenido Temático")
-            if subtopics:
+            # Core concepts from Knowledge Matrix
+            if concepts:
+                sections.append("## Conceptos Clave")
+                for i, c in enumerate(concepts[:6], 1):
+                    concept_name = c.get("concept", "")
+                    definition = c.get("definition", "")
+                    supporting = c.get("supporting_papers", [])
+                    comp_ids = c.get("competencies", [])
+
+                    sections.append(f"\n### {i}. {concept_name}")
+                    if definition:
+                        sections.append(f"\n{definition}\n")
+                    if comp_ids:
+                        sections.append(f"*Competencias vinculadas: {', '.join(comp_ids)}*\n")
+                    if supporting:
+                        sections.append("**Evidencia académica:**")
+                        for sp in supporting[:3]:
+                            sections.append(f"- {sp}")
+                        sections.append("")
+            elif subtopics:
+                sections.append("## Contenido Temático")
                 for i, st in enumerate(subtopics, 1):
                     sections.append(f"\n### {i}. {st}")
                     sections.append(
                         f"Este subtema examina los aspectos fundamentales de {st.lower()} "
-                        f"en el contexto de {subject_name.lower()}. "
-                        f"La comprensión de este concepto es esencial para el desarrollo "
-                        f"de competencias profesionales en el área.\n"
+                        f"en el contexto de {subject_name.lower()}.\n"
                     )
-            else:
-                sections.append(f"\nEl tema central de esta semana es **{theme}**, "
-                                f"que constituye un pilar fundamental en {subject_name}.\n")
 
-            # 4. Evidencia académica
+            # Methodologies
+            if methodologies:
+                sections.append("## Metodologías y Herramientas")
+                sections.append("Las siguientes metodologías son aplicables a los conceptos de esta semana:\n")
+                for m in methodologies[:8]:
+                    sections.append(f"- {m}")
+                sections.append("")
+
+            # Academic evidence from papers
             if relevant_papers:
                 sections.append("## Evidencia Académica de Vanguardia")
-                sections.append(
-                    "Los siguientes estudios publicados en revistas de alto impacto (Q1/Q2) "
-                    "sustentan los conceptos abordados en esta semana:\n"
-                )
-                for p in relevant_papers:
+                for p in relevant_papers[:4]:
                     authors = p.get("authors", [""])
                     author_str = authors[0] if isinstance(authors, list) and authors else str(authors)
+                    finding = p.get("key_finding", "")
                     sections.append(
                         f"- **{p.get('title', '')}** ({author_str}, {p.get('year', '')}). "
-                        f"*{p.get('journal', '')}*. "
-                        f"{p.get('key_finding', '')}\n"
+                        f"*{p.get('journal', '')}*. {finding}\n"
                     )
 
-            # 5. Aplicación profesional
+            # Professional application
             sections.append("## Aplicación Profesional")
             sections.append(
                 f"En el ejercicio profesional, los conceptos de {theme.lower()} se aplican "
-                f"directamente en la toma de decisiones estratégicas. El egresado de este "
-                f"programa utilizará estos conocimientos para analizar situaciones complejas, "
-                f"evaluar alternativas y fundamentar sus recomendaciones ante la alta dirección.\n"
+                f"directamente en la toma de decisiones estratégicas. El egresado utilizará "
+                f"estos conocimientos para analizar situaciones complejas, evaluar alternativas "
+                f"y fundamentar sus recomendaciones ante la alta dirección.\n"
             )
 
-            # 6. Actividades de aprendizaje
+            # Activities
             if activities:
                 sections.append("## Actividades de Aprendizaje")
                 for a in activities:
                     sections.append(f"- {a}")
                 sections.append("")
 
-            # 7. Preguntas de reflexión
+            # Reflection questions
             sections.append("## Preguntas de Reflexión")
             sections.append(f"1. ¿Cómo se relaciona {theme.lower()} con su experiencia profesional actual?")
             sections.append(f"2. ¿Qué decisiones estratégicas en su organización podrían beneficiarse de estos conceptos?")
             sections.append(f"3. ¿Cómo integraría la evidencia académica presentada en su práctica profesional?\n")
 
-            # 8. Referencias
+            # References
             if relevant_papers:
                 sections.append("## Referencias")
-                for p in relevant_papers:
+                for p in relevant_papers[:5]:
                     authors = p.get("authors", [""])
                     author_str = authors[0] if isinstance(authors, list) and authors else str(authors)
                     sections.append(
-                        f"- {author_str} ({p.get('year', '')}). *{p.get('title', '')}*. "
-                        f"{p.get('journal', '')}."
+                        f"- {author_str} ({p.get('year', '')}). *{p.get('title', '')}*. {p.get('journal', '')}."
                     )
 
             content = "\n".join(sections)
@@ -438,11 +501,16 @@ def _build_content_prompt(subject_id: str, sj: dict) -> str:
         for w in weeks
     ], ensure_ascii=False)
 
-    # Papers — compact (title + year only, for dashboard)
+    # Papers — compact
     papers_compact = json.dumps([
-        {"title": p.get("title","")[:60], "year": p.get("year",""), "journal": p.get("journal","")[:30], "key_finding": p.get("key_finding","")[:30]}
+        {"title": p.get("title","")[:60], "year": p.get("year",""), "journal": p.get("journal","")[:30],
+         "key_finding": p.get("key_finding","")[:50], "syllabus_topic": p.get("syllabus_topic","")[:40]}
         for p in papers[:20]
     ], ensure_ascii=False)
+
+    # Knowledge Matrix — pass to generate_executive_readings for substantive content
+    knowledge_matrix = research.get("knowledge_matrix", [])
+    km_compact = json.dumps(knowledge_matrix[:3], ensure_ascii=False)[:3000] if knowledge_matrix else "[]"
 
     num_weeks = len(weeks) if weeks else 5
 
@@ -457,19 +525,21 @@ Learning Outcomes:
 Objectives:
 {obj_text}
 
-Weekly Map (pass as weekly_map to tools):
+Weekly Map:
 {weeks_json}
 
-Papers (pass to generate_maestria_artifacts and generate_executive_readings):
+Papers:
 {papers_compact}
 
-CALL THESE 3 TOOLS with the data above:
-1. generate_executive_readings(weekly_map=<weekly_map>, subject_name="{subject_name}", language="{language}", papers=<papers>)
-2. generate_quizzes(learning_outcomes=<learning_outcomes as list of dicts>, subject_name="{subject_name}", language="{language}", objectives=<objectives as list>)
+Knowledge Matrix (IMPORTANT — pass this to generate_executive_readings):
+{km_compact}
+
+CALL THESE 3 TOOLS:
+1. generate_executive_readings(weekly_map=<weekly_map>, subject_name="{subject_name}", language="{language}", papers=<papers>, knowledge_matrix=<knowledge_matrix>)
+2. generate_quizzes(learning_outcomes=<learning_outcomes as list>, subject_name="{subject_name}", language="{language}", objectives=<objectives as list>)
 3. generate_maestria_artifacts(papers=<papers>, subject_name="{subject_name}", competencies=<competencies as list>, language="{language}", weekly_map=<weekly_map>, learning_outcomes=<learning_outcomes>)
 
-Then return a JSON with keys: executive_readings, quizzes, maestria_artifacts.
-Subject name in ALL outputs must be "{subject_name}".
+Return JSON with keys: executive_readings, quizzes, maestria_artifacts.
 """
 
 
