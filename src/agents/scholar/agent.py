@@ -314,6 +314,30 @@ def _self_persist(subject_id: str, result_text: str, section: str, new_state: st
         sj.setdefault("research", {})
         if parsed.get("top20_papers"):
             sj["research"]["top20_papers"] = parsed["top20_papers"]
+            # Enrich with OpenAlex abstracts
+            try:
+                from openalex_client import fetch_abstracts_batch
+            except ImportError:
+                try:
+                    from src.agents.scholar.openalex_client import fetch_abstracts_batch
+                except ImportError:
+                    fetch_abstracts_batch = None
+            if fetch_abstracts_batch:
+                try:
+                    abstracts = fetch_abstracts_batch(sj["research"]["top20_papers"], max_papers=20, delay=0.3)
+                    enriched = 0
+                    for paper in sj["research"]["top20_papers"]:
+                        sid = paper.get("scopus_id", "")
+                        if sid in abstracts and abstracts[sid]:
+                            paper["abstract"] = abstracts[sid][:1500]
+                            if paper.get("key_finding", "").startswith("Cited"):
+                                paper["key_finding"] = abstracts[sid][:300]
+                            enriched += 1
+                    import logging
+                    logging.getLogger().info(f"OPENALEX: Enriched {enriched}/{len(sj['research']['top20_papers'])} papers with abstracts")
+                except Exception as e:
+                    import logging
+                    logging.getLogger().warning(f"OPENALEX: Failed to enrich: {e}")
         if parsed.get("knowledge_matrix"):
             sj["research"]["knowledge_matrix"] = parsed["knowledge_matrix"]
         if parsed.get("keywords_used"):
