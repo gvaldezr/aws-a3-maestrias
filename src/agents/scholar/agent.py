@@ -69,7 +69,7 @@ def _get_agent():
                 resp = client.get(
                     "https://api.elsevier.com/content/search/scopus",
                     params={"query": query, "count": 25, "sort": "citedby-count",
-                            "field": "dc:identifier,dc:title,dc:creator,prism:publicationName,prism:coverDate,citedby-count,prism:doi"},
+                            "field": "dc:identifier,dc:title,dc:creator,prism:publicationName,prism:coverDate,citedby-count,prism:doi,affiliation,prism:aggregationType,subtypeDescription,openaccess,prism:pageRange,authkeywords"},
                     headers={"X-ELS-APIKey": api_key, "Accept": "application/json"},
                 )
 
@@ -86,6 +86,13 @@ def _get_agent():
                     year = int(e.get("prism:coverDate", "2000")[:4])
                 except ValueError:
                     continue
+                # Extract affiliation
+                affil = e.get("affiliation", [])
+                affil_name = affil[0].get("affilname", "") if isinstance(affil, list) and affil else ""
+                affil_country = affil[0].get("affiliation-country", "") if isinstance(affil, list) and affil else ""
+                # Extract author keywords
+                auth_kw = e.get("authkeywords", "")
+
                 papers.append({
                     "scopus_id": e.get("dc:identifier", "").replace("SCOPUS_ID:", ""),
                     "title": title,
@@ -93,8 +100,15 @@ def _get_agent():
                     "year": year,
                     "journal": e.get("prism:publicationName", ""),
                     "quartile": "Q1",
+                    "cited_by": int(e.get("citedby-count", 0)),
                     "key_finding": f"Cited {e.get('citedby-count', 0)} times",
                     "doi": e.get("prism:doi"),
+                    "doc_type": e.get("subtypeDescription", "Article"),
+                    "open_access": e.get("openaccess", "0") == "1",
+                    "affiliation": affil_name,
+                    "country": affil_country,
+                    "page_range": e.get("prism:pageRange", ""),
+                    "author_keywords": auth_kw,
                 })
             return {"papers": papers, "total": len(papers)}
         except Exception as exc:
@@ -131,15 +145,26 @@ def _get_agent():
             "You are Scholar, an academic research agent for university programs. "
             "You receive the COMPLETE academic context: subject name, syllabus, competencies, and learning outcomes. "
             "CRITICAL RULES: "
-            "1. Generate search keywords DIRECTLY from the syllabus topics — NOT generic ML/data science terms. "
-            "2. Keywords must be DOMAIN-SPECIFIC (e.g., for finance subjects, use financial terms). "
-            "3. Combine domain terms with methodological terms from the syllabus. "
-            "4. After searching, filter out papers that are NOT relevant to the subject domain. "
-            "Use search_scopus_papers to find Q1/Q2 papers, then build_knowledge_matrix to extract concepts. "
-            "CRITICAL: Your final response MUST be ONLY a single JSON code block with NO text before or after. "
+            "1. Generate search keywords DIRECTLY from the syllabus topics — NOT generic terms. "
+            "2. Keywords must be DOMAIN-SPECIFIC. "
+            "3. After searching, filter out papers that are NOT relevant to the subject domain. "
+            "Use search_scopus_papers to find Q1/Q2 papers, then build_knowledge_matrix. "
+            "IMPORTANT: In your final JSON response, the knowledge_matrix MUST be a rich academic resource. "
+            "For EACH learning outcome (RA), create a knowledge_matrix entry with: "
+            "- ra_id and ra_description "
+            "- syllabus_topics_covered: list of syllabus topics this RA covers "
+            "- core_concepts: list of objects, each with: "
+            "  - concept: name of the academic concept "
+            "  - definition: a SUBSTANTIVE academic definition (2-3 sentences minimum) explaining the concept, "
+            "    its theoretical foundation, and its practical application. Use the paper titles and your "
+            "    academic knowledge to write rigorous definitions. "
+            "  - supporting_papers: list of paper citations (Author, Year) that support this concept "
+            "  - competencies: list of competency IDs this concept develops "
+            "- key_methodologies: list of specific methodologies, frameworks, and analytical tools "
+            "CRITICAL: Your final response MUST be ONLY a single JSON code block. "
             "Format: ```json\n{...}\n``` "
-            "The JSON MUST have keys: top20_papers, knowledge_matrix, keywords_used. "
-            "Do NOT include markdown tables, explanations, or commentary outside the JSON block."
+            "Keys: top20_papers, knowledge_matrix, keywords_used. "
+            "No text outside the JSON block."
         ),
     )
     return _scholar_agent
