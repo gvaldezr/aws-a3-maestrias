@@ -562,6 +562,16 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
         "maestria_artifacts": maestria_result,
     }
 
+    # 4. Masterclass script
+    masterclass = _call_generate_masterclass(subject_name, weeks, objectives, papers, competencies)
+    content_package["masterclass_script"] = masterclass
+    log.info(f"CONTENT_DIRECT: Masterclass generated")
+
+    # 5. Agentic challenge
+    challenge = _call_generate_agentic_challenge(subject_name, learning_outcomes, competencies, weeks)
+    content_package["agentic_challenge"] = challenge
+    log.info(f"CONTENT_DIRECT: Agentic challenge generated")
+
     # Persist directly to S3
     _direct_persist_content(subject_id, sj, content_package)
     log.info(f"CONTENT_DIRECT: Persisted to S3 for {subject_id}")
@@ -776,6 +786,146 @@ def _call_generate_maestria(papers, subject_name, competencies, language, weeks,
         "executive_cases_repository": {"cases": cases},
         "facilitator_guide": {"sessions": sessions},
     }
+
+
+def _call_generate_masterclass(subject_name, weeks, objectives, papers, competencies):
+    """Generate masterclass script (18-22 min) for the subject."""
+    # Pick the most important theme (middle week — application level)
+    mid_week = weeks[len(weeks) // 2] if weeks else {}
+    theme = mid_week.get("theme", subject_name)
+    bloom = mid_week.get("bloom_level", "APLICAR")
+
+    # Pick top 3 papers for the case
+    top_papers = [p for p in (papers or []) if isinstance(p, dict)][:3]
+    paper_refs = "; ".join(f"{p.get('title','')[:40]} ({p.get('year','')})" for p in top_papers)
+
+    obj_text = "; ".join(o.get("description", "")[:60] for o in (objectives or [])[:3] if isinstance(o, dict))
+    comp_ids = ", ".join(c.get("competency_id", "") for c in (competencies or []) if isinstance(c, dict))
+
+    script = {
+        "title": f"Masterclass: {subject_name}",
+        "duration_minutes": 20,
+        "theme": theme,
+        "structure": [
+            {
+                "section": "Gancho directivo",
+                "time": "0:00 - 2:00",
+                "duration_minutes": 2,
+                "content": f"[SLIDE: Titulo] Bienvenidos a esta masterclass sobre {subject_name}. "
+                           f"Hoy abordaremos {theme}, un tema critico para la toma de decisiones en el sector financiero mexicano. "
+                           f"[DATO EN PANTALLA] Segun investigaciones recientes ({paper_refs[:80]}), "
+                           f"este tema impacta directamente en la creacion de valor corporativo.",
+                "notes": "Iniciar con una pregunta provocadora o dato impactante del sector financiero mexicano."
+            },
+            {
+                "section": "Desarrollo conceptual con caso",
+                "time": "2:00 - 16:00",
+                "duration_minutes": 14,
+                "content": f"[SLIDE: Marco conceptual] Los objetivos de esta sesion son: {obj_text}. "
+                           f"[CASO VISUAL] Consideremos el caso de una institucion financiera mexicana regulada por la CNBV "
+                           f"que enfrenta el reto de {theme.lower()}. "
+                           f"[SLIDE: Evidencia] La investigacion academica Q1/Q2 nos muestra que {paper_refs}. "
+                           f"[DATO EN PANTALLA] Competencias desarrolladas: {comp_ids}.",
+                "notes": "Alternar entre teoria y caso practico. Usar datos reales del mercado mexicano."
+            },
+            {
+                "section": "Sintesis y decision",
+                "time": "16:00 - 20:00",
+                "duration_minutes": 4,
+                "content": f"[SLIDE: Sintesis] Los tres conceptos clave de hoy son: "
+                           f"1) El marco teorico de {theme}, "
+                           f"2) Su aplicacion en el contexto regulatorio mexicano (CNBV, Banxico), "
+                           f"3) La evidencia academica que sustenta las decisiones. "
+                           f"[SLIDE: Decision] Si usted fuera el director financiero, que decision tomaria?",
+                "notes": "Cerrar con una pregunta que conecte con el reto de aprendizaje agentico."
+            },
+            {
+                "section": "Llamada a la accion",
+                "time": "20:00 - 22:00",
+                "duration_minutes": 2,
+                "content": f"[SLIDE: Siguiente paso] Para la proxima semana, complete el reto de aprendizaje agentico "
+                           f"donde aplicara estos conceptos a un escenario real. "
+                           f"Consulte las lecturas ejecutivas y los papers del dashboard de evidencia.",
+                "notes": "Vincular con el reto agentico y las lecturas de la semana."
+            }
+        ],
+        "total_slides": 8,
+        "competencies_covered": comp_ids,
+    }
+    return script
+
+
+def _call_generate_agentic_challenge(subject_name, learning_outcomes, competencies, weeks):
+    """Generate agentic learning challenge (week 2) with Mexican financial sector scenario."""
+    los = [lo for lo in (learning_outcomes or []) if isinstance(lo, dict)]
+    ra_text = "; ".join(f"{lo.get('ra_id','')}: {lo.get('description','')[:60]}" for lo in los)
+    comp_ids = [c.get("competency_id", "") for c in (competencies or []) if isinstance(c, dict)]
+    week2_theme = weeks[1].get("theme", subject_name) if len(weeks) > 1 else subject_name
+
+    challenge = {
+        "title": f"Reto de Aprendizaje Agentico: {subject_name}",
+        "week": 2,
+        "scenario": (
+            f"Usted es el director de planeacion financiera de una empresa mediana del sector financiero mexicano "
+            f"que cotiza en la Bolsa Mexicana de Valores (BMV). La Comision Nacional Bancaria y de Valores (CNBV) "
+            f"ha emitido nuevas disposiciones regulatorias que impactan directamente en {week2_theme.lower()}. "
+            f"El consejo de administracion le solicita un analisis fundamentado que integre {subject_name.lower()} "
+            f"para sustentar la estrategia financiera del proximo ejercicio fiscal. "
+            f"Debe considerar el entorno macroeconomico actual de Mexico, las Normas de Informacion Financiera (NIF) "
+            f"aplicables, y las mejores practicas internacionales documentadas en la literatura academica Q1/Q2."
+        ),
+        "central_question": (
+            f"Con base en la evidencia academica y el marco regulatorio mexicano, "
+            f"que estrategia financiera recomendaria al consejo de administracion "
+            f"para optimizar {week2_theme.lower()} en el contexto actual?"
+        ),
+        "deliverable": (
+            "Documento ejecutivo de 1-2 paginas que incluya: "
+            "1) Diagnostico de la situacion con datos del contexto mexicano, "
+            "2) Analisis fundamentado en al menos 3 papers del corpus academico, "
+            "3) Recomendacion estrategica con justificacion, "
+            "4) Consideraciones regulatorias (CNBV, Banxico, NIF segun aplique)."
+        ),
+        "learning_outcomes_assessed": ra_text,
+        "rubric": {
+            "criteria": [
+                {
+                    "criterion": "Fundamentacion en evidencia",
+                    "weight": "25%",
+                    "excelente": "Integra 3+ papers Q1/Q2 con analisis critico de hallazgos",
+                    "bueno": "Referencia 2 papers con vinculacion al caso",
+                    "regular": "Menciona papers sin analisis de relevancia",
+                    "deficiente": "Sin referencias academicas o referencias no pertinentes"
+                },
+                {
+                    "criterion": "Coherencia argumentativa",
+                    "weight": "25%",
+                    "excelente": "Argumento logico con premisas, evidencia y conclusion alineadas",
+                    "bueno": "Estructura argumentativa clara con minor gaps",
+                    "regular": "Ideas desconectadas o saltos logicos",
+                    "deficiente": "Sin estructura argumentativa identificable"
+                },
+                {
+                    "criterion": "Pertinencia del contexto regulatorio mexicano",
+                    "weight": "25%",
+                    "excelente": "Integra CNBV, Banxico, NIF con precision y relevancia al caso",
+                    "bueno": "Menciona marco regulatorio con aplicacion parcial",
+                    "regular": "Referencias regulatorias genericas sin especificidad",
+                    "deficiente": "Ignora el contexto regulatorio mexicano"
+                },
+                {
+                    "criterion": "Claridad directiva",
+                    "weight": "25%",
+                    "excelente": "Recomendacion ejecutiva clara, accionable y con metricas de seguimiento",
+                    "bueno": "Recomendacion clara con implementacion parcialmente definida",
+                    "regular": "Recomendacion vaga o sin plan de accion",
+                    "deficiente": "Sin recomendacion o recomendacion incoherente"
+                }
+            ],
+            "competency_ids": comp_ids,
+        }
+    }
+    return challenge
 
 
 def _direct_persist_content(subject_id: str, sj: dict, content_package: dict) -> None:
