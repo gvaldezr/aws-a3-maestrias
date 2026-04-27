@@ -62,6 +62,8 @@ def _get_agent():
         weekly_map = _ensure_dicts(weekly_map)
         papers = _ensure_dicts(papers)
         readings = []
+        total_weeks = len(weekly_map)
+
         for week in weekly_map:
             w = week.get("week", 1)
             theme = week.get("theme", "")
@@ -69,39 +71,101 @@ def _get_agent():
             subtopics = week.get("subtopics", [])
             activities = week.get("activities", [])
 
-            # Build subtopics section
-            subtopics_md = "\n".join(f"- {st}" for st in subtopics) if subtopics else f"- Tema principal: {theme}"
+            # Find relevant papers for this week
+            theme_words = [word.lower() for word in theme.split() if len(word) > 4]
+            relevant_papers = []
+            for p in papers:
+                title_lower = p.get("title", "").lower()
+                if any(word in title_lower for word in theme_words):
+                    relevant_papers.append(p)
+            relevant_papers = relevant_papers[:5] or papers[:3]
 
-            # Find relevant papers for this week's theme
-            theme_lower = theme.lower()
-            relevant_papers = [
-                p for p in papers
-                if any(word in p.get("title", "").lower() for word in theme_lower.split() if len(word) > 4)
-            ][:3]
-            papers_md = ""
-            if relevant_papers:
-                papers_md = "\n## Referencias Académicas\n\n" + "\n".join(
-                    f"- {p.get('title','')} ({p.get('year','')}, {p.get('journal','')[:40]})"
-                    for p in relevant_papers
-                )
+            # Build rich content sections
+            sections = []
 
-            # Build activities section
-            activities_md = ""
-            if activities:
-                activities_md = "\n## Actividades de Aprendizaje\n\n" + "\n".join(f"- {a}" for a in activities)
+            # 1. Header and introduction
+            sections.append(f"# Lectura Ejecutiva — Semana {w} de {total_weeks}: {theme}")
+            sections.append(f"\n**Asignatura**: {subject_name}")
+            sections.append(f"**Nivel cognitivo**: {bloom} (Taxonomía de Bloom)")
+            sections.append(f"**Semana**: {w} de {total_weeks}\n")
 
-            content = (
-                f"# Lectura Ejecutiva — Semana {w}: {theme}\n\n"
-                f"**Nivel Bloom**: {bloom}\n"
-                f"**Asignatura**: {subject_name}\n\n"
-                f"## Contenido Temático\n\n{subtopics_md}\n"
-                f"{activities_md}\n"
-                f"{papers_md}\n\n"
-                f"## Aplicación Profesional\n\n"
-                f"Caso de aplicación de {theme} en el contexto de {subject_name}.\n"
+            # 2. Introducción ejecutiva
+            sections.append("## Introducción")
+            sections.append(
+                f"Esta semana aborda **{theme}** dentro del programa de {subject_name}. "
+                f"El nivel cognitivo esperado es **{bloom}**, lo que implica que el estudiante "
+                f"deberá ir más allá de la memorización para {'identificar y reconocer' if bloom == 'RECORDAR' else 'comprender y explicar' if bloom == 'COMPRENDER' else 'aplicar en contextos reales' if bloom == 'APLICAR' else 'descomponer y examinar críticamente' if bloom == 'ANALIZAR' else 'juzgar y fundamentar decisiones' if bloom == 'EVALUAR' else 'diseñar y proponer soluciones originales'} "
+                f"los conceptos presentados.\n"
             )
+
+            # 3. Contenido temático detallado
+            sections.append("## Contenido Temático")
+            if subtopics:
+                for i, st in enumerate(subtopics, 1):
+                    sections.append(f"\n### {i}. {st}")
+                    sections.append(
+                        f"Este subtema examina los aspectos fundamentales de {st.lower()} "
+                        f"en el contexto de {subject_name.lower()}. "
+                        f"La comprensión de este concepto es esencial para el desarrollo "
+                        f"de competencias profesionales en el área.\n"
+                    )
+            else:
+                sections.append(f"\nEl tema central de esta semana es **{theme}**, "
+                                f"que constituye un pilar fundamental en {subject_name}.\n")
+
+            # 4. Evidencia académica
+            if relevant_papers:
+                sections.append("## Evidencia Académica de Vanguardia")
+                sections.append(
+                    "Los siguientes estudios publicados en revistas de alto impacto (Q1/Q2) "
+                    "sustentan los conceptos abordados en esta semana:\n"
+                )
+                for p in relevant_papers:
+                    authors = p.get("authors", [""])
+                    author_str = authors[0] if isinstance(authors, list) and authors else str(authors)
+                    sections.append(
+                        f"- **{p.get('title', '')}** ({author_str}, {p.get('year', '')}). "
+                        f"*{p.get('journal', '')}*. "
+                        f"{p.get('key_finding', '')}\n"
+                    )
+
+            # 5. Aplicación profesional
+            sections.append("## Aplicación Profesional")
+            sections.append(
+                f"En el ejercicio profesional, los conceptos de {theme.lower()} se aplican "
+                f"directamente en la toma de decisiones estratégicas. El egresado de este "
+                f"programa utilizará estos conocimientos para analizar situaciones complejas, "
+                f"evaluar alternativas y fundamentar sus recomendaciones ante la alta dirección.\n"
+            )
+
+            # 6. Actividades de aprendizaje
+            if activities:
+                sections.append("## Actividades de Aprendizaje")
+                for a in activities:
+                    sections.append(f"- {a}")
+                sections.append("")
+
+            # 7. Preguntas de reflexión
+            sections.append("## Preguntas de Reflexión")
+            sections.append(f"1. ¿Cómo se relaciona {theme.lower()} con su experiencia profesional actual?")
+            sections.append(f"2. ¿Qué decisiones estratégicas en su organización podrían beneficiarse de estos conceptos?")
+            sections.append(f"3. ¿Cómo integraría la evidencia académica presentada en su práctica profesional?\n")
+
+            # 8. Referencias
+            if relevant_papers:
+                sections.append("## Referencias")
+                for p in relevant_papers:
+                    authors = p.get("authors", [""])
+                    author_str = authors[0] if isinstance(authors, list) and authors else str(authors)
+                    sections.append(
+                        f"- {author_str} ({p.get('year', '')}). *{p.get('title', '')}*. "
+                        f"{p.get('journal', '')}."
+                    )
+
+            content = "\n".join(sections)
+
             if language == "BILINGUAL":
-                content += f"\n---\n# Executive Reading — Week {w}: {theme}\n\n[English version]"
+                content += f"\n\n---\n# Executive Reading — Week {w}: {theme}\n\n[English version available upon request]"
 
             title = f"Semana {w}: {theme}" if language == "ES" else f"Semana {w} / Week {w}: {theme}"
             readings.append({
