@@ -542,18 +542,96 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
 
     log.info(f"CONTENT_DIRECT: Generating content for {subject_name} ({subject_id})")
 
-    # 1. Executive readings
-    from strands import tool as _tool_decorator
-    readings_result = _call_generate_readings(weeks, subject_name, language, papers, knowledge_matrix)
-    log.info(f"CONTENT_DIRECT: Readings generated: {len(readings_result.get('readings', []))}")
+    # Try LLM-powered generation first, fall back to deterministic
+    try:
+        from llm_generator import generate_reading_llm, generate_quiz_llm, generate_masterclass_llm, generate_challenge_llm
+    except ImportError:
+        try:
+            from src.agents.content.llm_generator import generate_reading_llm, generate_quiz_llm, generate_masterclass_llm, generate_challenge_llm
+        except ImportError:
+            generate_reading_llm = None
+            generate_quiz_llm = None
+            generate_masterclass_llm = None
+            generate_challenge_llm = None
 
-    # 2. Quizzes
-    quizzes_result = _call_generate_quizzes(learning_outcomes, subject_name, language, objectives)
-    log.info(f"CONTENT_DIRECT: Quizzes generated: {len(quizzes_result.get('quizzes', []))}")
+    use_llm = generate_reading_llm is not None
 
-    # 3. Maestria artifacts
+    # 1. Executive readings — LLM per week
+    if use_llm:
+        log.info("CONTENT_LLM: Generating readings with LLM")
+        km = knowledge_matrix if isinstance(knowledge_matrix, list) else []
+        km_by_topic = {}
+        for km_entry in km:
+            if isinstance(km_entry, dict):
+                for topic in km_entry.get("syllabus_topics_covered", []):
+                    km_by_topic.setdefault(topic.lower().strip(), []).append(km_entry)
+
+        llm_readings = []
+        for week in weeks:
+            w = week.get("week", 1)
+            theme = week.get("theme", "")
+            bloom = week.get("bloom_level", "")
+            subtopics = week.get("subtopics", [])
+
+            # Find KM concepts for this week
+            theme_lower = theme.lower().strip()
+            relevant_km = km_by_topic.get(theme_lower, [])
+            if not relevant_km:
+                theme_words = {wd for wd in theme_lower.split() if len(wd) > 4}
+                for tk, entries in km_by_topic.items():
+                    if theme_words & {wd for wd in tk.split() if len(wd) > 4}:
+                        relevant_km.extend(entries)
+
+            concepts = []
+            methodologies_list = []
+            for kme in relevant_km:
+                for c in kme.get("core_concepts", []):
+                    if isinstance(c, dict):
+                        concepts.append(c)
+                for m in kme.get("key_methodologies", []):
+                    if isinstance(m, str):
+                        methodologies_list.append(m)
+
+            theme_words_list = [wd.lower() for wd in theme.split() if len(wd) > 4]
+            rel_papers = [p for p in papers if any(wd in p.get("title", "").lower() for wd in theme_words_list)][:3] or papers[:2]
+
+            content_md = generate_reading_llm(w, len(weeks), theme, subject_name, bloom, subtopics, concepts, rel_papers, methodologies_list)
+            llm_readings.append({"week": w, "title": f"Semana {w}: {theme}", "bloom_level": bloom, "content_md": content_md, "language": language})
+            log.info(f"CONTENT_LLM: Reading week {w} done ({len(content_md)} chars)")
+
+        readings_result = {"readings": llm_readings}
+    else:
+        readings_result = _call_generate_readings(weeks, subject_name, language, papers, knowledge_matrix)
+    log.info(f"CONTENT: Readings: {len(readings_result.get('readings', []))}")
+
+    # 2. Quiz — LLM generates 8 critical reasoning questions
+    if use_llm:
+        log.info("CONTENT_LLM: Generating quiz with LLM")
+        ra_descs = [lo.get("description", "") for lo in learning_outcomes]
+        obj_descs = [o.get("description", "") for o in objectives]
+        ra_ids_list = [lo.get("ra_id", "") for lo in learning_outcomes]
+        llm_questions = generate_quiz_llm(subject_name, ra_descs, obj_descs)
+        if llm_questions and len(llm_questions) >= 6:
+            quizzes_result = {"quizzes": [{
+                "quiz_id": "QUIZ-RC-001",
+                "title": f"Quiz de Razonamiento Critico: {subject_name}",
+                "type": "critical_reasoning",
+                "week": 3,
+                "total_questions": len(llm_questions),
+                "ra_ids": ra_ids_list,
+                "questions": llm_questions,
+            }]}
+            log.info(f"CONTENT_LLM: Quiz done ({len(llm_questions)} questions)")
+        else:
+            log.warning("CONTENT_LLM: Quiz LLM failed, using deterministic fallback")
+            quizzes_result = _call_generate_quizzes(learning_outcomes, subject_name, language, objectives)
+    else:
+        quizzes_result = _call_generate_quizzes(learning_outcomes, subject_name, language, objectives)
+    log.info(f"CONTENT: Quizzes: {len(quizzes_result.get('quizzes', []))}")
+
+    # 3. Maestria artifacts (deterministic — structure-heavy, not narrative)
     maestria_result = _call_generate_maestria(papers, subject_name, competencies, language, weeks, learning_outcomes)
-    log.info(f"CONTENT_DIRECT: Maestria artifacts generated")
+    log.info(f"CONTENT: Maestria artifacts generated")
 
     # Assemble result
     content_package = {
@@ -562,15 +640,36 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
         "maestria_artifacts": maestria_result,
     }
 
-    # 4. Masterclass script
-    masterclass = _call_generate_masterclass(subject_name, weeks, objectives, papers, competencies)
-    content_package["masterclass_script"] = masterclass
-    log.info(f"CONTENT_DIRECT: Masterclass generated")
+    # 4. Masterclass script — LLM
+    if use_llm:
+        log.info("CONTENT_LLM: Generating masterclass with LLM")
+        mid_week = weeks[len(weeks) // 2] if weeks else {}
+        mc_theme = mid_week.get("theme", subject_name)
+        obj_descs_short = [o.get("description", "")[:60] for o in objectives[:3]]
+        comp_ids_list = [c.get("competency_id", "") for c in competencies]
+        mc = generate_masterclass_llm(subject_name, mc_theme, obj_descs_short, papers[:5], comp_ids_list)
+        if mc and mc.get("structure"):
+            content_package["masterclass_script"] = mc
+            log.info("CONTENT_LLM: Masterclass done")
+        else:
+            content_package["masterclass_script"] = _call_generate_masterclass(subject_name, weeks, objectives, papers, competencies)
+    else:
+        content_package["masterclass_script"] = _call_generate_masterclass(subject_name, weeks, objectives, papers, competencies)
 
-    # 5. Agentic challenge
-    challenge = _call_generate_agentic_challenge(subject_name, learning_outcomes, competencies, weeks)
-    content_package["agentic_challenge"] = challenge
-    log.info(f"CONTENT_DIRECT: Agentic challenge generated")
+    # 5. Agentic challenge — LLM
+    if use_llm:
+        log.info("CONTENT_LLM: Generating agentic challenge with LLM")
+        ra_descs = [lo.get("description", "") for lo in learning_outcomes]
+        comp_ids_list = [c.get("competency_id", "") for c in competencies]
+        w2_theme = weeks[1].get("theme", subject_name) if len(weeks) > 1 else subject_name
+        ch = generate_challenge_llm(subject_name, ra_descs, comp_ids_list, w2_theme)
+        if ch and (ch.get("scenario") or ch.get("rubric")):
+            content_package["agentic_challenge"] = ch
+            log.info("CONTENT_LLM: Challenge done")
+        else:
+            content_package["agentic_challenge"] = _call_generate_agentic_challenge(subject_name, learning_outcomes, competencies, weeks)
+    else:
+        content_package["agentic_challenge"] = _call_generate_agentic_challenge(subject_name, learning_outcomes, competencies, weeks)
 
     # Persist directly to S3
     _direct_persist_content(subject_id, sj, content_package)
@@ -1075,8 +1174,6 @@ def _direct_persist_content(subject_id: str, sj: dict, content_package: dict) ->
     sj["updated_at"] = now
     s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json",
                   Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"), ContentType="application/json")
-
-    return {"result": result_str}
 
 
 def _self_persist_content(subject_id: str, result_text: str) -> None:
