@@ -565,6 +565,10 @@ def _self_persist_content(subject_id: str, result_text: str) -> None:
         sj["content_package"]["maestria_artifacts"] = parsed["maestria_artifacts"]
     if parsed.get("lab_cases"):
         sj["content_package"]["lab_cases"] = parsed["lab_cases"]
+    if parsed.get("masterclass_script"):
+        sj["content_package"]["masterclass_script"] = parsed["masterclass_script"]
+    if parsed.get("agentic_challenge"):
+        sj["content_package"]["agentic_challenge"] = parsed["agentic_challenge"]
 
     # Only advance state if not already past CONTENT_READY
     current = sj["pipeline_state"]["current_state"]

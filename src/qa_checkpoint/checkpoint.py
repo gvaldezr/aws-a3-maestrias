@@ -246,7 +246,13 @@ def _get_checkpoint_summary(subject_id: str) -> dict:
             "cases_count": len(ma.get("executive_cases_repository", {}).get("cases", [])) if isinstance(ma.get("executive_cases_repository"), dict) else 0,
             "maestria_artifacts": bool(ma.get("evidence_dashboard")),
             "papers_count": len(papers),
+            "has_masterclass": bool(cp.get("masterclass_script")),
+            "has_agentic_challenge": bool(cp.get("agentic_challenge")),
         },
+
+        # New content types
+        "masterclass_script": cp.get("masterclass_script", {}),
+        "agentic_challenge": cp.get("agentic_challenge", {}),
 
         # Academic inputs for reference
         "competencies": inputs.get("competencies", []),

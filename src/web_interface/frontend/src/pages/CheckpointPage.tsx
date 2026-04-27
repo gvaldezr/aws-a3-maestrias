@@ -10,7 +10,7 @@ interface Props {
   onDecisionComplete: () => void;
 }
 
-type Tab = "overview" | "objectives" | "readings" | "quizzes" | "papers" | "maestria" | "canvas";
+type Tab = "overview" | "objectives" | "readings" | "quizzes" | "papers" | "maestria" | "masterclass" | "challenge" | "canvas";
 
 export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
   const [summary, setSummary] = useState<Record<string, any> | null>(null);
@@ -54,6 +54,8 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
     { key: "quizzes", label: "❓ Quizzes", count: summary.quizzes?.length },
     { key: "papers", label: "📚 Papers", count: summary.papers?.length },
     { key: "maestria", label: "🎓 Maestría" },
+    { key: "masterclass", label: "🎬 Masterclass" },
+    { key: "challenge", label: "🏆 Reto Agéntico" },
     { key: "canvas", label: "👁️ Preview Canvas", count: summary.canvas_preview?.total_pages },
   ];
 
@@ -90,6 +92,8 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
         {activeTab === "quizzes" && <QuizzesTab quizzes={summary.quizzes || []} />}
         {activeTab === "papers" && <PapersTab papers={summary.papers || []} />}
         {activeTab === "maestria" && <MaestriaTab artifacts={summary.maestria_artifacts} />}
+        {activeTab === "masterclass" && <MasterclassTab script={summary.masterclass_script} />}
+        {activeTab === "challenge" && <ChallengeTab challenge={summary.agentic_challenge} />}
         {activeTab === "canvas" && <CanvasPreviewTab preview={summary.canvas_preview} />}
       </div>
 
@@ -142,6 +146,8 @@ function OverviewTab({ summary }: { summary: Record<string, any> }) {
         <StatCard label="Preguntas" value={cp.total_questions ?? 0} />
         <StatCard label="Papers" value={cp.papers_count ?? 0} />
         <StatCard label="Casos" value={cp.cases_count ?? 0} />
+        <StatCard label="Masterclass" value={cp.has_masterclass ? "✅" : "—"} ok={cp.has_masterclass} />
+        <StatCard label="Reto" value={cp.has_agentic_challenge ? "✅" : "—"} ok={cp.has_agentic_challenge} />
       </div>
 
       <h3>Carta Descriptiva</h3>
@@ -317,6 +323,59 @@ function MaestriaTab({ artifacts }: { artifacts: any }) {
           </div>
         )) || <p>No disponible</p>}
       </Section>
+    </div>
+  );
+}
+
+function MasterclassTab({ script }: { script: any }) {
+  if (!script || (typeof script === "object" && Object.keys(script).length === 0)) {
+    return <p style={{color:"#718096",padding:"1rem"}}>El guión de masterclass se generará en la próxima ejecución del pipeline con el template actualizado.</p>;
+  }
+  const s = typeof script === "string" ? script : JSON.stringify(script, null, 2);
+  return (
+    <div>
+      <h3 style={{marginTop:0}}>🎬 Guión de Masterclass (18-22 min)</h3>
+      <p style={{fontSize:"0.85rem",color:"#718096",marginBottom:"1rem"}}>
+        Estructura: Gancho directivo (2 min) → Desarrollo con caso (14 min) → Síntesis (4 min) → Llamada a la acción (2 min)
+      </p>
+      <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",padding:"1.5rem",whiteSpace:"pre-wrap",lineHeight:1.7,fontSize:"0.9rem"}}>
+        {s}
+      </div>
+    </div>
+  );
+}
+
+function ChallengeTab({ challenge }: { challenge: any }) {
+  if (!challenge || (typeof challenge === "object" && Object.keys(challenge).length === 0)) {
+    return <p style={{color:"#718096",padding:"1rem"}}>El reto de aprendizaje agéntico se generará en la próxima ejecución del pipeline con el template actualizado.</p>;
+  }
+  const c = typeof challenge === "object" ? challenge : {};
+  return (
+    <div>
+      <h3 style={{marginTop:0}}>🏆 Reto de Aprendizaje Agéntico (Semana 2)</h3>
+      <p style={{fontSize:"0.85rem",color:"#718096",marginBottom:"1rem"}}>
+        Escenario ejecutivo del sector financiero mexicano. Entregable: documento 1-2 páginas con decisión justificada.
+      </p>
+      <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",padding:"1.5rem"}}>
+        {c.scenario && <><h4>Escenario</h4><p style={{lineHeight:1.7}}>{c.scenario}</p></>}
+        {c.deliverable && <><h4>Entregable</h4><p style={{lineHeight:1.7}}>{c.deliverable}</p></>}
+        {c.rubric && (
+          <>
+            <h4>Rúbrica Analítica</h4>
+            {typeof c.rubric === "object" ? (
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:"0.85rem"}}>
+                <thead><tr style={{background:"#edf2f7"}}><th style={thStyle}>Criterio</th><th style={thStyle}>Excelente</th><th style={thStyle}>Bueno</th><th style={thStyle}>Regular</th><th style={thStyle}>Deficiente</th></tr></thead>
+                <tbody>
+                  {(Array.isArray(c.rubric) ? c.rubric : Object.entries(c.rubric).map(([k,v]) => ({criterion: k, ...(typeof v === "object" ? v : {})}))).map((r: any, i: number) => (
+                    <tr key={i}><td style={tdStyle}>{r.criterion || r.criteria || JSON.stringify(r)}</td><td style={tdStyle}>{r.excellent || r.excelente || ""}</td><td style={tdStyle}>{r.good || r.bueno || ""}</td><td style={tdStyle}>{r.regular || ""}</td><td style={tdStyle}>{r.deficient || r.deficiente || ""}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : <pre style={{whiteSpace:"pre-wrap",fontSize:"0.85rem"}}>{JSON.stringify(c.rubric, null, 2)}</pre>}
+          </>
+        )}
+        {!c.scenario && !c.rubric && <pre style={{whiteSpace:"pre-wrap",fontSize:"0.85rem"}}>{JSON.stringify(challenge, null, 2)}</pre>}
+      </div>
     </div>
   );
 }
