@@ -115,6 +115,31 @@ def _get_agent():
             return {"papers": [], "total": 0, "error": str(exc)}
 
     @tool
+    def enrich_papers_with_abstracts(papers: list) -> dict:
+        """Enrich papers with abstracts from OpenAlex (free API). Call after search_scopus_papers.
+
+        Args:
+            papers: List of paper dicts from search_scopus_papers (must have doi field)
+        """
+        try:
+            from openalex_client import fetch_abstracts_batch
+        except ImportError:
+            try:
+                from src.agents.scholar.openalex_client import fetch_abstracts_batch
+            except ImportError:
+                return {"enriched": 0, "error": "openalex_client not available"}
+
+        abstracts = fetch_abstracts_batch(papers, max_papers=20, delay=0.3)
+        enriched = 0
+        for paper in papers:
+            sid = paper.get("scopus_id", "")
+            if sid in abstracts:
+                paper["abstract"] = abstracts[sid][:1000]  # Cap at 1000 chars
+                paper["key_finding"] = abstracts[sid][:300]  # Use abstract start as key_finding
+                enriched += 1
+        return {"enriched": enriched, "total": len(papers)}
+
+    @tool
     def build_knowledge_matrix(papers: list, learning_outcomes: list) -> dict:
         """Extract concepts and methodologies from papers to build the Knowledge Matrix.
 
@@ -140,28 +165,22 @@ def _get_agent():
 
     _scholar_agent = Agent(
         model=model,
-        tools=[search_scopus_papers, build_knowledge_matrix],
+        tools=[search_scopus_papers, enrich_papers_with_abstracts, build_knowledge_matrix],
         system_prompt=(
             "You are Scholar, an academic research agent for university programs. "
-            "You receive the COMPLETE academic context: subject name, syllabus, competencies, and learning outcomes. "
+            "WORKFLOW: "
+            "1. Call search_scopus_papers to find Q1/Q2 papers "
+            "2. Call enrich_papers_with_abstracts to get abstracts from OpenAlex "
+            "3. Call build_knowledge_matrix to structure the knowledge "
             "CRITICAL RULES: "
-            "1. Generate search keywords DIRECTLY from the syllabus topics — NOT generic terms. "
+            "1. Generate search keywords DIRECTLY from the syllabus topics. "
             "2. Keywords must be DOMAIN-SPECIFIC. "
-            "3. After searching, filter out papers that are NOT relevant to the subject domain. "
-            "Use search_scopus_papers to find Q1/Q2 papers, then build_knowledge_matrix. "
-            "IMPORTANT: In your final JSON response, the knowledge_matrix MUST be a rich academic resource. "
-            "For EACH learning outcome (RA), create a knowledge_matrix entry with: "
-            "- ra_id and ra_description "
-            "- syllabus_topics_covered: list of syllabus topics this RA covers "
-            "- core_concepts: list of objects, each with: "
-            "  - concept: name of the academic concept "
-            "  - definition: a SUBSTANTIVE academic definition (2-3 sentences minimum) explaining the concept, "
-            "    its theoretical foundation, and its practical application. Use the paper titles and your "
-            "    academic knowledge to write rigorous definitions. "
-            "  - supporting_papers: list of paper citations (Author, Year) that support this concept "
-            "  - competencies: list of competency IDs this concept develops "
-            "- key_methodologies: list of specific methodologies, frameworks, and analytical tools "
-            "CRITICAL: Your final response MUST be ONLY a single JSON code block. "
+            "3. After enriching with abstracts, use the abstract content to write SUBSTANTIVE "
+            "   definitions in the knowledge_matrix core_concepts (2-3 sentences each). "
+            "4. Each core_concept must have: concept name, academic definition based on paper abstracts, "
+            "   supporting_papers list, and competency alignment. "
+            "5. Each RA entry must have: syllabus_topics_covered, core_concepts, key_methodologies. "
+            "CRITICAL: Final response MUST be ONLY a single JSON code block. "
             "Format: ```json\n{...}\n``` "
             "Keys: top20_papers, knowledge_matrix, keywords_used. "
             "No text outside the JSON block."

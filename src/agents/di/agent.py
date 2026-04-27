@@ -135,55 +135,58 @@ def _load_subject_context(subject_id: str) -> dict:
 
 
 def _build_di_prompt(subject_id: str, sj: dict) -> str:
-    """Build a compact prompt with academic context for the DI agent."""
+    """Build the DI prompt using the Carta Descriptiva template from Anáhuac."""
+    import re as _re
+
     meta = sj.get("metadata", {})
     inputs = sj.get("academic_inputs", {})
     research = sj.get("research", {})
 
     subject_name = meta.get("subject_name", "Unknown")
     subject_type = meta.get("subject_type", "CONCENTRACION")
-    grad_profile = inputs.get("graduation_profile", "")[:200]
     competencies = inputs.get("competencies", [])
     learning_outcomes = inputs.get("learning_outcomes", [])
     syllabus = inputs.get("syllabus", "")
     papers = research.get("top20_papers", [])
 
     # Extract week count from syllabus
-    import re as _re
     weeks_match = _re.search(r"[Dd]uracion[:\s]*(\d+)\s*semanas", syllabus)
     num_weeks = int(weeks_match.group(1)) if weeks_match else 0
-    # Count numbered topics as fallback
     topic_count = len(_re.findall(r'\d+\)', syllabus))
     if not num_weeks and topic_count:
         num_weeks = topic_count
+    if not num_weeks:
+        num_weeks = 5
 
-    comp_text = "\n".join(f"  {c['competency_id']}: {c['description'][:80]}" for c in competencies)
-    lo_text = "\n".join(f"  {lo['ra_id']}: {lo['description'][:80]}" for lo in learning_outcomes)
-    papers_text = ", ".join(f"\"{p.get('title','')[:40]}\" ({p.get('year','')})" for p in papers[:10])
+    try:
+        from carta_descriptiva_prompt import build_carta_descriptiva_prompt
+    except ImportError:
+        from src.agents.di.carta_descriptiva_prompt import build_carta_descriptiva_prompt
 
-    weeks_instruction = f"MANDATORY: Generate EXACTLY {num_weeks} weeks in the content_map. NOT more, NOT less." if num_weeks else "Match weeks to the number of topics in the syllabus."
+    base_prompt = build_carta_descriptiva_prompt(
+        subject_name=subject_name,
+        subject_type=subject_type,
+        learning_outcomes=learning_outcomes,
+        syllabus=syllabus,
+        competencies=competencies,
+        papers=papers,
+        num_weeks=num_weeks,
+    )
 
-    return f"""Design instructional content for "{subject_name}" (ID: {subject_id}, type: {subject_type}).
+    # Add tool instructions and ID enforcement
+    comp_ids = ", ".join(c["competency_id"] for c in competencies)
+    ra_ids = ", ".join(lo["ra_id"] for lo in learning_outcomes)
 
-Graduation profile: {grad_profile}
+    return f"""{base_prompt}
 
-Competencies (use EXACT IDs):
-{comp_text}
-
-Learning Outcomes (use EXACT IDs):
-{lo_text}
-
-Syllabus ({num_weeks} weeks):
-{syllabus}
-
-Top papers: {papers_text}
-
-CALL generate_learning_objectives then build_descriptive_card.
-Use EXACT IDs: {', '.join(c['competency_id'] for c in competencies)} and {', '.join(lo['ra_id'] for lo in learning_outcomes)}.
-{weeks_instruction}
-Each week in content_map MUST have a non-empty "theme" field with the topic name from the syllabus.
-Subject name must be "{subject_name}".
-Return JSON with keys: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps.
+ADDITIONAL INSTRUCTIONS:
+- Subject ID: {subject_id}
+- Use EXACT competency IDs: {comp_ids}
+- Use EXACT RA IDs: {ra_ids}
+- MANDATORY: Generate EXACTLY {num_weeks} weeks in mapa_contenidos.
+- Each week MUST have a non-empty "theme" field with the topic name from the syllabus.
+- CALL generate_learning_objectives then build_descriptive_card tools.
+- Return JSON with keys: objectives, traceability_matrix, descriptive_card, content_map, alignment_gaps, casos_ejecutivos, bibliografia_apa.
 """
 
 
