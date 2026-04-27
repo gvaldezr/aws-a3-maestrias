@@ -32,7 +32,7 @@ def _get_agent():
         model_id="us.anthropic.claude-sonnet-4-6",
         region_name=os.environ.get("AWS_REGION", "us-east-1"),
         temperature=0.3,
-        max_tokens=16384,
+        max_tokens=32768,
     )
 
     @tool

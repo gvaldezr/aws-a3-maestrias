@@ -89,19 +89,26 @@ def build_content_package_prompt(
         for lo in learning_outcomes
     )
 
-    # Papers with abstracts (truncated)
+    # Papers (compact — save tokens)
     corpus_lines = []
-    for p in papers[:15]:
-        line = f"- {p.get('title','')} ({p.get('year','')}). {p.get('journal','')}."
-        abstract = p.get("abstract", p.get("key_finding", ""))
+    for p in papers[:10]:
+        line = f"- {p.get('title','')[:50]} ({p.get('year','')}). {p.get('journal','')[:25]}."
+        abstract = p.get("abstract", "")
         if abstract:
-            line += f" Abstract: {abstract[:200]}"
+            line += f" {abstract[:80]}"
         corpus_lines.append(line)
     corpus_text = "\n".join(corpus_lines)
 
-    # Knowledge matrix (compact)
+    # Knowledge matrix (very compact — concept names + short definitions)
     import json
-    km_text = json.dumps(knowledge_matrix[:2], ensure_ascii=False)[:2000] if knowledge_matrix else "[]"
+    km_items = []
+    km_list = knowledge_matrix if isinstance(knowledge_matrix, list) else []
+    for km in km_list[:2]:
+        if isinstance(km, dict):
+            for c in km.get("core_concepts", [])[:3]:
+                if isinstance(c, dict):
+                    km_items.append(f"- {c.get('concept','')}: {c.get('definition','')[:80]}")
+    km_text = "\n".join(km_items) if km_items else "No disponible"
 
     return CONTENT_PACKAGE_TEMPLATE.format(
         subject_name=subject_name,
