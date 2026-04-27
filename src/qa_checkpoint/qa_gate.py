@@ -54,7 +54,11 @@ def validate_ra_coverage(subject_json: dict) -> RACoverageResult:
     covered_ra_ids = set()
     for q in quizzes:
         if isinstance(q, dict):
-            covered_ra_ids.add(q.get("ra_id", ""))
+            # Support both ra_id (singular) and ra_ids (plural)
+            if q.get("ra_id"):
+                covered_ra_ids.add(q["ra_id"])
+            for rid in q.get("ra_ids", []):
+                covered_ra_ids.add(rid)
     all_ra_ids = {lo["ra_id"] for lo in learning_outcomes}
     gaps = sorted(all_ra_ids - covered_ra_ids)
     return RACoverageResult(
