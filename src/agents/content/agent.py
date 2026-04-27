@@ -465,7 +465,7 @@ def _load_subject_context(subject_id: str) -> dict:
 
 
 def _build_content_prompt(subject_id: str, sj: dict) -> str:
-    """Build a compact prompt with essential academic context for the Content agent."""
+    """Build the content package prompt using the Anáhuac MADTFIN template."""
     meta = sj.get("metadata", {})
     inputs = sj.get("academic_inputs", {})
     research = sj.get("research", {})
@@ -473,74 +473,33 @@ def _build_content_prompt(subject_id: str, sj: dict) -> str:
 
     subject_name = meta.get("subject_name", "Unknown")
     subject_type = meta.get("subject_type", "CONCENTRACION")
-    program_type = meta.get("program_type", "MAESTRIA")
     language = meta.get("language", "ES")
     competencies = inputs.get("competencies", [])
     learning_outcomes = inputs.get("learning_outcomes", [])
     papers = research.get("top20_papers", [])
+    knowledge_matrix = research.get("knowledge_matrix", [])
     objectives = di.get("learning_objectives", [])
     content_map = di.get("content_map", {})
-
-    # Compact competencies
-    comp_text = ", ".join(f"{c['competency_id']}" for c in competencies)
-
-    # Compact learning outcomes
-    lo_text = "\n".join(f"  {lo['ra_id']}: {lo['description'][:80]}" for lo in learning_outcomes)
-
-    # Compact objectives
-    obj_text = "\n".join(
-        f"  {o.get('objective_id','')}: [{o.get('bloom_level','')}] {o.get('description','')[:80]}"
-        for o in objectives
-    )
-
-    # Content map weeks — compact
-    weeks = content_map.get("weeks", [])
-    weeks_json = json.dumps([
-        {"week": w.get("week"), "theme": w.get("theme","")[:50], "bloom_level": w.get("bloom_level",""),
-         "subtopics": w.get("subtopics", [])[:3], "activities": w.get("activities", [])[:2]}
-        for w in weeks
-    ], ensure_ascii=False)
-
-    # Papers — compact
-    papers_compact = json.dumps([
-        {"title": p.get("title","")[:60], "year": p.get("year",""), "journal": p.get("journal","")[:30],
-         "key_finding": p.get("key_finding","")[:50], "syllabus_topic": p.get("syllabus_topic","")[:40]}
-        for p in papers[:20]
-    ], ensure_ascii=False)
-
-    # Knowledge Matrix — pass to generate_executive_readings for substantive content
-    knowledge_matrix = research.get("knowledge_matrix", [])
-    km_compact = json.dumps(knowledge_matrix[:3], ensure_ascii=False)[:3000] if knowledge_matrix else "[]"
-
+    weeks = content_map.get("weeks", []) if isinstance(content_map, dict) else []
     num_weeks = len(weeks) if weeks else 5
 
-    return f"""Generate content for subject "{subject_name}" (ID: {subject_id}).
-Type: {subject_type} | Program: {program_type} | Language: {language} | Weeks: {num_weeks}
+    try:
+        from content_package_prompt import build_content_package_prompt
+    except ImportError:
+        from src.agents.content.content_package_prompt import build_content_package_prompt
 
-Competencies: {comp_text}
-
-Learning Outcomes:
-{lo_text}
-
-Objectives:
-{obj_text}
-
-Weekly Map:
-{weeks_json}
-
-Papers:
-{papers_compact}
-
-Knowledge Matrix (IMPORTANT — pass this to generate_executive_readings):
-{km_compact}
-
-CALL THESE 3 TOOLS:
-1. generate_executive_readings(weekly_map=<weekly_map>, subject_name="{subject_name}", language="{language}", papers=<papers>, knowledge_matrix=<knowledge_matrix>)
-2. generate_quizzes(learning_outcomes=<learning_outcomes as list>, subject_name="{subject_name}", language="{language}", objectives=<objectives as list>)
-3. generate_maestria_artifacts(papers=<papers>, subject_name="{subject_name}", competencies=<competencies as list>, language="{language}", weekly_map=<weekly_map>, learning_outcomes=<learning_outcomes>)
-
-Return JSON with keys: executive_readings, quizzes, maestria_artifacts.
-"""
+    return build_content_package_prompt(
+        subject_name=subject_name,
+        subject_type=subject_type,
+        language=language,
+        num_weeks=num_weeks,
+        objectives=objectives,
+        weekly_map=weeks,
+        competencies=competencies,
+        learning_outcomes=learning_outcomes,
+        papers=papers,
+        knowledge_matrix=knowledge_matrix,
+    )
 
 
 @app.entrypoint
