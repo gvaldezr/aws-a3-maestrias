@@ -80,7 +80,7 @@ export function SubjectTable({ onCheckpoint }: Props) {
           </tr>
         </thead>
         <tbody>
-          {data.subjects.map((subject: PipelineStatus) => (
+          {[...data.subjects].sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || "")).map((subject: PipelineStatus) => (
             <tr key={subject.subject_id} data-testid={`subject-row-${subject.subject_id}`}>
               <td>{subject.subject_name}</td>
               <td>{subject.program_name}</td>
