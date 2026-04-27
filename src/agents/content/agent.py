@@ -694,7 +694,10 @@ def _call_generate_readings(weeks, subject_name, language, papers, knowledge_mat
 
 
 def _call_generate_quizzes(learning_outcomes, subject_name, language, objectives):
-    """Call quiz generation logic directly."""
+    """Generate 1 quiz per subject: 8 critical reasoning questions, 4 options each.
+    At least 3 questions at Bloom Analyze/Evaluate level.
+    Each question includes 2-3 line feedback for the correct answer.
+    """
     def _ensure_dicts(items):
         result = []
         for item in (items or []):
@@ -711,26 +714,147 @@ def _call_generate_quizzes(learning_outcomes, subject_name, language, objectives
 
     learning_outcomes = _ensure_dicts(learning_outcomes)
     objectives = _ensure_dicts(objectives)
-    quizzes = []
-    for lo in learning_outcomes:
-        ra_id = lo.get("ra_id", "RA1")
-        ra_desc = lo.get("description", "")
-        related_objs = [o for o in objectives if ra_id in o.get("ra_ids", [])]
-        obj_context = related_objs[0].get("description", "") if related_objs else ra_desc
 
-        questions = [
-            {"question_id": f"{ra_id}-Q1", "question": f"En el contexto de {subject_name}, cual es el objetivo principal de '{ra_desc[:60]}'?",
-             "options": [f"Aplicar {obj_context[:50]} para la toma de decisiones", "Memorizar definiciones teoricas sin aplicacion", "Replicar modelos sin analisis critico", "Delegar el analisis a herramientas automatizadas"],
-             "correct_answer": 0, "feedback": f"El resultado de aprendizaje {ra_id} se enfoca en la aplicacion practica en {subject_name}."},
-            {"question_id": f"{ra_id}-Q2", "question": f"Como se aplica '{ra_desc[:50]}' en un contexto profesional?",
-             "options": ["Mediante analisis de datos y modelos para sustentar decisiones", "Solo reportes descriptivos", "Exclusivamente ofimatica basica", "Sin considerar contexto organizacional"],
-             "correct_answer": 0, "feedback": f"La aplicacion profesional de {ra_id} implica decisiones estrategicas basadas en evidencia."},
-            {"question_id": f"{ra_id}-Q3", "question": f"Que evidencia academica respalda '{ra_desc[:50]}'?",
-             "options": ["Investigacion Q1/Q2 con revision por pares", "Opiniones sin respaldo empirico", "Articulos de divulgacion general", "Datos anecdoticos aislados"],
-             "correct_answer": 0, "feedback": "La evidencia de investigacion academica de alto impacto (Q1/Q2) es el estandar para maestria."},
-        ]
-        quizzes.append({"ra_id": ra_id, "ra_description": ra_desc, "questions": questions})
-    return {"quizzes": quizzes}
+    # Build context from all RAs and objectives
+    ra_descriptions = [lo.get("description", "") for lo in learning_outcomes]
+    obj_descriptions = [o.get("description", "") for o in objectives]
+    ra_ids = [lo.get("ra_id", "") for lo in learning_outcomes]
+
+    # Generate 8 questions — at least 3 at Analyze/Evaluate level
+    questions = [
+        # Q1 — RECORDAR
+        {
+            "question_id": "Q1",
+            "bloom_level": "RECORDAR",
+            "question": f"En el contexto de {subject_name}, cual de los siguientes enunciados describe correctamente el alcance de esta asignatura?",
+            "options": [
+                f"Integra {ra_descriptions[0][:60] if ra_descriptions else subject_name} con enfoque en la toma de decisiones estrategicas",
+                "Se limita a la memorizacion de formulas y procedimientos sin aplicacion practica",
+                "Aborda exclusivamente aspectos teoricos sin vinculacion con el entorno organizacional",
+                "Se enfoca en habilidades operativas basicas sin componente analitico"
+            ],
+            "correct_answer": 0,
+            "feedback": f"Esta asignatura integra conocimientos de {subject_name} con un enfoque aplicado a la toma de decisiones en el contexto financiero mexicano. Los resultados de aprendizaje exigen que el estudiante vaya mas alla de la teoria para sustentar juicios profesionales fundamentados."
+        },
+        # Q2 — COMPRENDER
+        {
+            "question_id": "Q2",
+            "bloom_level": "COMPRENDER",
+            "question": f"Cual es la relacion entre los resultados de aprendizaje de {subject_name} y las competencias del programa MADTFIN?",
+            "options": [
+                "Los RAs operacionalizan las competencias del programa al definir desempenos observables y medibles en contextos financieros reales",
+                "Los RAs son independientes de las competencias y se evaluan por separado",
+                "Las competencias del programa no se relacionan con asignaturas individuales",
+                "Los RAs solo aplican a evaluaciones teoricas, no a competencias profesionales"
+            ],
+            "correct_answer": 0,
+            "feedback": f"Los resultados de aprendizaje de {subject_name} son la operacionalizacion de las competencias del programa. Cada RA define un desempeno observable que contribuye al desarrollo de una o mas competencias, asegurando la trazabilidad entre la formacion y el perfil de egreso."
+        },
+        # Q3 — APLICAR
+        {
+            "question_id": "Q3",
+            "bloom_level": "APLICAR",
+            "question": f"Un directivo financiero necesita aplicar los conceptos de {subject_name} para fundamentar una decision ante el consejo de administracion. Cual seria el enfoque mas apropiado?",
+            "options": [
+                "Integrar evidencia academica Q1/Q2 con datos del contexto regulatorio mexicano (CNBV, Banxico) para construir un argumento fundamentado",
+                "Presentar solo datos historicos de la empresa sin referencia a investigacion academica",
+                "Basarse exclusivamente en la intuicion y experiencia personal del directivo",
+                "Copiar las recomendaciones de un informe de consultoria sin adaptacion al contexto"
+            ],
+            "correct_answer": 0,
+            "feedback": f"La aplicacion profesional de {subject_name} requiere integrar multiples fuentes de evidencia. La investigacion academica Q1/Q2 proporciona el sustento teorico, mientras que el contexto regulatorio mexicano (CNBV, Banxico, NIF) asegura la pertinencia y viabilidad de las recomendaciones."
+        },
+        # Q4 — ANALIZAR (Bloom alto)
+        {
+            "question_id": "Q4",
+            "bloom_level": "ANALIZAR",
+            "question": f"Al analizar un caso de {subject_name} en el sector financiero mexicano, que elementos debe descomponer el estudiante para identificar las relaciones causa-efecto?",
+            "options": [
+                "Variables financieras clave, marco regulatorio aplicable, evidencia academica y contexto macroeconomico de Mexico",
+                "Unicamente los estados financieros de la empresa sin considerar factores externos",
+                "Solo las opiniones de los directivos involucrados en la decision",
+                "Los resultados financieros del ultimo trimestre sin analisis de tendencias"
+            ],
+            "correct_answer": 0,
+            "feedback": f"El analisis en {subject_name} requiere descomponer el problema en sus componentes fundamentales: las variables financieras internas, el entorno regulatorio (CNBV, Banxico), la evidencia academica que sustenta las relaciones causales, y el contexto macroeconomico mexicano. Solo integrando estos elementos se pueden identificar patrones e impactos relevantes."
+        },
+        # Q5 — ANALIZAR (Bloom alto)
+        {
+            "question_id": "Q5",
+            "bloom_level": "ANALIZAR",
+            "question": f"Dos investigaciones Q1 sobre {subject_name} llegan a conclusiones aparentemente contradictorias. Como deberia proceder el estudiante?",
+            "options": [
+                "Examinar las diferencias metodologicas, contextos de estudio y supuestos de cada investigacion para determinar la aplicabilidad al caso mexicano",
+                "Descartar ambas investigaciones por ser contradictorias",
+                "Elegir la investigacion mas reciente sin analizar las diferencias",
+                "Ignorar la evidencia academica y basarse en la practica comun del sector"
+            ],
+            "correct_answer": 0,
+            "feedback": f"El pensamiento critico en {subject_name} exige analizar las diferencias metodologicas entre estudios. Las conclusiones contradictorias frecuentemente se explican por diferencias en el contexto (mercados desarrollados vs. emergentes), la muestra, el periodo de estudio o los supuestos. El estudiante debe evaluar cual es mas aplicable al contexto financiero mexicano."
+        },
+        # Q6 — EVALUAR (Bloom alto)
+        {
+            "question_id": "Q6",
+            "bloom_level": "EVALUAR",
+            "question": f"Un colega propone una estrategia financiera basada en un unico paper academico sin considerar el marco regulatorio de la CNBV. Como evaluaria esta propuesta?",
+            "options": [
+                "La propuesta es insuficiente porque carece de triangulacion de evidencia y omite restricciones regulatorias que podrian invalidar la estrategia en Mexico",
+                "La propuesta es adecuada porque un paper Q1 es suficiente para fundamentar cualquier decision",
+                "La propuesta es correcta porque la regulacion mexicana no afecta las decisiones financieras estrategicas",
+                "La propuesta es valida si el paper fue publicado en los ultimos 2 anos"
+            ],
+            "correct_answer": 0,
+            "feedback": f"Evaluar propuestas en {subject_name} requiere verificar la solidez de la fundamentacion. Un unico paper, por mas riguroso que sea, no constituye evidencia suficiente para una decision estrategica. Ademas, omitir el marco regulatorio mexicano (CNBV, Banxico, LFPDPPP) puede resultar en estrategias inviables o que expongan a la organizacion a riesgos legales."
+        },
+        # Q7 — EVALUAR (Bloom alto)
+        {
+            "question_id": "Q7",
+            "bloom_level": "EVALUAR",
+            "question": f"Al evaluar la calidad de la evidencia utilizada en un analisis de {subject_name}, que criterios son mas relevantes?",
+            "options": [
+                "Validez metodologica del estudio, pertinencia al contexto mexicano, nivel de la revista (Q1/Q2) y replicabilidad de los hallazgos",
+                "Unicamente el numero de citas del articulo",
+                "La reputacion del autor sin considerar la metodologia",
+                "La extension del articulo y la cantidad de graficas incluidas"
+            ],
+            "correct_answer": 0,
+            "feedback": f"La evaluacion de evidencia en {subject_name} debe considerar multiples criterios de calidad. La validez metodologica asegura que los hallazgos son confiables, la pertinencia al contexto mexicano garantiza aplicabilidad, el nivel de la revista (Q1/Q2) indica rigor en la revision por pares, y la replicabilidad permite verificar los resultados."
+        },
+        # Q8 — APLICAR
+        {
+            "question_id": "Q8",
+            "bloom_level": "APLICAR",
+            "question": f"En el reto de aprendizaje agentico de {subject_name}, el estudiante debe entregar un documento ejecutivo. Cual de los siguientes elementos es indispensable?",
+            "options": [
+                "Diagnostico fundamentado en evidencia academica, analisis del contexto regulatorio mexicano y recomendacion estrategica accionable",
+                "Un resumen extenso de todos los papers leidos durante el curso",
+                "Una lista de definiciones teoricas sin aplicacion al caso",
+                "Un documento con formato libre sin estructura argumentativa"
+            ],
+            "correct_answer": 0,
+            "feedback": f"El reto agentico de {subject_name} evalua la capacidad del estudiante para integrar conocimiento en una decision profesional. El documento debe demostrar fundamentacion en evidencia (papers Q1/Q2), comprension del contexto regulatorio mexicano (CNBV, Banxico, NIF) y claridad directiva en la recomendacion estrategica."
+        },
+    ]
+
+    # Single quiz per subject
+    quiz = {
+        "quiz_id": "QUIZ-RC-001",
+        "title": f"Quiz de Razonamiento Critico: {subject_name}",
+        "type": "critical_reasoning",
+        "week": 3,
+        "total_questions": 8,
+        "bloom_distribution": {
+            "RECORDAR": 1,
+            "COMPRENDER": 1,
+            "APLICAR": 2,
+            "ANALIZAR": 2,
+            "EVALUAR": 2,
+        },
+        "ra_ids": ra_ids,
+        "questions": questions,
+    }
+
+    return {"quizzes": [quiz]}
 
 
 def _call_generate_maestria(papers, subject_name, competencies, language, weeks, learning_outcomes):

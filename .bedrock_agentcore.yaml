@@ -152,7 +152,7 @@ agents:
     bedrock_agentcore:
       agent_id: AcademicPipelineContentDev-fX2AEsCaMw
       agent_arn: arn:aws:bedrock-agentcore:us-east-1:254508868459:runtime/AcademicPipelineContentDev-fX2AEsCaMw
-      agent_session_id: 393308db-459d-4951-b831-5e8c7064e71e
+      agent_session_id: 09f0f518-fe13-46ad-ba19-2a601c0f2fdc
     codebuild:
       project_name: null
       execution_role: null
