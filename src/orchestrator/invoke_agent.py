@@ -130,16 +130,53 @@ def invoke_di(event: dict, context: Any) -> dict:
 
 
 def invoke_content(event: dict, context: Any) -> dict:
-    """Step 3: Invoke Content Agent — passes subject_id so agent loads context from S3."""
+    """Step 3: Invoke Content Agent and wait for it to persist results to S3.
+    
+    The Content agent with LLM calls can take 5-15 minutes.
+    We invoke it and then poll S3 for CONTENT_READY state.
+    """
+    import time
     subject_id = event.get("subject_id") or event.get("di", {}).get("subject_id", "")
     logger.info("orchestrator_content_start", extra={"subject_id": subject_id})
 
-    result = _invoke_runtime(CONTENT_ARN, {
-        "subject_id": subject_id,
-    })
+    # Fire the agent (may timeout on the invoke call, but agent continues in AgentCore)
+    try:
+        result = _invoke_runtime(CONTENT_ARN, {"subject_id": subject_id})
+        logger.info("orchestrator_content_invoke_returned", extra={"subject_id": subject_id})
+    except Exception as e:
+        logger.warning("orchestrator_content_invoke_timeout", extra={"subject_id": subject_id, "error": str(e)[:100]})
 
-    logger.info("orchestrator_content_complete", extra={"subject_id": subject_id})
-    return {"subject_id": subject_id, "content_status": "complete", "result": result}
+    # Poll S3 for CONTENT_READY state (agent self-persists)
+    s3 = boto3.client("s3")
+    bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
+    max_wait = 1200  # 20 minutes max
+    poll_interval = 15
+    waited = 0
+
+    while waited < max_wait:
+        try:
+            obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
+            sj = json.loads(obj["Body"].read().decode("utf-8"))
+            state = sj.get("pipeline_state", {}).get("current_state", "")
+            
+            # Check if content was generated
+            cp = sj.get("content_package", {})
+            er = cp.get("executive_readings", {})
+            readings = er.get("readings", []) if isinstance(er, dict) else (er if isinstance(er, list) else [])
+            
+            if state == "CONTENT_READY" and len(readings) > 0:
+                logger.info("orchestrator_content_ready", extra={"subject_id": subject_id, "readings": len(readings), "waited": waited})
+                return {"subject_id": subject_id, "content_status": "complete"}
+        except Exception:
+            pass
+
+        time.sleep(poll_interval)
+        waited += poll_interval
+        if waited % 60 == 0:
+            logger.info("orchestrator_content_polling", extra={"subject_id": subject_id, "waited": waited})
+
+    logger.warning("orchestrator_content_timeout", extra={"subject_id": subject_id, "waited": waited})
+    return {"subject_id": subject_id, "content_status": "timeout"}
 
 
 def invoke_qa_gate(event: dict, context: Any) -> dict:

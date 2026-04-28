@@ -76,16 +76,71 @@ def publish_course(subject_json: dict, client: CanvasClient) -> PublicationResul
 
     # Carta Descriptiva
     card = instructional.get("descriptive_card", {})
-    if card:
-        card_html = f"<h1>Carta Descriptiva: {metadata['subject_name']}</h1>"
-        card_html += f"<p><strong>Objetivo General</strong>: {card.get('general_objective', '')}</p>"
+    objectives = instructional.get("learning_objectives", [])
+    content_map_weeks = instructional.get("content_map", {}).get("weeks", []) if isinstance(instructional.get("content_map"), dict) else []
+
+    card_html = f"<h1>Carta Descriptiva: {metadata['subject_name']}</h1>"
+    card_html += f"<p><strong>Programa</strong>: {metadata.get('program_name', '')}</p>"
+    card_html += f"<p><strong>Tipo</strong>: {metadata.get('subject_type', '')} | <strong>Idioma</strong>: {metadata.get('language', '')}</p>"
+
+    if card.get("general_objective"):
+        card_html += f"<h2>Objetivo General</h2><p>{card['general_objective']}</p>"
+
+    if objectives:
+        card_html += "<h2>Objetivos de Aprendizaje</h2>"
+        card_html += '<table style="width:100%;border-collapse:collapse;margin:1rem 0;">'
+        card_html += '<thead><tr style="background:#394B58;color:white;">'
+        card_html += '<th style="padding:8px;">ID</th><th style="padding:8px;">Nivel Bloom</th>'
+        card_html += '<th style="padding:8px;">Descripcion</th><th style="padding:8px;">Competencias</th>'
+        card_html += '<th style="padding:8px;">RAs</th></tr></thead><tbody>'
+        for o in objectives:
+            if not isinstance(o, dict):
+                continue
+            card_html += '<tr style="border-bottom:1px solid #E2E8F0;">'
+            card_html += f'<td style="padding:8px;font-weight:bold;">{o.get("objective_id", "")}</td>'
+            card_html += f'<td style="padding:8px;text-align:center;">{o.get("bloom_level", "")}</td>'
+            card_html += f'<td style="padding:8px;">{o.get("description", "")}</td>'
+            card_html += f'<td style="padding:8px;">{", ".join(o.get("competency_ids", []))}</td>'
+            card_html += f'<td style="padding:8px;">{", ".join(o.get("ra_ids", []))}</td>'
+            card_html += '</tr>'
+        card_html += '</tbody></table>'
+
+    if card.get("specific_objectives"):
         card_html += "<h2>Objetivos Especificos</h2><ol>"
         for so in card.get("specific_objectives", []):
             text = so.get("text", so) if isinstance(so, dict) else str(so)
             card_html += f"<li>{text}</li>"
         card_html += "</ol>"
-        page = client.create_page(course_id, {"wiki_page": {"title": "Carta Descriptiva", "body": card_html, "published": False}})
-        _add_page_to_module(client, course_id, mod0_id, page)
+
+    if content_map_weeks:
+        card_html += "<h2>Mapa de Contenidos</h2>"
+        card_html += '<table style="width:100%;border-collapse:collapse;margin:1rem 0;">'
+        card_html += '<thead><tr style="background:#394B58;color:white;">'
+        card_html += '<th style="padding:8px;">Semana</th><th style="padding:8px;">Tema</th>'
+        card_html += '<th style="padding:8px;">Nivel Bloom</th></tr></thead><tbody>'
+        for w in content_map_weeks:
+            if not isinstance(w, dict):
+                continue
+            card_html += f'<tr style="border-bottom:1px solid #E2E8F0;">'
+            card_html += f'<td style="padding:8px;text-align:center;">{w.get("week", "")}</td>'
+            card_html += f'<td style="padding:8px;">{w.get("theme", "")}</td>'
+            card_html += f'<td style="padding:8px;text-align:center;">{w.get("bloom_level", "")}</td>'
+            card_html += '</tr>'
+        card_html += '</tbody></table>'
+
+    if card.get("evaluation_criteria"):
+        card_html += "<h2>Criterios de Evaluacion</h2><ul>"
+        ec = card["evaluation_criteria"]
+        if isinstance(ec, dict):
+            for k, v in ec.items():
+                if isinstance(v, dict):
+                    card_html += f"<li><strong>{k}</strong>: {v.get('instrument', '')} ({v.get('weight_percentage', '')}%) - Nivel {v.get('bloom_level', '')}</li>"
+                else:
+                    card_html += f"<li><strong>{k}</strong>: {v}</li>"
+        card_html += "</ul>"
+
+    page = client.create_page(course_id, {"wiki_page": {"title": "Carta Descriptiva", "body": card_html, "published": False}})
+    _add_page_to_module(client, course_id, mod0_id, page)
 
     # Masterclass
     mc = content.get("masterclass_script", {})

@@ -61,12 +61,12 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
   ];
 
   return (
-    <div style={{maxWidth:"960px",margin:"0 auto",padding:"1rem",fontFamily:"system-ui,sans-serif"}}>
+    <div style={{maxWidth:"960px",margin:"0 auto",padding:"1.5rem",fontFamily:"'Montserrat',system-ui,sans-serif"}}>
       {/* Header */}
-      <div style={{background:"#1a365d",color:"white",padding:"1.5rem",borderRadius:"8px",marginBottom:"1rem"}}>
-        <h1 style={{margin:0,fontSize:"1.4rem"}}>Validación de Contenido</h1>
-        <p style={{margin:"0.5rem 0 0",opacity:0.9}}>{summary.subject_name} — {summary.program_name}</p>
-        <p style={{margin:"0.25rem 0 0",opacity:0.7,fontSize:"0.85rem"}}>Tipo: {summary.subject_type} | Estado: {summary.current_state}</p>
+      <div style={{background:"#040404",color:"#FFFFFF",padding:"1.5rem",borderRadius:"8px",marginBottom:"1rem"}}>
+        <h1 style={{margin:0,fontSize:"1.4rem",color:"#FFFFFF"}}>Validación de Contenido</h1>
+        <p style={{margin:"0.5rem 0 0",color:"#FFFFFF",opacity:0.9}}>{summary.subject_name} — {summary.program_name}</p>
+        <p style={{margin:"0.25rem 0 0",color:"#FFFFFF",opacity:0.7,fontSize:"0.85rem"}}>Tipo: {summary.subject_type} | Estado: {summary.current_state}</p>
       </div>
 
       {/* Tabs */}
@@ -75,8 +75,8 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
           <button key={t.key} onClick={() => setActiveTab(t.key)}
             style={{
               padding:"0.6rem 1rem",border:"none",cursor:"pointer",fontSize:"0.85rem",
-              borderBottom: activeTab === t.key ? "3px solid #2b6cb0" : "3px solid transparent",
-              background: activeTab === t.key ? "#ebf4ff" : "transparent",
+              borderBottom: activeTab === t.key ? "3px solid #FF5900" : "3px solid transparent",
+              background: activeTab === t.key ? "#FFF0E0" : "transparent",
               fontWeight: activeTab === t.key ? 600 : 400,
               borderRadius:"4px 4px 0 0",
             }}>
