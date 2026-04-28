@@ -107,7 +107,7 @@ export function SubjectTable({ onCheckpoint }: Props) {
                 {subject.current_state === "PUBLISHED" && (
                   <button
                     onClick={() => onCheckpoint(subject.subject_id)}
-                    style={{background:"#231F20",color:"white",border:"none",padding:"0.3rem 0.75rem",borderRadius:"4px",cursor:"pointer",fontWeight:600,fontSize:"0.8rem",marginRight:"0.5rem"}}
+                    style={{background:"#262626",color:"white",border:"none",padding:"0.3rem 0.75rem",borderRadius:"4px",cursor:"pointer",fontWeight:600,fontSize:"0.8rem",marginRight:"0.5rem"}}
                   >
                     👁️ Ver contenido
                   </button>
@@ -118,7 +118,7 @@ export function SubjectTable({ onCheckpoint }: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                     data-testid={`canvas-link-${subject.subject_id}`}
-                    style={{background:"#997747",color:"white",padding:"0.3rem 0.75rem",borderRadius:"4px",fontSize:"0.8rem",fontWeight:600,textDecoration:"none",display:"inline-block"}}
+                    style={{background:"#262626",color:"white",padding:"0.3rem 0.75rem",borderRadius:"4px",fontSize:"0.8rem",fontWeight:600,textDecoration:"none",display:"inline-block"}}
                   >
                     🔗 Ver en Canvas
                   </a>

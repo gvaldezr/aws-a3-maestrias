@@ -63,7 +63,7 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
   return (
     <div style={{maxWidth:"960px",margin:"0 auto",padding:"1rem",fontFamily:"system-ui,sans-serif"}}>
       {/* Header */}
-      <div style={{background:"#231F20",color:"white",padding:"1.5rem",borderRadius:"8px",marginBottom:"1rem"}}>
+      <div style={{background:"#040404",color:"white",padding:"1.5rem",borderRadius:"8px",marginBottom:"1rem"}}>
         <h1 style={{margin:0,fontSize:"1.4rem"}}>Validación de Contenido</h1>
         <p style={{margin:"0.5rem 0 0",opacity:0.9}}>{summary.subject_name} — {summary.program_name}</p>
         <p style={{margin:"0.25rem 0 0",opacity:0.7,fontSize:"0.85rem"}}>Tipo: {summary.subject_type} | Estado: {summary.current_state}</p>

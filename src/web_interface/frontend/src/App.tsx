@@ -84,8 +84,8 @@ export function App() {
         <div style={styles.loginCard}>
           <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
             <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}>🎓</div>
-            <h1 style={{margin:0,fontSize:"1.3rem",color:"#231F20"}}>Vince Scholar</h1>
-            <p style={{margin:"0.3rem 0 0",color:"#997747",fontSize:"0.85rem"}}>Anáhuac Mayab</p>
+            <h1 style={{margin:0,fontSize:"1.3rem",color:"#040404"}}>Vince Scholar</h1>
+            <p style={{margin:"0.3rem 0 0",color:"#9C9C9C",fontSize:"0.85rem"}}>Anáhuac Mayab</p>
           </div>
           <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Usuario"
             style={styles.input} />
@@ -113,7 +113,7 @@ export function App() {
 
   /* ── Dashboard ── */
   return (
-    <div style={{fontFamily:"'Inter',system-ui,-apple-system,sans-serif",background:"#f5f2ef",minHeight:"100vh"}}>
+    <div style={{fontFamily:"'Inter',system-ui,-apple-system,sans-serif",background:"#f7f7f7",minHeight:"100vh"}}>
       <nav style={styles.nav}>
         <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
           <span style={{fontSize:"1.3rem"}}>🎓</span>
@@ -125,7 +125,7 @@ export function App() {
       <div style={{maxWidth:"1100px",margin:"0 auto",padding:"1.5rem"}}>
         {/* Upload Section */}
         <div style={styles.card}>
-          <h2 style={{margin:"0 0 0.75rem",fontSize:"1.05rem",color:"#231F20"}}>📤 Cargar Documentos</h2>
+          <h2 style={{margin:"0 0 0.75rem",fontSize:"1.05rem",color:"#040404"}}>📤 Cargar Documentos</h2>
           <p style={{margin:"0 0 1rem",color:"#718096",fontSize:"0.85rem"}}>
             Suba archivos PDF, DOCX o XLSX con la información de la asignatura. El pipeline se ejecutará automáticamente.
           </p>
@@ -148,7 +148,7 @@ export function App() {
 
         {/* Subject Table */}
         <div style={{...styles.card,marginTop:"1rem"}}>
-          <h2 style={{margin:"0 0 0.75rem",fontSize:"1.05rem",color:"#231F20"}}>📋 Estado del Pipeline</h2>
+          <h2 style={{margin:"0 0 0.75rem",fontSize:"1.05rem",color:"#040404"}}>📋 Estado del Pipeline</h2>
           <SubjectTable onCheckpoint={(id) => setCheckpointSubject(id)} />
         </div>
       </div>
@@ -160,22 +160,22 @@ export function App() {
 const styles: Record<string, React.CSSProperties> = {
   loginWrapper: {
     display:"flex",justifyContent:"center",alignItems:"center",minHeight:"100vh",
-    background:"linear-gradient(135deg,#231F20 0%,#997747 100%)",fontFamily:"'Inter',system-ui,sans-serif",
+    background:"linear-gradient(135deg,#040404 0%,#262626 100%)",fontFamily:"'Inter',system-ui,sans-serif",
   },
   loginCard: {
     background:"white",borderRadius:"12px",padding:"2rem",width:"100%",maxWidth:"380px",
-    boxShadow:"0 4px 24px rgba(0,0,0,0.15)",
+    boxShadow:"0 4px 24px rgba(0,0,0,0.2)",
   },
   input: {
     width:"100%",padding:"0.65rem 0.75rem",marginBottom:"0.6rem",borderRadius:"6px",
-    border:"1px solid #d4c5b0",fontSize:"0.9rem",boxSizing:"border-box" as const,
+    border:"1px solid #e5e5e5",fontSize:"0.9rem",boxSizing:"border-box" as const,
   },
   btnPrimary: {
     width:"100%",padding:"0.7rem",background:"#FF5900",color:"white",border:"none",
     borderRadius:"6px",cursor:"pointer",fontWeight:600,fontSize:"0.9rem",
   },
   nav: {
-    background:"#231F20",padding:"0.6rem 1.5rem",display:"flex",justifyContent:"space-between",
+    background:"#040404",padding:"0.6rem 1.5rem",display:"flex",justifyContent:"space-between",
     alignItems:"center",color:"white",
   },
   navBtn: {
@@ -186,7 +186,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding:"0.3rem 0.75rem",borderRadius:"4px",cursor:"pointer",fontSize:"0.8rem",
   },
   card: {
-    background:"white",borderRadius:"8px",padding:"1.25rem",boxShadow:"0 1px 3px rgba(0,0,0,0.08)",
-    border:"1px solid #e8e0d6",
+    background:"white",borderRadius:"8px",padding:"1.25rem",boxShadow:"0 1px 3px rgba(0,0,0,0.06)",
+    border:"1px solid #e5e5e5",
   },
 };
