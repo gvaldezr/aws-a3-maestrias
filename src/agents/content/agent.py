@@ -1084,7 +1084,11 @@ def _call_generate_agentic_challenge(subject_name, learning_outcomes, competenci
 
 
 def _direct_persist_content(subject_id: str, sj: dict, content_package: dict) -> None:
-    """Persist content directly to S3 without agent loop."""
+    """Persist content directly to S3 without agent loop.
+    
+    Re-reads current state from S3 before writing to avoid overwriting
+    PENDING_APPROVAL set by QA Gate (race condition fix).
+    """
     from datetime import datetime, timezone
 
     bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
@@ -1092,20 +1096,31 @@ def _direct_persist_content(subject_id: str, sj: dict, content_package: dict) ->
     s3 = boto3.client("s3")
     ddb = boto3.resource("dynamodb")
 
-    sj["content_package"] = content_package
+    # Re-read the LATEST JSON from S3 to get current state
+    # (QA Gate may have changed it to PENDING_APPROVAL since we started)
+    try:
+        obj = s3.get_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json")
+        latest_sj = json.loads(obj["Body"].read().decode("utf-8"))
+        current_state = latest_sj.get("pipeline_state", {}).get("current_state", "")
+    except Exception:
+        latest_sj = sj
+        current_state = sj.get("pipeline_state", {}).get("current_state", "")
+
+    # Merge: keep the latest state but update content_package
+    latest_sj["content_package"] = content_package
     now = datetime.now(timezone.utc).isoformat()
 
-    current = sj["pipeline_state"]["current_state"]
     advanced_states = {"PENDING_APPROVAL", "APPROVED", "REJECTED", "PUBLISHED"}
-    if current not in advanced_states:
-        sj["pipeline_state"]["current_state"] = "CONTENT_READY"
-        sj["pipeline_state"]["state_history"].append({"state": "CONTENT_READY", "agent": "content-agent-direct", "timestamp": now, "llm_version": "deterministic", "result_hash": ""})
+    if current_state not in advanced_states:
+        latest_sj["pipeline_state"]["current_state"] = "CONTENT_READY"
+        latest_sj["pipeline_state"]["state_history"].append({"state": "CONTENT_READY", "agent": "content-agent-direct", "timestamp": now, "llm_version": "deterministic", "result_hash": ""})
         ddb.Table(table_name).put_item(Item={"subject_id": subject_id, "SK": "STATE", "current_state": "CONTENT_READY",
-                                              "subject_name": sj["metadata"]["subject_name"], "program_name": sj["metadata"]["program_name"],
+                                              "subject_name": latest_sj["metadata"]["subject_name"], "program_name": latest_sj["metadata"]["program_name"],
                                               "updated_at": now, "s3_key": f"subjects/{subject_id}/subject.json"})
-    sj["updated_at"] = now
+
+    latest_sj["updated_at"] = now
     s3.put_object(Bucket=bucket, Key=f"subjects/{subject_id}/subject.json",
-                  Body=json.dumps(sj, ensure_ascii=False, indent=2).encode("utf-8"), ContentType="application/json")
+                  Body=json.dumps(latest_sj, ensure_ascii=False, indent=2).encode("utf-8"), ContentType="application/json")
 
 
 def _self_persist_content(subject_id: str, result_text: str) -> None:
