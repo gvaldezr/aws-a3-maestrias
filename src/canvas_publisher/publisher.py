@@ -83,14 +83,16 @@ def publish_course(subject_json: dict, client: CanvasClient) -> PublicationResul
     for quiz_data in quizzes:
         if not isinstance(quiz_data, dict):
             continue
+        quiz_title = quiz_data.get("title", f"Quiz — {quiz_data.get('ra_id', quiz_data.get('quiz_id', 'Quiz'))}")
+        quiz_ra = quiz_data.get("ra_id", ", ".join(quiz_data.get("ra_ids", [])))
         quiz_resp = client.create_quiz(course_id, format_quiz_payload(
-            title=f"Quiz — {quiz_data['ra_id']}",
-            ra_id=quiz_data["ra_id"],
+            title=quiz_title,
+            ra_id=quiz_ra,
         ))
         quiz_id = str(quiz_resp["id"])
         for q in quiz_data.get("questions", []):
             client.create_quiz_question(course_id, quiz_id, format_quiz_question_payload(q))
-        _add_quiz_to_module(client, course_id, module_id, quiz_id, f"Quiz — {quiz_data['ra_id']}")
+        _add_quiz_to_module(client, course_id, module_id, quiz_id, quiz_title)
 
     # Publicar casos de laboratorio con rúbricas (BR-CV04)
     for case in content.get("lab_cases", []):
