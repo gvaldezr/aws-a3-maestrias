@@ -149,7 +149,7 @@ def invoke_content(event: dict, context: Any) -> dict:
     # Poll S3 for CONTENT_READY state (agent self-persists)
     s3 = boto3.client("s3")
     bucket = os.environ.get("SUBJECTS_BUCKET_NAME", "academic-pipeline-subjects-254508868459-us-east-1-dev")
-    max_wait = 780  # 13 minutes max
+    max_wait = 1200  # 20 minutes max
     poll_interval = 15
     waited = 0
 
