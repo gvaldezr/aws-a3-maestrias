@@ -41,6 +41,7 @@ def publish_course(subject_json: dict, client: CanvasClient) -> PublicationResul
     competencies = subject_json["academic_inputs"]["competencies"]
 
     course_code = f"AP-{subject_id[:8].upper()}"
+    course_name = metadata["subject_name"]
 
     # Crear o encontrar curso
     existing = client.find_course_by_code(_CANVAS_ACCOUNT_ID, course_code)
@@ -50,8 +51,8 @@ def publish_course(subject_json: dict, client: CanvasClient) -> PublicationResul
     else:
         course_resp = client.create_course(_CANVAS_ACCOUNT_ID, {
             "course": {
-                "name": metadata["subject_name"],
-                "course_code": course_code,
+                "name": course_name,
+                "course_code": f"MADTFIN-{course_name[:30].replace(' ', '-')}",
                 "workflow_state": "unpublished",
                 "language": metadata.get("language", "es").lower()[:2],
             }
