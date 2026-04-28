@@ -60,57 +60,44 @@ def publish_course(subject_json: dict, client: CanvasClient) -> PublicationResul
         course_url = course_resp.get("html_url", "")
         logger.info("canvas_course_created", extra={"subject_id": subject_id, "course_id": course_id})
 
+    try:
+        from html_helpers import rubric_to_html, schedule_to_html
+    except ImportError:
+        from src.canvas_publisher.html_helpers import rubric_to_html, schedule_to_html
+
     module_urls: list[str] = []
     position = 1
 
-    # ── Módulo 0: Carta Descriptiva + Recursos Globales ──
-    mod0 = client.create_module(course_id, "Información General", position=position)
+    # ── Módulo 0: Información General ──
+    mod0 = client.create_module(course_id, "Informacion General", position=position)
     mod0_id = str(mod0["id"])
     position += 1
 
     # Carta Descriptiva
     card = instructional.get("descriptive_card", {})
     if card:
-        card_md = f"# Carta Descriptiva: {metadata['subject_name']}\n\n"
-        card_md += f"**Objetivo General**: {card.get('general_objective', '')}\n\n"
+        card_html = f"<h1>Carta Descriptiva: {metadata['subject_name']}</h1>"
+        card_html += f"<p><strong>Objetivo General</strong>: {card.get('general_objective', '')}</p>"
+        card_html += "<h2>Objetivos Especificos</h2><ol>"
         for so in card.get("specific_objectives", []):
             text = so.get("text", so) if isinstance(so, dict) else str(so)
-            card_md += f"- {text}\n"
-        page = client.create_page(course_id, format_page_payload("Carta Descriptiva", card_md))
+            card_html += f"<li>{text}</li>"
+        card_html += "</ol>"
+        page = client.create_page(course_id, {"wiki_page": {"title": "Carta Descriptiva", "body": card_html, "published": False}})
         _add_page_to_module(client, course_id, mod0_id, page)
 
     # Masterclass
     mc = content.get("masterclass_script", {})
     if mc and isinstance(mc, dict):
-        mc_md = f"# Masterclass: {mc.get('title', metadata['subject_name'])}\n\n"
-        mc_md += f"**Duración**: {mc.get('duration_minutes', 20)} minutos\n\n"
+        mc_html = f"<h1>{mc.get('title', 'Masterclass')}</h1>"
+        mc_html += f"<p><strong>Duracion</strong>: {mc.get('duration_minutes', 20)} minutos</p>"
         for sec in mc.get("structure", []):
             if isinstance(sec, dict):
-                mc_md += f"## {sec.get('section', '')} ({sec.get('time', '')})\n\n"
-                mc_md += f"{sec.get('content', '')}\n\n"
+                mc_html += f"<h2>{sec.get('section', '')} ({sec.get('time', '')})</h2>"
+                mc_html += f"<p>{sec.get('content', '')}</p>"
                 if sec.get("notes"):
-                    mc_md += f"*Nota: {sec['notes']}*\n\n"
-        page = client.create_page(course_id, format_page_payload("Guion de Masterclass", mc_md))
-        _add_page_to_module(client, course_id, mod0_id, page)
-
-    # Reto de Aprendizaje Agéntico
-    challenge = content.get("agentic_challenge", {})
-    if challenge and isinstance(challenge, dict):
-        ch_md = f"# {challenge.get('title', 'Reto de Aprendizaje Agentico')}\n\n"
-        ch_md += f"**Semana**: {challenge.get('week', 2)}\n\n"
-        ch_md += f"## Escenario\n\n{challenge.get('scenario', '')}\n\n"
-        ch_md += f"## Pregunta Directiva Central\n\n{challenge.get('central_question', '')}\n\n"
-        ch_md += f"## Entregable\n\n{challenge.get('deliverable', '')}\n\n"
-        rubric = challenge.get("rubric", {})
-        criteria = rubric.get("criteria", []) if isinstance(rubric, dict) else []
-        if criteria:
-            ch_md += "## Rubrica de Evaluacion\n\n"
-            ch_md += "| Criterio | Peso | Excelente | Bueno | Regular | Deficiente |\n"
-            ch_md += "|---|---|---|---|---|---|\n"
-            for cr in criteria:
-                if isinstance(cr, dict):
-                    ch_md += f"| {cr.get('criterion','')} | {cr.get('weight','')} | {cr.get('excelente','')} | {cr.get('bueno','')} | {cr.get('regular','')} | {cr.get('deficiente','')} |\n"
-        page = client.create_page(course_id, format_page_payload("Reto de Aprendizaje Agentico", ch_md))
+                    mc_html += f"<p><em>{sec['notes']}</em></p>"
+        page = client.create_page(course_id, {"wiki_page": {"title": "Guion de Masterclass", "body": mc_html, "published": False}})
         _add_page_to_module(client, course_id, mod0_id, page)
 
     # Guía del Facilitador
@@ -119,23 +106,20 @@ def publish_course(subject_json: dict, client: CanvasClient) -> PublicationResul
         fg = ma.get("facilitator_guide", {})
         sessions = fg.get("sessions", []) if isinstance(fg, dict) else []
         if sessions:
-            fg_md = "# Guia del Facilitador\n\n"
+            fg_html = "<h1>Guia del Facilitador</h1>"
             for s in sessions:
                 if not isinstance(s, dict):
                     continue
-                fg_md += f"## Semana {s.get('week', '')}: {s.get('objective', '')}\n\n"
-                fg_md += f"**Duracion**: {s.get('duration_minutes', 90)} minutos\n\n"
-                fg_md += "| Tiempo | Actividad |\n|---|---|\n"
-                for step in s.get("sequence", []):
-                    if isinstance(step, dict):
-                        fg_md += f"| {step.get('time', '')} | {step.get('activity', '')} |\n"
+                fg_html += f"<h2>Semana {s.get('week', '')}: {s.get('objective', '')}</h2>"
+                fg_html += f"<p><strong>Duracion</strong>: {s.get('duration_minutes', 90)} minutos</p>"
+                fg_html += schedule_to_html(s.get("sequence", []))
                 tqs = s.get("trigger_questions", [])
                 if tqs:
-                    fg_md += "\n**Preguntas detonadoras**:\n\n"
+                    fg_html += "<p><strong>Preguntas detonadoras</strong>:</p><ul>"
                     for tq in tqs:
-                        fg_md += f"- {tq}\n"
-                fg_md += "\n"
-            page = client.create_page(course_id, format_page_payload("Guia del Facilitador", fg_md))
+                        fg_html += f"<li>{tq}</li>"
+                    fg_html += "</ul>"
+            page = client.create_page(course_id, {"wiki_page": {"title": "Guia del Facilitador", "body": fg_html, "published": False}})
             _add_page_to_module(client, course_id, mod0_id, page)
 
     # ── Módulos semanales ──
@@ -215,25 +199,38 @@ def publish_course(subject_json: dict, client: CanvasClient) -> PublicationResul
         # Forum
         week_forums = forums_by_week.get(w, [])
         for forum in week_forums[:1]:
-            forum_md = f"# {forum.get('title', f'Foro Semana {w}')}\n\n"
+            forum_html = f"<h1>{forum.get('title', f'Foro Semana {w}')}</h1>"
             case = forum.get("case", {})
             if isinstance(case, dict):
-                forum_md += f"## Caso de Negocio\n\n{case.get('description', '')}\n\n"
-            forum_md += "## Preguntas de Discusion\n\n"
-            for qi, fq in enumerate(forum.get("questions", []), 1):
-                forum_md += f"{qi}. {fq}\n\n"
+                forum_html += f"<h2>Caso de Negocio</h2><p>{case.get('description', '')}</p>"
+            forum_html += "<h2>Preguntas de Discusion</h2><ol>"
+            for fq in forum.get("questions", []):
+                forum_html += f"<li>{fq}</li>"
+            forum_html += "</ol>"
             frubric = forum.get("rubric", {})
             if isinstance(frubric, dict) and frubric.get("criteria"):
-                forum_md += "## Rubrica de Evaluacion\n\n"
-                forum_md += "| Criterio | Peso | Excelente | Bueno | Regular | Deficiente |\n|---|---|---|---|---|---|\n"
-                for cr in frubric["criteria"]:
-                    if isinstance(cr, dict):
-                        forum_md += f"| {cr.get('criterion','')} | {cr.get('weight','')} | {cr.get('excelente','')} | {cr.get('bueno','')} | {cr.get('regular','')} | {cr.get('deficiente','')} |\n"
-            page = client.create_page(course_id, format_page_payload(
-                forum.get("title", f"Foro Semana {w}"),
-                forum_md,
-            ))
+                forum_html += "<h2>Rubrica de Evaluacion</h2>"
+                forum_html += rubric_to_html(frubric["criteria"])
+            page = client.create_page(course_id, {"wiki_page": {"title": forum.get("title", f"Foro Semana {w}"), "body": forum_html, "published": False}})
             _add_page_to_module(client, course_id, mod_id, page)
+
+    # ── Módulo: Reto de Aprendizaje Agéntico ──
+    challenge = content.get("agentic_challenge", {})
+    if challenge and isinstance(challenge, dict) and challenge.get("scenario"):
+        mod_reto = client.create_module(course_id, "Reto de Aprendizaje Agentico", position=position)
+        position += 1
+        ch_html = f"<h1>{challenge.get('title', 'Reto de Aprendizaje Agentico')}</h1>"
+        ch_html += f"<p><strong>Semana</strong>: {challenge.get('week', 2)}</p>"
+        ch_html += f"<h2>Escenario</h2><p>{challenge.get('scenario', '')}</p>"
+        ch_html += f"<h2>Pregunta Directiva Central</h2><p><strong>{challenge.get('central_question', '')}</strong></p>"
+        ch_html += f"<h2>Entregable</h2><p>{challenge.get('deliverable', '')}</p>"
+        ch_rubric = challenge.get("rubric", {})
+        ch_criteria = ch_rubric.get("criteria", []) if isinstance(ch_rubric, dict) else []
+        if ch_criteria:
+            ch_html += "<h2>Rubrica de Evaluacion</h2>"
+            ch_html += rubric_to_html(ch_criteria)
+        page = client.create_page(course_id, {"wiki_page": {"title": "Reto de Aprendizaje Agentico", "body": ch_html, "published": False}})
+        _add_page_to_module(client, course_id, str(mod_reto["id"]), page)
 
     # ── Módulo: Dashboard de Evidencia ──
     if isinstance(ma, dict) and ma.get("evidence_dashboard", {}).get("html_content"):
