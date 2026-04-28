@@ -5,35 +5,134 @@ Sistema automatizado que transforma documentos de planeación académica (PDF/DO
 ## Arquitectura
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        Frontend (S3 Static)                         │
-│  Login (Cognito) → Upload DOCX → Dashboard → Revisar → Aprobar     │
-└──────────┬──────────────────────────────────┬───────────────────────┘
-           │ API Gateway (Web)                │ API Gateway (Checkpoint)
-           ▼                                  ▼
-┌──────────────────┐              ┌─────────────────────┐
-│  Upload Handler  │              │ Checkpoint Handler   │
-│  Ingestion       │              │ GET  /checkpoint     │
-│  Dashboard       │              │ POST /decision       │
-└────────┬─────────┘              └──────────┬──────────┘
-         │ S3 Event                          │ Approve → Canvas Publisher
-         ▼                                   ▼
-┌──────────────────────────────────────────────────────┐
-│              Step Functions Orchestrator              │
-│  WarmUp → Scholar → DI → Content → QA Gate → STOP   │
-└────┬──────────┬──────────┬──────────┬────────────────┘
-     ▼          ▼          ▼          ▼
-┌─────────┐ ┌──────┐ ┌─────────┐ ┌────────┐
-│ Scholar │ │  DI  │ │ Content │ │QA Gate │
-│AgentCore│ │Agent │ │ Agent   │ │Lambda  │
-│ Runtime │ │Core  │ │  Core   │ │        │
-└────┬────┘ └──┬───┘ └────┬────┘ └────┬───┘
-     │         │          │           │
-     ▼         ▼          ▼           ▼
-┌──────────────────────────────────────────┐
-│     S3 (Subject JSON) + DynamoDB         │
-│     Fuente única de verdad por asignatura│
-└──────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         Frontend (React + Vite → S3 Static)                  │
+│   Login (Cognito) → Upload DOCX → Dashboard → Revisar (10 tabs) → Aprobar   │
+└──────────┬───────────────────────────────────────────────┬───────────────────┘
+           │                                               │
+           ▼                                               ▼
+┌─────────────────────────┐                 ┌──────────────────────────────────┐
+│  API Gateway (Web)      │                 │  API Gateway (Checkpoint)        │
+│  POST /api/upload       │                 │  GET  /subjects                  │
+│  GET  /api/subjects     │                 │  GET  /subjects/{id}/checkpoint  │
+└──────┬──────────────────┘                 │  POST /subjects/{id}/decision    │
+       │                                    └──────────┬───────────────────────┘
+       ▼                                               │
+┌──────────────────┐                                   ▼
+│  Upload Lambda   │                        ┌─────────────────────┐
+└──────┬───────────┘                        │ Checkpoint Lambda   │──┐
+       │ PUT uploads/                       │ (approve/reject)    │  │
+       ▼                                    └─────────────────────┘  │
+┌──────────────────┐                                                 │ Approve
+│  S3 Bucket       │◄── S3 Event Notification (uploads/ prefix)      │
+│  (SSE-KMS)       │                                                 ▼
+└──────┬───────────┘                                    ┌────────────────────┐
+       │                                                │ Canvas Publisher   │
+       ▼                                                │ Lambda             │
+┌──────────────────┐                                    │ (Canvas LMS API)   │
+│ Ingestion Lambda │                                    └────────┬───────────┘
+│ (DOCX parser)    │                                             │
+└──────┬───────────┘                                             ▼
+       │ StartExecution                                 ┌────────────────────┐
+       ▼                                                │ Canvas LMS Cloud   │
+┌──────────────────────────────────────────────────┐    │ (Instructure)      │
+│            Step Functions Orchestrator            │    └────────────────────┘
+│                                                  │
+│  ┌─────────┐   ┌─────────┐   ┌──────────────┐   │
+│  │ WarmUp  │──▶│ Scholar │──▶│Persist Scholar│   │
+│  │ (ping)  │   │AgentCore│   │  (Lambda)     │   │
+│  └─────────┘   │ Runtime │   └──────┬────────┘   │
+│                └─────────┘          │            │
+│                                     ▼            │
+│  ┌──────────────┐   ┌─────────┐   ┌──────────┐  │
+│  │ Persist DI   │◀──│   DI    │◀──┘          │  │
+│  │  (Lambda)    │   │AgentCore│              │  │
+│  └──────┬───────┘   │ Runtime │              │  │
+│         │           └─────────┘              │  │
+│         ▼                                    │  │
+│  ┌─────────────┐   ┌───────────────────┐     │  │
+│  │   Content   │──▶│ Persist Content   │     │  │
+│  │  AgentCore  │   │ (Lambda, polls S3)│     │  │
+│  │  Runtime    │   └──────┬────────────┘     │  │
+│  └─────────────┘          │                  │  │
+│                           ▼                  │  │
+│                    ┌────────────┐             │  │
+│                    │  QA Gate   │             │  │
+│                    │  Lambda    │             │  │
+│                    └─────┬──┬──┘             │  │
+│                     PASS │  │ FAIL           │  │
+│                          ▼  ▼                │  │
+│              ┌──────────┐  ┌────────┐        │  │
+│              │ PENDING  │  │  QA    │        │  │
+│              │ APPROVAL │  │ FAILED │        │  │
+│              └──────────┘  └────────┘        │  │
+└──────────────────────────────────────────────┘  │
+       │              │              │             │
+       ▼              ▼              ▼             │
+┌──────────────────────────────────────────────┐  │
+│  S3 (Subject JSON, versionado, SSE-KMS)      │  │
+│  Fuente única de verdad por asignatura       │◄─┘
+│  subjects/{subject_id}/subject.json          │
+└──────────────────────┬───────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────┐
+│  DynamoDB (índice de estado)                 │
+│  PK: subject_id  |  GSI: state-index         │
+│  GSI: program-index                          │
+└──────────────────────────────────────────────┘
+
+                 Servicios Transversales
+┌──────────────┐ ┌──────────────┐ ┌────────────┐
+│ Secrets Mgr  │ │ CloudWatch   │ │    SNS     │
+│ Scopus Key   │ │ Logs (JSON)  │ │ Alerts     │
+│ Canvas Token │ │ 90d retention│ │ Staff      │
+│ Canvas API   │ │ 7 log groups │ │ Admin      │
+└──────────────┘ └──────────────┘ └────────────┘
+┌──────────────┐ ┌──────────────┐ ┌────────────┐
+│   Cognito    │ │     KMS      │ │ EventBridge│
+│  User Pool   │ │  CMK rotate  │ │ Timeout 1h │
+│  JWT auth    │ │  S3+DDB+SM   │ │ reminder   │
+└──────────────┘ └──────────────┘ └────────────┘
+```
+
+### Flujo del Pipeline
+
+```
+Staff sube DOCX
+       │
+       ▼
+Upload Lambda → S3 (uploads/) → S3 Event → Ingestion Lambda
+       │                                          │
+       │                              Parsea DOCX (tablas Anáhuac)
+       │                              Crea Subject JSON (INGESTED)
+       │                                          │
+       │                              StartExecution Step Functions
+       │                                          │
+       ▼                                          ▼
+  Dashboard ◄──── DynamoDB ◄──── Step Functions ejecuta:
+  (polling)                      │
+                                 ├─ 1. WarmUp (ping 3 agentes)
+                                 ├─ 2. Scholar → Persist (KNOWLEDGE_MATRIX_READY)
+                                 ├─ 3. DI → Persist (DI_READY)
+                                 ├─ 4. Content → Poll S3 → Persist (CONTENT_READY)
+                                 ├─ 5. QA Gate (PENDING_APPROVAL | QA_FAILED)
+                                 └─ 6. STOP — espera decisión humana
+                                                  │
+                                    Staff revisa en frontend (10 tabs)
+                                                  │
+                                    POST /subjects/{id}/decision
+                                                  │
+                                         ┌────────┴────────┐
+                                         ▼                 ▼
+                                    APPROVED          REJECTED
+                                         │           (feedback → retry)
+                                         ▼
+                                  Canvas Publisher
+                                  (crea curso en Canvas LMS)
+                                         │
+                                         ▼
+                                     PUBLISHED
 ```
 
 ## Stack Tecnológico
@@ -41,16 +140,20 @@ Sistema automatizado que transforma documentos de planeación académica (PDF/DO
 | Componente | Tecnología |
 |-----------|-----------|
 | Agentes IA | Amazon Bedrock AgentCore Runtime + Strands SDK |
-| Modelo LLM | Claude Sonnet 4.6 (us.anthropic.claude-sonnet-4-6) |
-| Orquestación | AWS Step Functions |
-| Almacenamiento | Amazon S3 (JSON versionado) + DynamoDB (índice de estado) |
-| APIs | Amazon API Gateway (REST) con Cognito JWT |
-| Autenticación | Amazon Cognito User Pool |
-| Investigación | Scopus API (Elsevier) + OpenAlex (abstracts) |
-| LMS destino | Canvas LMS (Instructure) |
-| Frontend | React + TypeScript + Vite (S3 Static Website) |
-| IaC | AWS CDK (Python) |
-| Secretos | AWS Secrets Manager |
+| Modelo LLM | Claude Sonnet 4.6 (`us.anthropic.claude-sonnet-4-6`) |
+| Orquestación | AWS Step Functions (9 Lambda handlers) |
+| Almacenamiento | Amazon S3 (JSON versionado, SSE-KMS) + DynamoDB (índice de estado, 2 GSIs) |
+| APIs | 2× Amazon API Gateway REST (Web + Checkpoint) con Cognito JWT |
+| Autenticación | Amazon Cognito User Pool (MFA opcional, bloqueo progresivo) |
+| Cifrado | AWS KMS (CMK con rotación automática) — S3, DynamoDB, Secrets Manager, SNS |
+| Investigación | Scopus API (Elsevier) + OpenAlex (abstracts gratuitos) |
+| LMS destino | Canvas LMS Cloud (Instructure) — `anahuacmerida.instructure.com` |
+| Frontend | React 18 + TypeScript 5.6 + Vite 6 (S3 Static Website) |
+| IaC | AWS CDK (Python) — 5 stacks |
+| Secretos | AWS Secrets Manager (Scopus Key, Canvas Token, Canvas API Key) |
+| Notificaciones | Amazon SNS (3 topics: alerts, staff, admin) |
+| Observabilidad | CloudWatch Logs (JSON estructurado, 90d retención, 7 log groups) |
+| Scheduling | Amazon EventBridge (timeout checker cada 1h) |
 
 ## Pipeline por Asignatura
 
@@ -124,13 +227,13 @@ Para 5 semanas: 5 intros + 15 lecturas + 5 quizzes + 5 foros + masterclass + ret
 npx cdk deploy --all --require-approval never
 ```
 
-| Stack | Recursos |
-|-------|----------|
-| Infrastructure | S3, DynamoDB, KMS, SNS, Secrets Manager |
-| QACheckpoint | Cognito, QA Gate Lambda, Checkpoint Lambda, API Gateway |
-| CanvasPublisher | Canvas Publisher Lambda |
-| Orchestrator | Step Functions, 9 Lambda handlers |
-| WebInterface | Upload/Ingestion/Dashboard Lambdas, API Gateway, S3 trigger |
+| Stack | Recursos | Dependencias |
+|-------|----------|-------------|
+| InfrastructureBase | S3 (versionado, SSE-KMS), DynamoDB (2 GSIs), KMS (CMK), 3× SNS, 3× Secrets Manager, 7× CloudWatch Log Groups, IAM roles | Ninguna |
+| QACheckpoint | Cognito User Pool, QA Gate Lambda, Checkpoint Lambda, Timeout Checker Lambda, EventBridge Rule (1h), API Gateway REST | InfrastructureBase |
+| CanvasPublisher | Canvas Publisher Lambda | InfrastructureBase |
+| Orchestrator | Step Functions, 9 Lambdas (warmup, scholar, persist-scholar, di, persist-di, content, persist-content, qa, canvas), Shared Layer | InfrastructureBase, QACheckpoint, CanvasPublisher |
+| WebInterface | Upload Lambda, Ingestion Lambda (S3 trigger), Dashboard Lambda, API Gateway REST, S3 Event Notification | InfrastructureBase, QACheckpoint, Orchestrator |
 
 ### AgentCore Runtimes (3)
 ```bash
