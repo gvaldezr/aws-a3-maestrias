@@ -3,191 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pitch AWS (2 Min): IA Agéntica Anáhuac</title>
+    <title>Scholar Agent - Anáhuac Mayab</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --anahuac-orange: #ff5900;
+            --aws-slate: #0f172a;
+        }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* Slate 900 */
-            color: #f8fafc; /* Slate 50 */
+            background-color: #020617; 
+            color: #f8fafc;
             overflow: hidden;
+            margin: 0;
+            height: 100vh;
         }
         .slide {
+            height: 100vh;
+            width: 100vw;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-            transform: scale(0.95);
+            transition: all 0.5s ease-in-out;
             display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 5%;
         }
         .slide.active {
             opacity: 1;
-            transform: scale(1);
             display: flex;
         }
         .text-gradient {
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-image: linear-gradient(to right, #fb923c, #f59e0b); /* Naranja AWS-ish */
+            background-image: linear-gradient(to right, #ff5900, #ffb200);
         }
-        .progress-bar {
-            transition: width 0.3s ease;
+        .hero-quote {
+            font-size: clamp(1.8rem, 4.2vw, 3rem);
+            line-height: 1.1;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+        }
+        .hero-time {
+            font-size: clamp(6rem, 14vw, 11rem);
+            line-height: 0.85;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 40px rgba(255, 89, 0, 0.4);
+        }
+        .card-glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 89, 0, 0.3);
+            border-radius: 2.5rem;
+            padding: clamp(2rem, 4vw, 3.5rem);
+        }
+        .progress-bar { transition: width 0.4s ease; }
+        
+        .main-title {
+            font-size: clamp(3rem, 8vw, 6.5rem);
+        }
+
+        .impact-card {
+            border-left: 4px solid var(--anahuac-orange);
+            background: rgba(255, 89, 0, 0.05);
+            padding: 1rem 1.5rem;
+            border-radius: 0 1rem 1rem 0;
+        }
+
+        .comparison-badge {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 6px 16px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            color: #f87171;
+            font-weight: 600;
+        }
+
+        /* Cost Table */
+        .cost-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        .cost-table th {
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            padding-bottom: 12px;
+            text-align: left;
+        }
+        .cost-table td {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+        }
+        .cost-table tr td:first-child { border-radius: 12px 0 0 12px; }
+        .cost-table tr td:last-child { border-radius: 0 12px 12px 0; text-align: right; font-weight: bold; }
+
+        /* Timeline User Experience */
+        .timeline-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            margin-top: 4rem;
+        }
+        .timeline-line {
+            position: absolute;
+            top: 24px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #1e293b;
+            z-index: 0;
+        }
+        .timeline-step {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 18%;
+            text-align: center;
+        }
+        .step-number {
+            width: 48px;
+            height: 48px;
+            background: var(--anahuac-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.1rem;
+            color: white;
+            box-shadow: 0 0 25px rgba(255, 89, 0, 0.4);
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
-<body class="h-screen w-screen relative">
+<body class="relative overflow-hidden">
 
-    <!-- Barra de Progreso -->
-    <div class="absolute top-0 left-0 w-full h-1.5 bg-slate-800 z-50">
-        <div id="progress" class="h-full bg-gradient-to-r from-orange-500 to-yellow-400 progress-bar" style="width: 20%;"></div>
+    <!-- Barra de progreso superior -->
+    <div class="absolute top-0 left-0 w-full h-1.5 bg-slate-900 z-50">
+        <div id="progress" class="h-full bg-orange-600 progress-bar" style="width: 0%;"></div>
     </div>
 
-    <!-- Contenedor de Slides -->
-    <div id="slides-container" class="w-full h-full relative">
+    <div id="slides-container" class="relative h-full w-full">
 
-        <!-- Slide 1: Título (0:00 - 0:15) -->
-        <div class="slide active flex-col justify-center items-center h-full text-center px-10">
-            <i data-lucide="cpu" class="w-24 h-24 text-orange-500 mb-6 opacity-80"></i>
-            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 text-white">
-                Fábrica de Conocimiento <br><span class="text-gradient">IA Agéntica</span>
+        <!-- SLIDE 1: PORTADA -->
+        <div class="slide active items-center text-center">
+            <div class="mb-6 inline-block p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20">
+                <i data-lucide="graduation-cap" class="w-16 h-16 text-[#ff5900]"></i>
+            </div>
+            <h1 class="main-title font-black tracking-tighter mb-4 leading-none">
+                VINCE <span class="text-gradient">SCHOLAR</span>
             </h1>
-            <p class="text-xl md:text-2xl text-slate-400 max-w-3xl mt-4">
-                Acelerando la producción de posgrados para Anáhuac Online en AWS.
+            <p class="text-xl md:text-2xl text-slate-400 font-light max-w-2xl mx-auto">
+                Pipeline académico automatizado para Anáhuac Mayab.
             </p>
-            <div class="mt-10 opacity-50 border border-dashed border-slate-600 rounded-lg p-4 max-w-xs w-full flex items-center justify-center">
-                <p class="text-sm text-slate-500">[Logos Anáhuac + AWS]</p>
+            <div class="mt-12 flex items-center gap-4 opacity-40">
+                <span class="text-xs font-bold tracking-[0.4em] uppercase">AWS Builders League 2026</span>
             </div>
         </div>
 
-        <!-- Slide 2: El Problema y El Impacto (0:15 - 0:45) -->
-        <div class="slide flex-col justify-center h-full px-16 md:px-32 relative bg-slate-900">
-            <h2 class="text-4xl md:text-5xl font-bold mb-10 text-white">El Cuello de Botella vs. La Promesa</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <!-- Problem -->
-                <div>
-                    <blockquote class="text-2xl italic text-slate-300 border-l-4 border-orange-500 pl-6 mb-6">
-                        "Me encantaría diseñar el posgrado, pero no tengo tiempo."
+        <!-- SLIDE 2: EL DOLOR DEL CLIENTE -->
+        <div class="slide">
+            <div class="absolute top-8 left-0 w-full text-center">
+                <h2 class="text-sm font-bold uppercase tracking-[0.3em] text-slate-500">Perspectiva del Cliente: El Diseñador Instruccional</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-7xl mx-auto w-full">
+                <div class="relative px-4">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-orange-500/10 rounded-lg">
+                            <i data-lucide="user" class="w-6 h-6 text-orange-500"></i>
+                        </div>
+                        <span class="text-slate-400 font-bold text-xs uppercase tracking-widest">El Cuello de Botella</span>
+                    </div>
+                    <blockquote class="hero-quote leading-tight text-white">
+                        “Tengo el diseño listo, pero sigo <span class="text-red-500 font-bold">paralizado</span> esperando que el experto tenga tiempo para validarme.”
                     </blockquote>
-                    <ul class="text-lg space-y-4 text-slate-400">
-                        <li class="flex items-center"><i data-lucide="x-circle" class="mr-3 text-red-500"></i> Expertos directivos saturados.</li>
-                        <li class="flex items-center"><i data-lucide="clock" class="mr-3 text-red-500"></i> Meses de retraso para validación SEP.</li>
-                        <li class="flex items-center"><i data-lucide="trending-down" class="mr-3 text-red-500"></i> Pérdida de Time-to-Market.</li>
-                    </ul>
-                </div>
-                <!-- Impact -->
-                <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border-2 border-orange-500 flex flex-col items-center transform scale-105 shadow-[0_0_40px_rgba(249,115,22,0.2)]">
-                    <div class="flex items-center gap-3 text-xl font-bold text-slate-500 mb-2 line-through decoration-red-500 decoration-2">
-                        40h Experto + 40h Diseñador = 80h
+                    <div class="mt-8 space-y-4">
+                        <div class="flex items-start gap-4">
+                            <i data-lucide="clock-8" class="w-5 h-5 text-red-400 mt-1"></i>
+                            <p class="text-slate-400">Dependencia crítica de agendas saturadas.</p>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-400 mt-1"></i>
+                            <p class="text-slate-400">Pérdida de meses en el time-to-market del programa.</p>
+                        </div>
                     </div>
-                    <div class="text-7xl font-black text-white my-2 flex items-baseline">
-                        15 <span class="text-3xl ml-2 text-orange-400">Minutos</span>
+                </div>
+                <div class="relative flex flex-col items-center">
+                    <div class="absolute inset-0 bg-orange-600/10 blur-[120px] rounded-full"></div>
+                    <div class="card-glass text-center relative w-full max-w-md border-orange-500/40">
+                        <div class="flex justify-center gap-2 mb-4">
+                             <i data-lucide="zap" class="w-6 h-6 text-orange-500 fill-orange-500"></i>
+                             <span class="text-orange-500 font-black uppercase tracking-[0.4em] text-sm">Autonomía Radical</span>
+                        </div>
+                        <div class="flex flex-col items-center mb-6">
+                            <span class="comparison-badge line-through mb-4 italic uppercase tracking-tighter">40 Horas de Trabajo Manual</span>
+                            <div class="hero-time tracking-tighter">15</div>
+                            <div class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mt-2">Minutos</div>
+                        </div>
+                        <p class="text-slate-300 text-lg font-light leading-snug">
+                            El DI recupera el control generando bases con <span class="text-white font-bold">rigor científico</span> de forma inmediata.
+                        </p>
                     </div>
-                    <p class="text-lg text-slate-300 mt-2 text-center">"Primera Versión" Profesional Completa</p>
                 </div>
             </div>
         </div>
 
-        <!-- Slide 3: Arquitectura y Magia (0:45 - 1:25) -->
-        <div class="slide flex-col justify-center h-full px-16 md:px-32">
-            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-white">Orquestación Serverless <i data-lucide="arrow-right" class="inline w-8 h-8 text-orange-500 mx-2"></i> Canvas LMS</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Step Functions -->
-                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                    <i data-lucide="git-merge" class="w-10 h-10 text-orange-400 mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">AWS Step Functions</h3>
-                    <p class="text-slate-400 text-sm">Coordina 7 fases automáticas desde la ingesta del DOCX hasta la publicación final.</p>
+        <!-- SLIDE 3: ORQUESTACIÓN Y AGENTES -->
+        <div class="slide">
+            <h2 class="text-4xl font-black mb-10 border-l-8 border-orange-600 pl-6 mx-auto max-w-6xl w-full uppercase tracking-tighter">Orquestación <span class="text-orange-500">AWS</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto w-full">
+                <div class="p-8 rounded-[2rem] bg-slate-900/50 border border-slate-800 hover:border-orange-500/30 transition-all">
+                    <i data-lucide="search" class="w-10 h-10 text-blue-400 mb-6"></i>
+                    <h3 class="text-2xl font-bold mb-3 text-white">Scholar Agent</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Filtra y cita papers de fuentes como Scopus para fundamentar el diseño con evidencia científica real.</p>
                 </div>
-                <!-- AgentCore -->
-                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                    <i data-lucide="brain-circuit" class="w-10 h-10 text-blue-400 mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Cerebro Agéntico</h3>
-                    <p class="text-slate-400 text-sm"><strong>AgentCore + Claude 4.6</strong>. Tres agentes investigan Scopus, aplican Bloom y redactan.</p>
+                <div class="p-8 rounded-[2rem] bg-slate-900/50 border border-orange-500/50 shadow-[0_0_30px_rgba(255,89,0,0.1)]">
+                    <i data-lucide="brain-circuit" class="w-10 h-10 text-orange-500 mb-6"></i>
+                    <h3 class="text-2xl font-bold mb-3 text-white">DI Agent</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Transforma los objetivos en una estructura pedagógica completa siguiendo la Taxonomía de Bloom.</p>
                 </div>
-                <!-- Canvas -->
-                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                    <i data-lucide="monitor-play" class="w-10 h-10 text-green-400 mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">API Canvas LMS</h3>
-                    <p class="text-slate-400 text-sm">Despliegue nativo con módulos, foros y rúbricas renderizadas en código HTML.</p>
+                <div class="p-8 rounded-[2rem] bg-slate-900/50 border border-slate-800 hover:border-orange-500/30 transition-all">
+                    <i data-lucide="shield-check" class="w-10 h-10 text-green-400 mb-6"></i>
+                    <h3 class="text-2xl font-bold mb-3 text-white">QA Agent</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Garantiza la alineación total al perfil de egreso y detecta brechas de contenido antes de publicar.</p>
                 </div>
             </div>
-            
-            <!-- ESPACIO PARA IMAGEN: Arquitectura simplificada -->
-            <div class="mt-8 h-32 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center opacity-70">
-                <p class="text-slate-500 text-center px-4 text-sm">[Imagen: Diagrama Arquitectura High-Level (API Gateway, Step Functions, Bedrock, S3)]</p>
+            <div class="mt-12 text-center text-slate-500 text-[10px] font-bold uppercase tracking-[0.5em]">
+                Amazon Bedrock AgentCore• AWS Step Functions • Claude 3.5 Sonnet • Amazon OpenSearch
             </div>
         </div>
 
-        <!-- Slide 4: El Cierre y Humano en el Centro (1:25 - 1:50) -->
-        <div class="slide flex-col justify-center h-full px-16 md:px-32 relative">
-            <h2 class="text-4xl md:text-5xl font-bold mb-6 text-white">De Escritor a <span class="text-orange-500">Editor Empoderado</span></h2>
-            <p class="text-xl text-slate-400 mb-10">La IA asiste, pero el humano decide (Checkpoint con Cognito).</p>
-            
-            <div class="flex flex-col md:flex-row gap-10 items-center">
-                <!-- Imagen Dashboard -->
-                <div class="w-full md:w-1/2 h-56 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center relative overflow-hidden">
-                    <p class="text-slate-500 text-sm z-10">[Imagen: Dashboard React de Aprobación]</p>
-                    <div class="absolute inset-0 bg-gradient-to-tr from-slate-800 to-slate-700 opacity-50"></div>
+        <!-- SLIDE 4: EXPERIENCIA DEL USUARIO (DIAGRAMA) -->
+        <div class="slide">
+            <div class="max-w-6xl mx-auto w-full text-center mb-16">
+                <h2 class="text-orange-500 text-4xl font-black mb-4 uppercase tracking-tighter">De 40 horas a 15 minutos</h2>
+                <p class="text-slate-400 text-lg">El flujo de trabajo automatizado que libera al Diseñador Instruccional:</p>
+            </div>
+
+            <div class="relative max-w-6xl mx-auto w-full">
+                <div class="timeline-line"></div>
+                <div class="timeline-container">
+                    <!-- Paso 1 -->
+                    <div class="timeline-step">
+                        <div class="step-number">1</div>
+                        <h4 class="font-bold text-white text-lg mb-2">Ingesta</h4>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Carga de Perfil <br> de Egreso (S3)</p>
+                    </div>
+                    <!-- Paso 2 -->
+                    <div class="timeline-step">
+                        <div class="step-number">2</div>
+                        <h4 class="font-bold text-white text-lg mb-2">Agentes</h4>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Procesamiento <br> Multi-Agente</p>
+                    </div>
+                    <!-- Paso 3 -->
+                    <div class="timeline-step">
+                        <div class="step-number">3</div>
+                        <h4 class="font-bold text-white text-lg mb-2">QA Gate</h4>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Validación <br> Automática</p>
+                    </div>
+                    <!-- Paso 4 -->
+                    <div class="timeline-step">
+                        <div class="step-number">4</div>
+                        <h4 class="font-bold text-white text-lg mb-2">Validación</h4>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Revisión Humana <br> (React Dashboard)</p>
+                    </div>
+                    <!-- Paso 5 -->
+                    <div class="timeline-step">
+                        <div class="step-number">5</div>
+                        <h4 class="font-bold text-white text-lg mb-2">Publicación</h4>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Curso Vivo <br> en Canvas LMS</p>
+                    </div>
                 </div>
-                <!-- Impacto Final -->
-                <div class="w-full md:w-1/2">
-                    <h3 class="text-2xl font-bold text-white mb-6">Impacto Real</h3>
-                    <ul class="text-lg space-y-4 text-slate-300">
-                        <li class="flex items-start">
-                            <i data-lucide="check-circle-2" class="w-6 h-6 text-green-500 mr-3 shrink-0"></i> 
-                            <span><strong>Time-to-market acelerado:</strong> Meses reducidos a días de revisión.</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i data-lucide="check-circle-2" class="w-6 h-6 text-green-500 mr-3 shrink-0"></i> 
-                            <span><strong>Calidad garantizada:</strong> Integración con Scopus/OpenAlex para papers Q1.</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i data-lucide="check-circle-2" class="w-6 h-6 text-green-500 mr-3 shrink-0"></i> 
-                            <span>El experto recupera su tiempo para <strong>enseñar e inspirar</strong>.</span>
-                        </li>
-                    </ul>
+            </div>
+
+            <div class="mt-20 max-w-2xl mx-auto text-center italic text-slate-500 border-t border-slate-800 pt-8">
+                "La IA asiste la fundamentación, pero <span class="text-white font-bold">el experto humano mantiene el criterio final</span>."
+            </div>
+        </div>
+
+        <!-- SLIDE 5: VIABILIDAD FINANCIERA -->
+        <div class="slide">
+            <div class="max-w-6xl mx-auto w-full">
+                <div class="flex items-center gap-4 mb-12">
+                    <div class="w-2 h-12 bg-orange-600"></div>
+                    <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tighter">Viabilidad Financiera: <span class="text-orange-500">Eficiencia de Costos</span></h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                    <!-- Detalle de Costos -->
+                    <div class="lg:col-span-3 space-y-8">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Estimación por Materia</h3>
+                            <p class="text-slate-400 text-sm max-w-md">El costo operativo se reduce drásticamente mediante arquitectura serverless (Pago por uso).</p>
+                        </div>
+
+                        <div class="flex items-baseline gap-3">
+                            <span class="text-6xl font-black text-orange-500 tracking-tighter">$0.98 USD</span>
+                            <span class="text-slate-500 text-xl font-light">/ Materia Completa</span>
+                        </div>
+
+                        <table class="cost-table">
+                            <thead>
+                                <tr>
+                                    <th>Componente</th>
+                                    <th>Costo Est.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>IA (Amazon Bedrock Agentcore - Sonnet)</td>
+                                    <td>$0.89</td>
+                                </tr>
+                                <tr>
+                                    <td>Infraestructura (Lambda, S3, DDB)</td>
+                                    <td>$0.08</td>
+                                </tr>
+                                <tr>
+                                    <td>Orquestación (Step Functions)</td>
+                                    <td>$0.01</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ROI y Optimización -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="card-glass border-orange-500/20 p-8 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10">
+                                <i data-lucide="trending-up" class="w-24 h-24 text-white"></i>
+                            </div>
+                            <span class="text-orange-500 font-bold uppercase tracking-widest text-xs">ROI Disruptivo</span>
+                            <div class="text-7xl font-black text-white my-2 tracking-tighter">99.5%</div>
+                            <p class="text-slate-400 font-medium">Ahorro vs. Proceso Manual</p>
+                        </div>
+
+                        <div class="p-6 rounded-3xl bg-white/5 border border-white/10">
+                            <div class="flex items-center gap-3 mb-4 text-orange-500">
+                                <i data-lucide="rocket" class="w-5 h-5"></i>
+                                <span class="font-bold text-sm uppercase tracking-wider">Optimización Futura:</span>
+                            </div>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                Mediante modelos <span class="text-white font-bold">Haiku</span> y procesamiento en <span class="text-white font-bold">Batch</span>, el costo puede descender hasta <span class="text-orange-500 font-bold">$0.24 USD</span> por materia sin sacrificar calidad.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Slide 5: Mensaje de Cierre Poderoso (1:50 - 2:00) -->
-        <div class="slide flex-col justify-center items-center h-full text-center px-10 bg-slate-900">
-            <div class="relative">
-                <div class="absolute -inset-4 bg-orange-500/20 blur-3xl rounded-full"></div>
-                <i data-lucide="rocket" class="w-24 h-24 text-orange-500 mb-8 relative animate-bounce"></i>
-            </div>
-            
-            <h2 class="text-5xl md:text-6xl font-extrabold mb-6 text-white leading-tight max-w-5xl">
-                No automatizamos la educación.<br>
-                <span class="text-gradient">Escalamos el potencial humano.</span>
+        <!-- SLIDE 6: CIERRE -->
+        <div class="slide items-center text-center">
+            <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-tight">
+                Escalando el <br>
+                <span class="text-gradient">Potencial Humano</span>
             </h2>
-            
-            <p class="text-2xl text-slate-400 max-w-3xl mt-6">
-                Con <strong>AWS AgentCore</strong>, estamos construyendo la universidad del futuro para Anáhuac Online.
-            </p>
-            
-            <div class="mt-16 text-slate-500 text-sm uppercase tracking-widest font-bold">
-                Gracias. ¿Preguntas?
-            </div>
+            <div class="w-24 h-1.5 bg-orange-600 mb-8 mx-auto"></div>
+            <p class="text-sm font-bold uppercase tracking-[0.6em] text-slate-600">Vince scholar | Anáhuac Mayab</p>
         </div>
 
     </div>
 
-    <!-- Controles de Navegación -->
-    <div class="absolute bottom-8 left-0 w-full flex justify-between px-12 z-50 pointer-events-none">
-        <button id="prevBtn" class="pointer-events-auto p-3 rounded-full bg-slate-800/80 text-white hover:bg-orange-500 hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-slate-800 focus:outline-none">
-            <i data-lucide="chevron-left"></i>
+    <!-- Navegación -->
+    <div class="absolute bottom-8 w-full flex justify-between px-10 z-50 pointer-events-none">
+        <button id="prevBtn" class="pointer-events-auto p-4 rounded-full bg-slate-900/80 text-white hover:bg-orange-600 transition-all disabled:opacity-10 border border-slate-800">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
         </button>
-        <button id="nextBtn" class="pointer-events-auto p-3 rounded-full bg-slate-800/80 text-white hover:bg-orange-500 hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-slate-800 focus:outline-none">
-            <i data-lucide="chevron-right"></i>
+        <button id="nextBtn" class="pointer-events-auto p-4 rounded-full bg-slate-900/80 text-white hover:bg-orange-600 transition-all disabled:opacity-10 border border-slate-800">
+            <i data-lucide="arrow-right" class="w-5 h-5"></i>
         </button>
     </div>
 
     <script>
-        // Inicializar Lucide Icons
         lucide.createIcons();
-
-        // Lógica del Slider
         const slides = document.querySelectorAll('.slide');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
@@ -196,49 +396,20 @@
 
         function updateSlider() {
             slides.forEach((slide, index) => {
-                if (index === currentSlide) {
-                    slide.classList.add('active');
-                    setTimeout(() => slide.style.opacity = 1, 10); 
-                } else {
-                    slide.classList.remove('active');
-                    slide.style.opacity = 0;
-                }
+                slide.classList.toggle('active', index === currentSlide);
             });
-
             prevBtn.disabled = currentSlide === 0;
             nextBtn.disabled = currentSlide === slides.length - 1;
-
-            const progressPercentage = ((currentSlide + 1) / slides.length) * 100;
-            progressBar.style.width = `${progressPercentage}%`;
+            progressBar.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
         }
 
-        prevBtn.addEventListener('click', () => {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateSlider();
-            }
-        });
-
-        nextBtn.addEventListener('click', () => {
-            if (currentSlide < slides.length - 1) {
-                currentSlide++;
-                updateSlider();
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'Space') {
-                if (currentSlide < slides.length - 1) {
-                    currentSlide++;
-                    updateSlider();
-                }
-            } else if (e.key === 'ArrowLeft') {
-                if (currentSlide > 0) {
-                    currentSlide--;
-                    updateSlider();
-                }
-            }
-        });
+        prevBtn.onclick = () => { if(currentSlide > 0) { currentSlide--; updateSlider(); } };
+        nextBtn.onclick = () => { if(currentSlide < slides.length - 1) { currentSlide++; updateSlider(); } };
+        
+        document.onkeydown = (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextBtn.click();
+            if (e.key === 'ArrowLeft') prevBtn.click();
+        };
 
         updateSlider();
     </script>
