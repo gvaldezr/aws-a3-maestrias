@@ -5,14 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vince Scholar — Anáhuac Mayab</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f7f7f7; color: #262626; }
+    body { font-family: 'Montserrat', system-ui, -apple-system, sans-serif; background: #FFFFFF; color: #262626; font-size: 16px; line-height: 1.6; }
+    h1, h2, h3 { color: #040404; font-weight: 700; }
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.25rem; }
+    h3 { font-size: 1.05rem; font-weight: 600; }
+    p { color: #262626; }
+    a { color: #FF5900; text-decoration: none; }
+    a:hover { text-decoration: underline; }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     th { text-align: left; padding: 0.6rem 0.75rem; background: #040404; color: white; font-weight: 600; font-size: 0.8rem; }
     td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #e5e5e5; }
     tr:hover { background: #fafafa; }
-    button { transition: opacity 0.15s; }
-    button:hover:not(:disabled) { opacity: 0.85; }
+    button { font-family: 'Montserrat', system-ui, sans-serif; transition: all 0.2s ease; cursor: pointer; }
+    button:hover:not(:disabled) { opacity: 0.9; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #FF5900; color: #FFFFFF; border: none; border-radius: 4px; padding: 0.5rem 1rem; font-weight: 600; }
+    .btn-primary:hover { background: #e65000; }
+    .btn-secondary { background: transparent; color: #FF5900; border: 1.5px solid #FF5900; border-radius: 4px; padding: 0.5rem 1rem; font-weight: 600; }
+    .btn-secondary:hover { background: #FF5900; color: #FFFFFF; }
+    .card { background: #FFFFFF; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
     .status-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
     .status-pending_approval { background: #FFF0E0; color: #FF5900; }
     .status-approved { background: #E8F5E9; color: #2E7D32; }
@@ -22,8 +36,12 @@
     .status-failed, .status-qa_failed { background: #FFEBEE; color: #C62828; }
     .status-knowledge_matrix_ready { background: #F3E5F5; color: #6A1B9A; }
     .status-di_ready { background: #E0F2F1; color: #00695C; }
-    .status-uploaded { background: #f0f0f0; color: #9C9C9C; }
-    .status-ingested { background: #f0f0f0; color: #9C9C9C; }
+    .status-uploaded, .status-ingested { background: #f0f0f0; color: #9C9C9C; }
+    @media (max-width: 768px) {
+      body { font-size: 15px; }
+      table { font-size: 0.8rem; }
+      .card { margin: 0.5rem; }
+    }
   </style>
 </head>
 <body>

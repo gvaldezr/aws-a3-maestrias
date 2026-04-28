@@ -61,7 +61,7 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
   ];
 
   return (
-    <div style={{maxWidth:"960px",margin:"0 auto",padding:"1rem",fontFamily:"system-ui,sans-serif"}}>
+    <div style={{maxWidth:"960px",margin:"0 auto",padding:"1.5rem",fontFamily:"'Montserrat',system-ui,sans-serif"}}>
       {/* Header */}
       <div style={{background:"#040404",color:"white",padding:"1.5rem",borderRadius:"8px",marginBottom:"1rem"}}>
         <h1 style={{margin:0,fontSize:"1.4rem"}}>Validación de Contenido</h1>

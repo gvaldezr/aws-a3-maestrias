@@ -102,9 +102,9 @@ export function App() {
   if (checkpointSubject) {
     return (
       <>
-        <nav style={styles.nav}>
-          <button onClick={() => setCheckpointSubject(null)} style={styles.navBtn}>← Volver al Dashboard</button>
-          <button onClick={handleLogout} style={styles.navBtnLight}>Cerrar Sesión</button>
+        <nav style={{background:"#FFFFFF",padding:"0.75rem 2rem",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid #e5e5e5"}}>
+          <button onClick={() => setCheckpointSubject(null)} style={{background:"none",border:"none",color:"#040404",cursor:"pointer",fontSize:"0.9rem",fontWeight:500}}>← Volver al Dashboard</button>
+          <button onClick={handleLogout} style={{background:"transparent",border:"1.5px solid #FF5900",color:"#FF5900",padding:"0.3rem 0.75rem",borderRadius:"4px",cursor:"pointer",fontSize:"0.8rem",fontWeight:600}}>Cerrar Sesión</button>
         </nav>
         <CheckpointPage subjectId={checkpointSubject} onDecisionComplete={() => setCheckpointSubject(null)} />
       </>
@@ -113,7 +113,7 @@ export function App() {
 
   /* ── Dashboard ── */
   return (
-    <div style={{fontFamily:"'Inter',system-ui,-apple-system,sans-serif",background:"#f7f7f7",minHeight:"100vh"}}>
+    <div style={{fontFamily:"'Montserrat',system-ui,-apple-system,sans-serif",background:"#FFFFFF",minHeight:"100vh"}}>
       <nav style={styles.nav}>
         <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
           <span style={{fontSize:"1.3rem"}}>🎓</span>
@@ -133,7 +133,7 @@ export function App() {
             <input ref={fileRef} type="file" multiple accept=".pdf,.docx,.xlsx"
               style={{flex:1,minWidth:"200px",padding:"0.4rem",border:"1px solid #cbd5e0",borderRadius:"6px",background:"white"}} />
             <button onClick={handleUpload} disabled={uploading}
-              style={{...styles.btnPrimary,opacity:uploading?0.6:1,minWidth:"120px"}}>
+              style={{...styles.btnPrimary,width:"auto",minWidth:"120px",opacity:uploading?0.5:1}}>
               {uploading ? "Subiendo..." : "Cargar"}
             </button>
           </div>
@@ -160,33 +160,36 @@ export function App() {
 const styles: Record<string, React.CSSProperties> = {
   loginWrapper: {
     display:"flex",justifyContent:"center",alignItems:"center",minHeight:"100vh",
-    background:"linear-gradient(135deg,#040404 0%,#262626 100%)",fontFamily:"'Inter',system-ui,sans-serif",
+    background:"linear-gradient(135deg,#040404 0%,#262626 100%)",fontFamily:"'Montserrat',system-ui,sans-serif",
   },
   loginCard: {
-    background:"white",borderRadius:"12px",padding:"2rem",width:"100%",maxWidth:"380px",
+    background:"#FFFFFF",borderRadius:"8px",padding:"2.5rem",width:"100%",maxWidth:"400px",
     boxShadow:"0 4px 24px rgba(0,0,0,0.2)",
   },
   input: {
-    width:"100%",padding:"0.65rem 0.75rem",marginBottom:"0.6rem",borderRadius:"6px",
-    border:"1px solid #e5e5e5",fontSize:"0.9rem",boxSizing:"border-box" as const,
+    width:"100%",padding:"0.7rem 0.85rem",marginBottom:"0.75rem",borderRadius:"4px",
+    border:"1px solid #e5e5e5",fontSize:"0.95rem",boxSizing:"border-box" as const,
+    fontFamily:"'Montserrat',system-ui,sans-serif",
   },
   btnPrimary: {
-    width:"100%",padding:"0.7rem",background:"#FF5900",color:"white",border:"none",
-    borderRadius:"6px",cursor:"pointer",fontWeight:600,fontSize:"0.9rem",
+    width:"100%",padding:"0.75rem",background:"#FF5900",color:"#FFFFFF",border:"none",
+    borderRadius:"4px",cursor:"pointer",fontWeight:600,fontSize:"0.95rem",
+    fontFamily:"'Montserrat',system-ui,sans-serif",
   },
   nav: {
-    background:"#040404",padding:"0.6rem 1.5rem",display:"flex",justifyContent:"space-between",
-    alignItems:"center",color:"white",
+    background:"#FFFFFF",padding:"0.75rem 2rem",display:"flex",justifyContent:"space-between",
+    alignItems:"center",color:"#040404",borderBottom:"1px solid #e5e5e5",
+    boxShadow:"0 1px 3px rgba(0,0,0,0.04)",
   },
   navBtn: {
-    background:"none",border:"none",color:"white",cursor:"pointer",fontSize:"0.9rem",fontWeight:500,
+    background:"none",border:"none",color:"#040404",cursor:"pointer",fontSize:"0.9rem",fontWeight:500,
   },
   navBtnLight: {
-    background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.3)",color:"white",
-    padding:"0.3rem 0.75rem",borderRadius:"4px",cursor:"pointer",fontSize:"0.8rem",
+    background:"transparent",border:"1.5px solid #FF5900",color:"#FF5900",
+    padding:"0.35rem 0.85rem",borderRadius:"4px",cursor:"pointer",fontSize:"0.8rem",fontWeight:600,
   },
   card: {
-    background:"white",borderRadius:"8px",padding:"1.25rem",boxShadow:"0 1px 3px rgba(0,0,0,0.06)",
-    border:"1px solid #e5e5e5",
+    background:"#FFFFFF",borderRadius:"6px",padding:"1.5rem",
+    boxShadow:"0 1px 4px rgba(0,0,0,0.06)",border:"1px solid #f0f0f0",
   },
 };
