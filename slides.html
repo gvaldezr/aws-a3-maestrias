@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pitch AWS (2 Min): IA Agéntica Anáhuac</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            overflow: hidden;
+        }
+        .slide {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: scale(0.95);
+            display: none;
+        }
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+            display: flex;
+        }
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #fb923c, #f59e0b); /* Naranja AWS-ish */
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen relative">
+
+    <!-- Barra de Progreso -->
+    <div class="absolute top-0 left-0 w-full h-1.5 bg-slate-800 z-50">
+        <div id="progress" class="h-full bg-gradient-to-r from-orange-500 to-yellow-400 progress-bar" style="width: 20%;"></div>
+    </div>
+
+    <!-- Contenedor de Slides -->
+    <div id="slides-container" class="w-full h-full relative">
+
+        <!-- Slide 1: Título (0:00 - 0:15) -->
+        <div class="slide active flex-col justify-center items-center h-full text-center px-10">
+            <i data-lucide="cpu" class="w-24 h-24 text-orange-500 mb-6 opacity-80"></i>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 text-white">
+                Fábrica de Conocimiento <br><span class="text-gradient">IA Agéntica</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-slate-400 max-w-3xl mt-4">
+                Acelerando la producción de posgrados para Anáhuac Online en AWS.
+            </p>
+            <div class="mt-10 opacity-50 border border-dashed border-slate-600 rounded-lg p-4 max-w-xs w-full flex items-center justify-center">
+                <p class="text-sm text-slate-500">[Logos Anáhuac + AWS]</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: El Problema y El Impacto (0:15 - 0:45) -->
+        <div class="slide flex-col justify-center h-full px-16 md:px-32 relative bg-slate-900">
+            <h2 class="text-4xl md:text-5xl font-bold mb-10 text-white">El Cuello de Botella vs. La Promesa</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <!-- Problem -->
+                <div>
+                    <blockquote class="text-2xl italic text-slate-300 border-l-4 border-orange-500 pl-6 mb-6">
+                        "Me encantaría diseñar el posgrado, pero no tengo tiempo."
+                    </blockquote>
+                    <ul class="text-lg space-y-4 text-slate-400">
+                        <li class="flex items-center"><i data-lucide="x-circle" class="mr-3 text-red-500"></i> Expertos directivos saturados.</li>
+                        <li class="flex items-center"><i data-lucide="clock" class="mr-3 text-red-500"></i> Meses de retraso para validación SEP.</li>
+                        <li class="flex items-center"><i data-lucide="trending-down" class="mr-3 text-red-500"></i> Pérdida de Time-to-Market.</li>
+                    </ul>
+                </div>
+                <!-- Impact -->
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border-2 border-orange-500 flex flex-col items-center transform scale-105 shadow-[0_0_40px_rgba(249,115,22,0.2)]">
+                    <div class="flex items-center gap-3 text-xl font-bold text-slate-500 mb-2 line-through decoration-red-500 decoration-2">
+                        40h Experto + 40h Diseñador = 80h
+                    </div>
+                    <div class="text-7xl font-black text-white my-2 flex items-baseline">
+                        15 <span class="text-3xl ml-2 text-orange-400">Minutos</span>
+                    </div>
+                    <p class="text-lg text-slate-300 mt-2 text-center">"Primera Versión" Profesional Completa</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Arquitectura y Magia (0:45 - 1:25) -->
+        <div class="slide flex-col justify-center h-full px-16 md:px-32">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-white">Orquestación Serverless <i data-lucide="arrow-right" class="inline w-8 h-8 text-orange-500 mx-2"></i> Canvas LMS</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Step Functions -->
+                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                    <i data-lucide="git-merge" class="w-10 h-10 text-orange-400 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">AWS Step Functions</h3>
+                    <p class="text-slate-400 text-sm">Coordina 7 fases automáticas desde la ingesta del DOCX hasta la publicación final.</p>
+                </div>
+                <!-- AgentCore -->
+                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                    <i data-lucide="brain-circuit" class="w-10 h-10 text-blue-400 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Cerebro Agéntico</h3>
+                    <p class="text-slate-400 text-sm"><strong>AgentCore + Claude 4.6</strong>. Tres agentes investigan Scopus, aplican Bloom y redactan.</p>
+                </div>
+                <!-- Canvas -->
+                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                    <i data-lucide="monitor-play" class="w-10 h-10 text-green-400 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">API Canvas LMS</h3>
+                    <p class="text-slate-400 text-sm">Despliegue nativo con módulos, foros y rúbricas renderizadas en código HTML.</p>
+                </div>
+            </div>
+            
+            <!-- ESPACIO PARA IMAGEN: Arquitectura simplificada -->
+            <div class="mt-8 h-32 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center opacity-70">
+                <p class="text-slate-500 text-center px-4 text-sm">[Imagen: Diagrama Arquitectura High-Level (API Gateway, Step Functions, Bedrock, S3)]</p>
+            </div>
+        </div>
+
+        <!-- Slide 4: El Cierre y Humano en el Centro (1:25 - 1:50) -->
+        <div class="slide flex-col justify-center h-full px-16 md:px-32 relative">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 text-white">De Escritor a <span class="text-orange-500">Editor Empoderado</span></h2>
+            <p class="text-xl text-slate-400 mb-10">La IA asiste, pero el humano decide (Checkpoint con Cognito).</p>
+            
+            <div class="flex flex-col md:flex-row gap-10 items-center">
+                <!-- Imagen Dashboard -->
+                <div class="w-full md:w-1/2 h-56 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center relative overflow-hidden">
+                    <p class="text-slate-500 text-sm z-10">[Imagen: Dashboard React de Aprobación]</p>
+                    <div class="absolute inset-0 bg-gradient-to-tr from-slate-800 to-slate-700 opacity-50"></div>
+                </div>
+                <!-- Impacto Final -->
+                <div class="w-full md:w-1/2">
+                    <h3 class="text-2xl font-bold text-white mb-6">Impacto Real</h3>
+                    <ul class="text-lg space-y-4 text-slate-300">
+                        <li class="flex items-start">
+                            <i data-lucide="check-circle-2" class="w-6 h-6 text-green-500 mr-3 shrink-0"></i> 
+                            <span><strong>Time-to-market acelerado:</strong> Meses reducidos a días de revisión.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="check-circle-2" class="w-6 h-6 text-green-500 mr-3 shrink-0"></i> 
+                            <span><strong>Calidad garantizada:</strong> Integración con Scopus/OpenAlex para papers Q1.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="check-circle-2" class="w-6 h-6 text-green-500 mr-3 shrink-0"></i> 
+                            <span>El experto recupera su tiempo para <strong>enseñar e inspirar</strong>.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Mensaje de Cierre Poderoso (1:50 - 2:00) -->
+        <div class="slide flex-col justify-center items-center h-full text-center px-10 bg-slate-900">
+            <div class="relative">
+                <div class="absolute -inset-4 bg-orange-500/20 blur-3xl rounded-full"></div>
+                <i data-lucide="rocket" class="w-24 h-24 text-orange-500 mb-8 relative animate-bounce"></i>
+            </div>
+            
+            <h2 class="text-5xl md:text-6xl font-extrabold mb-6 text-white leading-tight max-w-5xl">
+                No automatizamos la educación.<br>
+                <span class="text-gradient">Escalamos el potencial humano.</span>
+            </h2>
+            
+            <p class="text-2xl text-slate-400 max-w-3xl mt-6">
+                Con <strong>AWS AgentCore</strong>, estamos construyendo la universidad del futuro para Anáhuac Online.
+            </p>
+            
+            <div class="mt-16 text-slate-500 text-sm uppercase tracking-widest font-bold">
+                Gracias. ¿Preguntas?
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controles de Navegación -->
+    <div class="absolute bottom-8 left-0 w-full flex justify-between px-12 z-50 pointer-events-none">
+        <button id="prevBtn" class="pointer-events-auto p-3 rounded-full bg-slate-800/80 text-white hover:bg-orange-500 hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-slate-800 focus:outline-none">
+            <i data-lucide="chevron-left"></i>
+        </button>
+        <button id="nextBtn" class="pointer-events-auto p-3 rounded-full bg-slate-800/80 text-white hover:bg-orange-500 hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-slate-800 focus:outline-none">
+            <i data-lucide="chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        // Inicializar Lucide Icons
+        lucide.createIcons();
+
+        // Lógica del Slider
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progress');
+        let currentSlide = 0;
+
+        function updateSlider() {
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                    setTimeout(() => slide.style.opacity = 1, 10); 
+                } else {
+                    slide.classList.remove('active');
+                    slide.style.opacity = 0;
+                }
+            });
+
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+
+            const progressPercentage = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlider();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlider();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    updateSlider();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlider();
+                }
+            }
+        });
+
+        updateSlider();
+    </script>
+</body>
+</html>
