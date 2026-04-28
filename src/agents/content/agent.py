@@ -572,6 +572,7 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
             theme = week.get("theme", "")
             bloom = week.get("bloom_level", "")
             subtopics = week.get("subtopics", [])
+            is_last_week = (w == len(weeks))
 
             # Find KM concepts for this week
             theme_lower = theme.lower().strip()
@@ -595,9 +596,29 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
             theme_words_list = [wd.lower() for wd in theme.split() if len(wd) > 4]
             rel_papers = [p for p in papers if any(wd in p.get("title", "").lower() for wd in theme_words_list)][:3] or papers[:2]
 
-            content_md = generate_reading_llm(w, len(weeks), theme, subject_name, bloom, subtopics, concepts, rel_papers, methodologies_list)
-            llm_readings.append({"week": w, "title": f"Semana {w}: {theme}", "bloom_level": bloom, "content_md": content_md, "language": language})
-            log.info(f"CONTENT_LLM: Reading week {w} done ({len(content_md)} chars)")
+            # Generate 2 readings per week (except last week which is synthesis)
+            num_readings = 1 if is_last_week else 2
+
+            for reading_num in range(1, num_readings + 1):
+                if num_readings == 2:
+                    # Split concepts between the 2 readings
+                    half = max(1, len(concepts) // 2)
+                    reading_concepts = concepts[:half] if reading_num == 1 else concepts[half:]
+                    reading_methods = methodologies_list[:3] if reading_num == 1 else methodologies_list[3:]
+                    reading_papers = rel_papers[:2] if reading_num == 1 else rel_papers[1:3]
+                    suffix = "A" if reading_num == 1 else "B"
+                    title = f"Semana {w}{suffix}: {theme}"
+                else:
+                    reading_concepts = concepts
+                    reading_methods = methodologies_list
+                    reading_papers = rel_papers
+                    title = f"Semana {w}: {theme} (Sintesis)"
+
+                content_md = generate_reading_llm(w, len(weeks), theme, subject_name, bloom,
+                                                   subtopics, reading_concepts, reading_papers, reading_methods)
+                llm_readings.append({"week": w, "reading_num": reading_num, "title": title,
+                                     "bloom_level": bloom, "content_md": content_md, "language": language})
+                log.info(f"CONTENT_LLM: Reading week {w}.{reading_num} done ({len(content_md)} chars)")
 
         readings_result = {"readings": llm_readings}
     else:
