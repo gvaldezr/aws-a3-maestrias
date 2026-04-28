@@ -232,16 +232,6 @@ def publish_course(subject_json: dict, client: CanvasClient) -> PublicationResul
         page = client.create_page(course_id, {"wiki_page": {"title": "Reto de Aprendizaje Agentico", "body": ch_html, "published": False}})
         _add_page_to_module(client, course_id, str(mod_reto["id"]), page)
 
-    # ── Módulo: Dashboard de Evidencia ──
-    if isinstance(ma, dict) and ma.get("evidence_dashboard", {}).get("html_content"):
-        mod_ev = client.create_module(course_id, "Dashboard de Evidencia", position=position)
-        position += 1
-        page = client.create_page(course_id, format_page_payload(
-            "Dashboard de Evidencia",
-            f"# Dashboard de Evidencia\n\n{ma['evidence_dashboard']['html_content']}",
-        ))
-        _add_page_to_module(client, course_id, str(mod_ev["id"]), page)
-
     now = datetime.now(timezone.utc).isoformat()
     return PublicationResult(
         subject_id=subject_id,
