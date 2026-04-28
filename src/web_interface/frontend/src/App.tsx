@@ -84,8 +84,8 @@ export function App() {
         <div style={styles.loginCard}>
           <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
             <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}>🎓</div>
-            <h1 style={{margin:0,fontSize:"1.3rem",color:"#231F20"}}>Pipeline Académico</h1>
-            <p style={{margin:"0.3rem 0 0",color:"#997747",fontSize:"0.85rem"}}>Anáhuac Mérida — Staff de Tecnología Educativa</p>
+            <h1 style={{margin:0,fontSize:"1.3rem",color:"#231F20"}}>Vince Scholar</h1>
+            <p style={{margin:"0.3rem 0 0",color:"#997747",fontSize:"0.85rem"}}>Anáhuac Mayab</p>
           </div>
           <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Usuario"
             style={styles.input} />
@@ -117,7 +117,7 @@ export function App() {
       <nav style={styles.nav}>
         <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
           <span style={{fontSize:"1.3rem"}}>🎓</span>
-          <h1 style={{margin:0,fontSize:"1rem",fontWeight:600}}>Pipeline Académico</h1>
+          <h1 style={{margin:0,fontSize:"1rem",fontWeight:600}}>Vince Scholar</h1>
         </div>
         <button onClick={handleLogout} style={styles.navBtnLight}>Cerrar Sesión</button>
       </nav>
