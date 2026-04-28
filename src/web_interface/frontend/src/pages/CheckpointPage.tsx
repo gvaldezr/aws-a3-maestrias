@@ -329,53 +329,109 @@ function MaestriaTab({ artifacts }: { artifacts: any }) {
 
 function MasterclassTab({ script }: { script: any }) {
   if (!script || (typeof script === "object" && Object.keys(script).length === 0)) {
-    return <p style={{color:"#718096",padding:"1rem"}}>El guión de masterclass se generará en la próxima ejecución del pipeline con el template actualizado.</p>;
+    return <p style={{color:"#718096",padding:"1rem"}}>El guión de masterclass se generará en la próxima ejecución del pipeline.</p>;
   }
-  const s = typeof script === "string" ? script : JSON.stringify(script, null, 2);
+  const s = typeof script === "string" ? {} : script;
+  const structure = s.structure || [];
   return (
     <div>
-      <h3 style={{marginTop:0}}>🎬 Guión de Masterclass (18-22 min)</h3>
-      <p style={{fontSize:"0.85rem",color:"#718096",marginBottom:"1rem"}}>
-        Estructura: Gancho directivo (2 min) → Desarrollo con caso (14 min) → Síntesis (4 min) → Llamada a la acción (2 min)
-      </p>
-      <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",padding:"1.5rem",whiteSpace:"pre-wrap",lineHeight:1.7,fontSize:"0.9rem"}}>
-        {s}
+      <h3 style={{marginTop:0}}>🎬 {s.title || "Guión de Masterclass"}</h3>
+      <div style={{display:"flex",gap:"1rem",marginBottom:"1rem",flexWrap:"wrap"}}>
+        <StatCard label="Duración" value={`${s.duration_minutes || 20} min`} />
+        <StatCard label="Slides" value={s.total_slides || structure.length} />
+        <StatCard label="Secciones" value={structure.length} />
       </div>
+      {s.theme && <p style={{color:"#718096",fontSize:"0.85rem",marginBottom:"1rem"}}>Tema central: <strong>{s.theme}</strong></p>}
+      {structure.map((sec: any, i: number) => (
+        <div key={i} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",marginBottom:"0.75rem",overflow:"hidden"}}>
+          <div style={{background:"#2d3748",color:"white",padding:"0.5rem 1rem",display:"flex",justifyContent:"space-between",fontSize:"0.85rem"}}>
+            <span><strong>{sec.section}</strong></span>
+            <span>{sec.time} ({sec.duration_minutes} min)</span>
+          </div>
+          <div style={{padding:"1rem",lineHeight:1.7,fontSize:"0.9rem"}}>
+            {(sec.content || "").split(/(\[SLIDE[^\]]*\]|\[DATO EN PANTALLA[^\]]*\]|\[CASO VISUAL[^\]]*\])/).map((part: string, pi: number) =>
+              part.match(/^\[SLIDE/) ? <span key={pi} style={{background:"#bee3f8",padding:"0.1rem 0.4rem",borderRadius:"3px",fontSize:"0.8rem",fontWeight:600}}>{part}</span> :
+              part.match(/^\[DATO/) ? <span key={pi} style={{background:"#fefcbf",padding:"0.1rem 0.4rem",borderRadius:"3px",fontSize:"0.8rem",fontWeight:600}}>{part}</span> :
+              part.match(/^\[CASO/) ? <span key={pi} style={{background:"#fed7aa",padding:"0.1rem 0.4rem",borderRadius:"3px",fontSize:"0.8rem",fontWeight:600}}>{part}</span> :
+              <span key={pi}>{part}</span>
+            )}
+          </div>
+          {sec.notes && <div style={{padding:"0.5rem 1rem",background:"#f7fafc",borderTop:"1px solid #e2e8f0",fontSize:"0.8rem",color:"#718096"}}><em>📝 {sec.notes}</em></div>}
+        </div>
+      ))}
+      {s.competencies_covered && <p style={{fontSize:"0.8rem",color:"#718096",marginTop:"0.5rem"}}>Competencias: {s.competencies_covered}</p>}
     </div>
   );
 }
 
 function ChallengeTab({ challenge }: { challenge: any }) {
   if (!challenge || (typeof challenge === "object" && Object.keys(challenge).length === 0)) {
-    return <p style={{color:"#718096",padding:"1rem"}}>El reto de aprendizaje agéntico se generará en la próxima ejecución del pipeline con el template actualizado.</p>;
+    return <p style={{color:"#718096",padding:"1rem"}}>El reto de aprendizaje agéntico se generará en la próxima ejecución del pipeline.</p>;
   }
   const c = typeof challenge === "object" ? challenge : {};
+  const rubric = c.rubric || {};
+  const criteria = Array.isArray(rubric.criteria) ? rubric.criteria : (Array.isArray(rubric) ? rubric : []);
   return (
     <div>
-      <h3 style={{marginTop:0}}>🏆 Reto de Aprendizaje Agéntico (Semana 2)</h3>
-      <p style={{fontSize:"0.85rem",color:"#718096",marginBottom:"1rem"}}>
-        Escenario ejecutivo del sector financiero mexicano. Entregable: documento 1-2 páginas con decisión justificada.
-      </p>
-      <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",padding:"1.5rem"}}>
-        {c.scenario && <><h4>Escenario</h4><p style={{lineHeight:1.7}}>{c.scenario}</p></>}
-        {c.deliverable && <><h4>Entregable</h4><p style={{lineHeight:1.7}}>{c.deliverable}</p></>}
-        {c.rubric && (
-          <>
-            <h4>Rúbrica Analítica</h4>
-            {typeof c.rubric === "object" ? (
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:"0.85rem"}}>
-                <thead><tr style={{background:"#edf2f7"}}><th style={thStyle}>Criterio</th><th style={thStyle}>Excelente</th><th style={thStyle}>Bueno</th><th style={thStyle}>Regular</th><th style={thStyle}>Deficiente</th></tr></thead>
-                <tbody>
-                  {(Array.isArray(c.rubric) ? c.rubric : Object.entries(c.rubric).map(([k,v]) => ({criterion: k, ...(typeof v === "object" ? v : {})}))).map((r: any, i: number) => (
-                    <tr key={i}><td style={tdStyle}>{r.criterion || r.criteria || JSON.stringify(r)}</td><td style={tdStyle}>{r.excellent || r.excelente || ""}</td><td style={tdStyle}>{r.good || r.bueno || ""}</td><td style={tdStyle}>{r.regular || ""}</td><td style={tdStyle}>{r.deficient || r.deficiente || ""}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : <pre style={{whiteSpace:"pre-wrap",fontSize:"0.85rem"}}>{JSON.stringify(c.rubric, null, 2)}</pre>}
-          </>
-        )}
-        {!c.scenario && !c.rubric && <pre style={{whiteSpace:"pre-wrap",fontSize:"0.85rem"}}>{JSON.stringify(challenge, null, 2)}</pre>}
-      </div>
+      <h3 style={{marginTop:0}}>🏆 {c.title || "Reto de Aprendizaje Agéntico"}</h3>
+      {c.week && <p style={{fontSize:"0.85rem",color:"#718096"}}>Semana {c.week}</p>}
+
+      {c.scenario && (
+        <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",padding:"1rem",marginBottom:"1rem"}}>
+          <h4 style={{margin:"0 0 0.5rem",color:"#2d3748"}}>Escenario</h4>
+          <p style={{lineHeight:1.7,margin:0}}>{c.scenario}</p>
+        </div>
+      )}
+
+      {c.central_question && (
+        <div style={{background:"#ebf4ff",border:"1px solid #bee3f8",borderRadius:"6px",padding:"1rem",marginBottom:"1rem"}}>
+          <h4 style={{margin:"0 0 0.5rem",color:"#2b6cb0"}}>Pregunta Directiva Central</h4>
+          <p style={{lineHeight:1.7,margin:0,fontWeight:500}}>{c.central_question}</p>
+        </div>
+      )}
+
+      {c.deliverable && (
+        <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",padding:"1rem",marginBottom:"1rem"}}>
+          <h4 style={{margin:"0 0 0.5rem",color:"#2d3748"}}>Entregable</h4>
+          <p style={{lineHeight:1.7,margin:0}}>{c.deliverable}</p>
+        </div>
+      )}
+
+      {criteria.length > 0 && (
+        <div style={{marginBottom:"1rem"}}>
+          <h4 style={{margin:"0 0 0.75rem"}}>Rúbrica Analítica (4 niveles)</h4>
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:"0.8rem",minWidth:"600px"}}>
+              <thead>
+                <tr style={{background:"#2d3748",color:"white"}}>
+                  <th style={{padding:"0.5rem",textAlign:"left",width:"20%"}}>Criterio</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",width:"5%"}}>Peso</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",background:"#38a169",width:"18.75%"}}>Excelente</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",background:"#3182ce",width:"18.75%"}}>Bueno</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",background:"#dd6b20",width:"18.75%"}}>Regular</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",background:"#e53e3e",width:"18.75%"}}>Deficiente</th>
+                </tr>
+              </thead>
+              <tbody>
+                {criteria.map((cr: any, i: number) => (
+                  <tr key={i} style={{borderBottom:"1px solid #e2e8f0"}}>
+                    <td style={{padding:"0.5rem",fontWeight:600}}>{cr.criterion || cr.criteria || ""}</td>
+                    <td style={{padding:"0.5rem",textAlign:"center"}}>{cr.weight || ""}</td>
+                    <td style={{padding:"0.5rem",background:"#f0fff4"}}>{cr.excelente || cr.excellent || ""}</td>
+                    <td style={{padding:"0.5rem",background:"#ebf8ff"}}>{cr.bueno || cr.good || ""}</td>
+                    <td style={{padding:"0.5rem",background:"#fffaf0"}}>{cr.regular || ""}</td>
+                    <td style={{padding:"0.5rem",background:"#fff5f5"}}>{cr.deficiente || cr.deficient || ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {c.learning_outcomes_assessed && (
+        <p style={{fontSize:"0.8rem",color:"#718096"}}>RAs evaluados: {c.learning_outcomes_assessed}</p>
+      )}
     </div>
   );
 }
