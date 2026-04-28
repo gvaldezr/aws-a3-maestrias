@@ -10,7 +10,7 @@ interface Props {
   onDecisionComplete: () => void;
 }
 
-type Tab = "overview" | "objectives" | "readings" | "quizzes" | "papers" | "maestria";
+type Tab = "overview" | "objectives" | "readings" | "quizzes" | "forums" | "papers" | "maestria" | "masterclass" | "challenge" | "canvas";
 
 export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
   const [summary, setSummary] = useState<Record<string, any> | null>(null);
@@ -52,8 +52,12 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
     { key: "objectives", label: "🎯 Objetivos", count: summary.objectives?.length },
     { key: "readings", label: "📖 Lecturas", count: summary.readings?.length },
     { key: "quizzes", label: "❓ Quizzes", count: summary.quizzes?.length },
+    { key: "forums", label: "💬 Foros", count: summary.forums?.length },
     { key: "papers", label: "📚 Papers", count: summary.papers?.length },
     { key: "maestria", label: "🎓 Maestría" },
+    { key: "masterclass", label: "🎬 Masterclass" },
+    { key: "challenge", label: "🏆 Reto Agéntico" },
+    { key: "canvas", label: "👁️ Preview Canvas", count: summary.canvas_preview?.total_pages },
   ];
 
   return (
@@ -87,11 +91,30 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
         {activeTab === "objectives" && <ObjectivesTab objectives={summary.objectives || []} card={summary.descriptive_card} />}
         {activeTab === "readings" && <ReadingsTab readings={summary.readings || []} />}
         {activeTab === "quizzes" && <QuizzesTab quizzes={summary.quizzes || []} />}
+        {activeTab === "forums" && <ForumsTab forums={summary.forums || []} />}
         {activeTab === "papers" && <PapersTab papers={summary.papers || []} />}
         {activeTab === "maestria" && <MaestriaTab artifacts={summary.maestria_artifacts} />}
+        {activeTab === "masterclass" && <MasterclassTab script={summary.masterclass_script} />}
+        {activeTab === "challenge" && <ChallengeTab challenge={summary.agentic_challenge} />}
+        {activeTab === "canvas" && <CanvasPreviewTab preview={summary.canvas_preview} />}
       </div>
 
-      {/* Decision Panel */}
+      {/* Decision Panel — only for PENDING_APPROVAL */}
+      {summary.current_state === "PUBLISHED" ? (
+        <div style={{background:"#c6f6d5",border:"1px solid #9ae6b4",borderRadius:"8px",padding:"1.5rem",textAlign:"center"}}>
+          <p style={{margin:0,fontSize:"1.1rem",color:"#22543d",fontWeight:600}}>✅ Este curso ya fue publicado en Canvas LMS</p>
+          {summary.canvas_course_url && (
+            <a href={summary.canvas_course_url} target="_blank" rel="noopener noreferrer"
+              style={{display:"inline-block",marginTop:"0.75rem",background:"#38a169",color:"white",padding:"0.5rem 1.5rem",borderRadius:"6px",textDecoration:"none",fontWeight:600}}>
+              🔗 Ver curso en Canvas
+            </a>
+          )}
+        </div>
+      ) : summary.current_state === "APPROVED" ? (
+        <div style={{background:"#bee3f8",border:"1px solid #90cdf4",borderRadius:"8px",padding:"1.5rem",textAlign:"center"}}>
+          <p style={{margin:0,fontSize:"1.1rem",color:"#2a4365",fontWeight:600}}>⏳ Curso aprobado, publicación en proceso...</p>
+        </div>
+      ) : (
       <div style={{background:"#f7fafc",border:"1px solid #e2e8f0",borderRadius:"8px",padding:"1.5rem"}}>
         <h2 style={{margin:"0 0 1rem",fontSize:"1.1rem"}}>Decisión</h2>
         <textarea
@@ -111,6 +134,7 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -140,6 +164,9 @@ function OverviewTab({ summary }: { summary: Record<string, any> }) {
         <StatCard label="Preguntas" value={cp.total_questions ?? 0} />
         <StatCard label="Papers" value={cp.papers_count ?? 0} />
         <StatCard label="Casos" value={cp.cases_count ?? 0} />
+        <StatCard label="Masterclass" value={cp.has_masterclass ? "✅" : "—"} ok={cp.has_masterclass} />
+        <StatCard label="Reto" value={cp.has_agentic_challenge ? "✅" : "—"} ok={cp.has_agentic_challenge} />
+        <StatCard label="Foros" value={cp.forums_count ?? 0} />
       </div>
 
       <h3>Carta Descriptiva</h3>
@@ -315,6 +342,243 @@ function MaestriaTab({ artifacts }: { artifacts: any }) {
           </div>
         )) || <p>No disponible</p>}
       </Section>
+    </div>
+  );
+}
+
+function ForumsTab({ forums }: { forums: any[] }) {
+  if (!forums || forums.length === 0) return <p style={{color:"#718096",padding:"1rem"}}>Los foros se generarán en la próxima ejecución del pipeline.</p>;
+  return (
+    <div>
+      <h3 style={{marginTop:0}}>💬 Foros de Aprendizaje ({forums.length})</h3>
+      {forums.map((f: any, i: number) => (
+        <div key={i} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",marginBottom:"1rem",overflow:"hidden"}}>
+          <div style={{background:"#2d3748",color:"white",padding:"0.5rem 1rem",fontSize:"0.85rem"}}>
+            <strong>Semana {f.week}:</strong> {f.title}
+          </div>
+          <div style={{padding:"1rem"}}>
+            {f.case && (
+              <div style={{marginBottom:"1rem"}}>
+                <h4 style={{margin:"0 0 0.5rem",color:"#2b6cb0"}}>{f.case.title || "Caso de Negocio"}</h4>
+                <p style={{lineHeight:1.7,margin:0}}>{f.case.description}</p>
+              </div>
+            )}
+            {f.questions && (
+              <div style={{marginBottom:"1rem"}}>
+                <h4 style={{margin:"0 0 0.5rem"}}>Preguntas de Discusión</h4>
+                <ol style={{margin:0,paddingLeft:"1.5rem",lineHeight:1.8}}>
+                  {f.questions.map((q: string, qi: number) => <li key={qi}>{q}</li>)}
+                </ol>
+              </div>
+            )}
+            {f.rubric && (
+              <div>
+                <h4 style={{margin:"0 0 0.5rem"}}>Rúbrica de Evaluación</h4>
+                <div style={{overflowX:"auto"}}>
+                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:"0.8rem",minWidth:"500px"}}>
+                    <thead>
+                      <tr style={{background:"#edf2f7"}}>
+                        <th style={thStyle}>Criterio</th><th style={thStyle}>Peso</th>
+                        <th style={{...thStyle,background:"#c6f6d5"}}>Excelente</th>
+                        <th style={{...thStyle,background:"#bee3f8"}}>Bueno</th>
+                        <th style={{...thStyle,background:"#fefcbf"}}>Regular</th>
+                        <th style={{...thStyle,background:"#fed7d7"}}>Deficiente</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(f.rubric.criteria || []).map((cr: any, ci: number) => (
+                        <tr key={ci}>
+                          <td style={{...tdStyle,fontWeight:600}}>{cr.criterion}</td>
+                          <td style={tdStyle}>{cr.weight}</td>
+                          <td style={{...tdStyle,background:"#f0fff4"}}>{cr.excelente || cr.excellent || ""}</td>
+                          <td style={{...tdStyle,background:"#ebf8ff"}}>{cr.bueno || cr.good || ""}</td>
+                          <td style={{...tdStyle,background:"#fffff0"}}>{cr.regular || ""}</td>
+                          <td style={{...tdStyle,background:"#fff5f5"}}>{cr.deficiente || cr.deficient || ""}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MasterclassTab({ script }: { script: any }) {
+  if (!script || (typeof script === "object" && Object.keys(script).length === 0)) {
+    return <p style={{color:"#718096",padding:"1rem"}}>El guión de masterclass se generará en la próxima ejecución del pipeline.</p>;
+  }
+  const s = typeof script === "string" ? {} : script;
+  const structure = s.structure || [];
+  return (
+    <div>
+      <h3 style={{marginTop:0}}>🎬 {s.title || "Guión de Masterclass"}</h3>
+      <div style={{display:"flex",gap:"1rem",marginBottom:"1rem",flexWrap:"wrap"}}>
+        <StatCard label="Duración" value={`${s.duration_minutes || 20} min`} />
+        <StatCard label="Slides" value={s.total_slides || structure.length} />
+        <StatCard label="Secciones" value={structure.length} />
+      </div>
+      {s.theme && <p style={{color:"#718096",fontSize:"0.85rem",marginBottom:"1rem"}}>Tema central: <strong>{s.theme}</strong></p>}
+      {structure.map((sec: any, i: number) => (
+        <div key={i} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",marginBottom:"0.75rem",overflow:"hidden"}}>
+          <div style={{background:"#2d3748",color:"white",padding:"0.5rem 1rem",display:"flex",justifyContent:"space-between",fontSize:"0.85rem"}}>
+            <span><strong>{sec.section}</strong></span>
+            <span>{sec.time} ({sec.duration_minutes} min)</span>
+          </div>
+          <div style={{padding:"1rem",lineHeight:1.7,fontSize:"0.9rem"}}>
+            {(sec.content || "").split(/(\[SLIDE[^\]]*\]|\[DATO EN PANTALLA[^\]]*\]|\[CASO VISUAL[^\]]*\])/).map((part: string, pi: number) =>
+              part.match(/^\[SLIDE/) ? <span key={pi} style={{background:"#bee3f8",padding:"0.1rem 0.4rem",borderRadius:"3px",fontSize:"0.8rem",fontWeight:600}}>{part}</span> :
+              part.match(/^\[DATO/) ? <span key={pi} style={{background:"#fefcbf",padding:"0.1rem 0.4rem",borderRadius:"3px",fontSize:"0.8rem",fontWeight:600}}>{part}</span> :
+              part.match(/^\[CASO/) ? <span key={pi} style={{background:"#fed7aa",padding:"0.1rem 0.4rem",borderRadius:"3px",fontSize:"0.8rem",fontWeight:600}}>{part}</span> :
+              <span key={pi}>{part}</span>
+            )}
+          </div>
+          {sec.notes && <div style={{padding:"0.5rem 1rem",background:"#f7fafc",borderTop:"1px solid #e2e8f0",fontSize:"0.8rem",color:"#718096"}}><em>📝 {sec.notes}</em></div>}
+        </div>
+      ))}
+      {s.competencies_covered && <p style={{fontSize:"0.8rem",color:"#718096",marginTop:"0.5rem"}}>Competencias: {s.competencies_covered}</p>}
+    </div>
+  );
+}
+
+function ChallengeTab({ challenge }: { challenge: any }) {
+  if (!challenge || (typeof challenge === "object" && Object.keys(challenge).length === 0)) {
+    return <p style={{color:"#718096",padding:"1rem"}}>El reto de aprendizaje agéntico se generará en la próxima ejecución del pipeline.</p>;
+  }
+  const c = typeof challenge === "object" ? challenge : {};
+  const rubric = c.rubric || {};
+  const criteria = Array.isArray(rubric.criteria) ? rubric.criteria : (Array.isArray(rubric) ? rubric : []);
+  return (
+    <div>
+      <h3 style={{marginTop:0}}>🏆 {c.title || "Reto de Aprendizaje Agéntico"}</h3>
+      {c.week && <p style={{fontSize:"0.85rem",color:"#718096"}}>Semana {c.week}</p>}
+
+      {c.scenario && (
+        <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",padding:"1rem",marginBottom:"1rem"}}>
+          <h4 style={{margin:"0 0 0.5rem",color:"#2d3748"}}>Escenario</h4>
+          <p style={{lineHeight:1.7,margin:0}}>{c.scenario}</p>
+        </div>
+      )}
+
+      {c.central_question && (
+        <div style={{background:"#ebf4ff",border:"1px solid #bee3f8",borderRadius:"6px",padding:"1rem",marginBottom:"1rem"}}>
+          <h4 style={{margin:"0 0 0.5rem",color:"#2b6cb0"}}>Pregunta Directiva Central</h4>
+          <p style={{lineHeight:1.7,margin:0,fontWeight:500}}>{c.central_question}</p>
+        </div>
+      )}
+
+      {c.deliverable && (
+        <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",padding:"1rem",marginBottom:"1rem"}}>
+          <h4 style={{margin:"0 0 0.5rem",color:"#2d3748"}}>Entregable</h4>
+          <p style={{lineHeight:1.7,margin:0}}>{c.deliverable}</p>
+        </div>
+      )}
+
+      {criteria.length > 0 && (
+        <div style={{marginBottom:"1rem"}}>
+          <h4 style={{margin:"0 0 0.75rem"}}>Rúbrica Analítica (4 niveles)</h4>
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:"0.8rem",minWidth:"600px"}}>
+              <thead>
+                <tr style={{background:"#2d3748",color:"white"}}>
+                  <th style={{padding:"0.5rem",textAlign:"left",width:"20%"}}>Criterio</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",width:"5%"}}>Peso</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",background:"#38a169",width:"18.75%"}}>Excelente</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",background:"#3182ce",width:"18.75%"}}>Bueno</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",background:"#dd6b20",width:"18.75%"}}>Regular</th>
+                  <th style={{padding:"0.5rem",textAlign:"left",background:"#e53e3e",width:"18.75%"}}>Deficiente</th>
+                </tr>
+              </thead>
+              <tbody>
+                {criteria.map((cr: any, i: number) => (
+                  <tr key={i} style={{borderBottom:"1px solid #e2e8f0"}}>
+                    <td style={{padding:"0.5rem",fontWeight:600}}>{cr.criterion || cr.criteria || ""}</td>
+                    <td style={{padding:"0.5rem",textAlign:"center"}}>{cr.weight || ""}</td>
+                    <td style={{padding:"0.5rem",background:"#f0fff4"}}>{cr.excelente || cr.excellent || ""}</td>
+                    <td style={{padding:"0.5rem",background:"#ebf8ff"}}>{cr.bueno || cr.good || ""}</td>
+                    <td style={{padding:"0.5rem",background:"#fffaf0"}}>{cr.regular || ""}</td>
+                    <td style={{padding:"0.5rem",background:"#fff5f5"}}>{cr.deficiente || cr.deficient || ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {c.learning_outcomes_assessed && (
+        <p style={{fontSize:"0.8rem",color:"#718096"}}>RAs evaluados: {c.learning_outcomes_assessed}</p>
+      )}
+    </div>
+  );
+}
+
+function CanvasPreviewTab({ preview }: { preview: any }) {
+  const [selectedPage, setSelectedPage] = useState(0);
+  if (!preview?.pages?.length) return <p>No hay preview disponible.</p>;
+
+  const pages = preview.pages;
+  const current = pages[selectedPage];
+
+  const canvasCSS = `
+    body { font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #2D3B45; line-height: 1.5; padding: 1rem; }
+    h1 { color: #2D3B45; font-size: 1.6rem; border-bottom: 1px solid #C7CDD1; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+    h2 { color: #2D3B45; font-size: 1.25rem; margin-top: 1.5rem; }
+    h3 { color: #394B58; font-size: 1.05rem; margin-top: 1rem; }
+    p { margin: 0.5rem 0; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    th { background: #394B58; color: white; padding: 0.5rem; text-align: left; }
+    td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #C7CDD1; }
+    tr:nth-child(even) { background: #F5F5F5; }
+    ul, ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+    li { margin: 0.3rem 0; }
+    em { color: #6B7B8D; }
+    strong { color: #2D3B45; }
+  `;
+
+  return (
+    <div>
+      <h3 style={{marginTop:0}}>👁️ Preview Canvas LMS ({pages.length} páginas)</h3>
+      <p style={{fontSize:"0.8rem",color:"#718096",marginBottom:"1rem"}}>
+        Así se verá el contenido en Canvas LMS. Navegue entre páginas para revisar cada recurso.
+      </p>
+
+      {/* Page selector */}
+      <div style={{display:"flex",gap:"0.25rem",marginBottom:"1rem",flexWrap:"wrap"}}>
+        {pages.map((p: any, i: number) => (
+          <button key={i} onClick={() => setSelectedPage(i)}
+            style={{
+              padding:"0.4rem 0.75rem",border:"1px solid #cbd5e0",borderRadius:"4px",cursor:"pointer",
+              fontSize:"0.75rem",
+              background: i === selectedPage ? "#2b6cb0" : "white",
+              color: i === selectedPage ? "white" : "#4a5568",
+              fontWeight: i === selectedPage ? 600 : 400,
+            }}>
+            {p.type === "quiz" ? "❓" : "📄"} {p.title?.substring(0, 30)}{p.title?.length > 30 ? "..." : ""}
+          </button>
+        ))}
+      </div>
+
+      {/* Canvas-styled preview */}
+      <div style={{
+        border:"1px solid #C7CDD1",borderRadius:"4px",background:"white",
+        boxShadow:"0 1px 3px rgba(0,0,0,0.1)",overflow:"hidden",
+      }}>
+        {/* Canvas header bar */}
+        <div style={{background:"#394B58",color:"white",padding:"0.5rem 1rem",fontSize:"0.8rem",display:"flex",justifyContent:"space-between"}}>
+          <span>📄 {current.title}</span>
+          <span style={{opacity:0.7}}>Página {selectedPage + 1} de {pages.length}</span>
+        </div>
+        {/* Content area */}
+        <div
+          style={{padding:"1.5rem",maxHeight:"600px",overflow:"auto"}}
+          dangerouslySetInnerHTML={{__html: `<style>${canvasCSS}</style>${current.html || "<p>Sin contenido</p>"}`}}
+        />
+      </div>
     </div>
   );
 }

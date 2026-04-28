@@ -46,125 +46,75 @@ Sistema automatizado que transforma documentos de planeación académica (PDF/DO
 | Almacenamiento | Amazon S3 (JSON versionado) + DynamoDB (índice de estado) |
 | APIs | Amazon API Gateway (REST) con Cognito JWT |
 | Autenticación | Amazon Cognito User Pool |
-| Investigación | Scopus API (Elsevier) |
-| LMS destino | Canvas LMS (Instructure) — mock mode disponible |
+| Investigación | Scopus API (Elsevier) + OpenAlex (abstracts) |
+| LMS destino | Canvas LMS (Instructure) |
 | Frontend | React + TypeScript + Vite (S3 Static Website) |
 | IaC | AWS CDK (Python) |
 | Secretos | AWS Secrets Manager |
-
-## Estructura del Proyecto
-
-```
-aws-a3-maestrias/
-├── app.py                          # CDK App entry point
-├── cdk.json                        # CDK configuration
-├── .bedrock_agentcore.yaml         # AgentCore Runtime config (3 agents)
-│
-├── src/
-│   ├── agents/
-│   │   ├── scholar/agent.py        # Agente Investigador (Scopus + Knowledge Matrix)
-│   │   ├── di/agent.py             # Agente Diseño Instruccional (Bloom + Carta Descriptiva)
-│   │   └── content/agent.py        # Agente Contenido (Lecturas + Quizzes + Maestría)
-│   │
-│   ├── orchestrator/
-│   │   ├── invoke_agent.py         # Step Functions Lambda handlers
-│   │   └── persist_results.py      # Persistencia de resultados entre fases
-│   │
-│   ├── qa_checkpoint/
-│   │   ├── qa_gate.py              # Validación QA (RA coverage, Bloom, Maestría)
-│   │   ├── checkpoint.py           # Checkpoint humano (aprobar/rechazar/editar)
-│   │   ├── models.py               # QAReport, ValidationDecision, etc.
-│   │   └── timeout_checker.py      # Monitor de timeout 48h
-│   │
-│   ├── canvas_publisher/
-│   │   ├── publisher.py            # Publicación en Canvas LMS
-│   │   ├── canvas_client.py        # Cliente REST para Canvas API
-│   │   ├── mock_client.py          # Mock para testing sin Canvas real
-│   │   ├── formatters.py           # Markdown→HTML, payloads de Canvas API
-│   │   └── models.py               # PublicationResult, CanvasCourse, etc.
-│   │
-│   ├── web_interface/
-│   │   ├── backend/
-│   │   │   ├── upload_handler.py   # Presigned URL para S3
-│   │   │   ├── ingestion_handler.py # Parse DOCX/PDF → Subject JSON → Step Functions
-│   │   │   ├── dashboard_handler.py # GET /api/subjects
-│   │   │   └── document_parser.py  # Extracción de datos académicos de DOCX
-│   │   └── frontend/
-│   │       ├── src/App.tsx          # Login + Dashboard + Upload
-│   │       ├── src/pages/CheckpointPage.tsx  # Revisión con 6 tabs
-│   │       ├── src/components/SubjectTable.tsx # Tabla de estado
-│   │       └── src/api/pipeline.ts  # API client
-│   │
-│   └── infrastructure/
-│       ├── stacks/                  # CDK Stacks (5)
-│       ├── state/                   # State manager (S3 + DynamoDB)
-│       ├── schema/                  # JSON schema validator
-│       └── observability/           # Logger + Metrics
-│
-├── tests/                           # 191 unit tests
-├── lambda-layer/                    # Shared Lambda Layer
-├── test-data/                       # Scripts de prueba y deploy
-└── aidlc-docs/                      # Documentación AI-DLC
-```
 
 ## Pipeline por Asignatura
 
 Cada asignatura pasa por 7 fases secuenciales:
 
 ### Fase 1: Ingesta
-- Staff sube DOCX/PDF desde el frontend
-- `ingestion_handler` parsea tablas del DOCX (formato Anáhuac)
-- Extrae: nombre, RAs, competencias, syllabus, tipo de materia
+- Staff sube DOCX desde el frontend
+- Parser extrae tablas Anáhuac: nombre, RAs, competencias, syllabus, duración (semanas)
 - Crea Subject JSON en S3 y dispara Step Functions
 
-### Fase 2: Scholar (AgentCore Runtime)
+### Fase 2: Scholar (AgentCore Runtime, ~3 min)
 - Genera keywords específicos del dominio a partir del syllabus
 - Busca en Scopus API papers Q1/Q2 (Top 20)
-- Construye Knowledge Matrix vinculando papers a RAs
-- Auto-persiste resultados a S3 + DynamoDB
+- Enriquece papers con abstracts de OpenAlex (API gratuita)
+- Construye Knowledge Matrix con conceptos, definiciones y metodologías
+- Auto-persiste a S3 + DynamoDB
 
-### Fase 3: DI — Diseño Instruccional (AgentCore Runtime)
-- Carga contexto completo de S3 (syllabus, competencias, papers)
-- Genera objetivos de aprendizaje con Taxonomía de Bloom
-- Alinea objetivos → competencias del programa (C1-C4) → RAs
-- Genera Carta Descriptiva V1 y Mapa de Contenidos semanal
-- Auto-persiste resultados
+### Fase 3: DI — Diseño Instruccional (AgentCore Runtime, ~2 min)
+- Usa template Anáhuac MADTFIN para Carta Descriptiva
+- Genera objetivos con Taxonomía de Bloom (Aplicar o superior)
+- Audiencia: directivos financieros 5+ años experiencia
+- Contexto regulatorio México (CNBV, Banxico, NIF)
+- Genera mapa de contenidos semanal y casos ejecutivos
 
-### Fase 4: Content — Generación de Recursos (AgentCore Runtime)
-- Carga todo el contexto previo (syllabus, objetivos, papers, mapa semanal)
-- Genera lecturas ejecutivas por semana
-- Genera quizzes con preguntas específicas del dominio
-- Genera 4 artefactos Maestría (RF-05a):
-  1. Dashboard de Evidencia (20 papers)
-  2. Mapa de Ruta Crítica
-  3. Repositorio de Casos Ejecutivos
-  4. Guía del Facilitador (minuto a minuto)
-- Auto-persiste resultados
+### Fase 4: Content — Generación de Recursos (AgentCore Runtime, ~5 min)
+Genera contenido por semana usando llamadas LLM individuales:
+
+**Por semana (= 1 Módulo en Canvas):**
+- 1 Introducción (150-200 palabras)
+- 3 Lecturas ejecutivas (400-500 palabras cada una, prosa narrativa)
+- 1 Quiz de razonamiento crítico (8 preguntas, ≥3 en Analizar/Evaluar)
+- 1 Foro de aprendizaje (caso de negocio + 3 preguntas + rúbrica evaluación pares)
+
+**Recursos globales:**
+- 1 Guión de Masterclass (18-22 min, con indicaciones [SLIDE]/[CASO VISUAL])
+- 1 Reto de Aprendizaje Agéntico (escenario financiero mexicano, rúbrica 4 niveles)
+- 4 Artefactos Maestría (dashboard, ruta crítica, casos, guía facilitador)
+
+Para 5 semanas: 5 intros + 15 lecturas + 5 quizzes + 5 foros + masterclass + reto.
 
 ### Fase 5: QA Gate
 - Valida cobertura 100% de RAs
-- Valida alineación Bloom–Competencias (sin gaps)
-- Valida presencia de 4 artefactos Maestría
-- Si PASS → estado PENDING_APPROVAL
-- Si FAIL → reintento automático (máx 3)
+- Valida alineación Bloom–Competencias
+- Valida presencia de artefactos Maestría
+- Si PASS → PENDING_APPROVAL
 
-### Fase 6: Checkpoint Humano (RF-07)
-- Pipeline se pausa — Staff recibe notificación
-- Frontend muestra 6 tabs de previsualización:
-  - Resumen QA, Objetivos, Lecturas, Quizzes, Papers, Maestría
-- Staff puede: Aprobar / Rechazar con comentarios / Editar
-- Sin aprobación explícita, no se publica
+### Fase 6: Checkpoint Humano
+- Pipeline se pausa — Staff revisa en frontend (10 tabs)
+- Tabs: Resumen, Objetivos, Lecturas, Quizzes, Foros, Papers, Maestría, Masterclass, Reto, Preview Canvas
+- Staff puede: Aprobar / Rechazar con comentarios
+- Cursos publicados muestran banner verde + link a Canvas
 
-### Fase 7: Canvas Publisher (RF-08)
-- Crea curso en Canvas LMS (borrador)
-- Publica módulos, páginas, quizzes, rúbricas
-- Vincula competencias a rúbricas de evaluación
-- Modo mock disponible (`CANVAS_MOCK_MODE=true`)
+### Fase 7: Canvas Publisher
+- Crea curso con nombre de la asignatura (código MADTFIN)
+- Estructura en Canvas:
+  - Módulo "Información General": Carta Descriptiva, Masterclass, Guía Facilitador
+  - Módulos semanales: Introducción, 3 Lecturas, Quiz, Foro (con rúbrica HTML)
+  - Módulo "Reto de Aprendizaje Agéntico" (al final)
+- Rúbricas renderizadas como tablas HTML con colores (4 niveles)
 
 ## Despliegue
 
 ### Prerrequisitos
-- AWS CLI configurado (con cuenta y región apropiadas)
+- AWS CLI configurado
 - Node.js 18+ (para CDK)
 - Python 3.11
 - AgentCore CLI (`pip install bedrock-agentcore-starter-toolkit`)
@@ -196,9 +146,9 @@ npm install && npx vite build
 aws s3 sync dist/ s3://<FRONTEND_BUCKET>/ --delete
 ```
 
-## URLs de Producción (dev)
+## URLs y Credenciales
 
-Estas URLs se generan durante el despliegue con CDK. Consultar los outputs de cada stack.
+Las URLs se generan durante el despliegue con CDK. Consultar los outputs de cada stack.
 
 | Recurso | Descripción |
 |---------|-------------|
@@ -208,13 +158,10 @@ Estas URLs se generan durante el despliegue con CDK. Consultar los outputs de ca
 | Cognito User Pool | Output de QACheckpoint stack |
 | Staff User | Crear via Cognito console o CLI |
 
-## Credenciales y Secretos
-
 | Secreto | Ubicación |
 |---------|-----------|
 | Scopus API Key | Secrets Manager: `academic-pipeline/<env>/scopus-api-key` |
 | Canvas OAuth Token | Secrets Manager: `academic-pipeline/<env>/canvas-oauth-token` |
-| Canvas URL | Configurar en variable de entorno del Canvas Publisher Lambda |
 
 ## Testing
 
@@ -222,23 +169,22 @@ Estas URLs se generan durante el despliegue con CDK. Consultar los outputs de ca
 # Unit tests (191 passing)
 python -m pytest tests/ -q
 
-# Test pipeline end-to-end
+# Check subject state
 python test-data/check_subject.py /tmp/subject.json
 
-# Review content quality
-python test-data/review_content.py
+# Check content quality
+python test-data/check_new_content.py /tmp/subject.json
+
+# Show reading sizes
+python test-data/show_readings.py /tmp/subject.json
 ```
 
 ## Configuración del Canvas Publisher
 
 ```bash
-# Mock mode (default) — no hace llamadas reales a Canvas
-aws lambda update-function-configuration \
-  --function-name academic-pipeline-canvas-publisher-<env> \
-  --environment "Variables={CANVAS_MOCK_MODE=true,...}"
+# Real mode (publica en Canvas LMS)
+bash test-data/activate_canvas.sh
 
-# Real mode — publica en Canvas LMS
-aws lambda update-function-configuration \
-  --function-name academic-pipeline-canvas-publisher-<env> \
-  --environment "Variables={CANVAS_MOCK_MODE=false,...}"
+# Mock mode (simula sin Canvas real)
+# Cambiar CANVAS_MOCK_MODE=true en la configuración del Lambda
 ```

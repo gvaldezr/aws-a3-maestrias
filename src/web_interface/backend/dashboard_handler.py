@@ -26,6 +26,7 @@ def lambda_handler(event: dict, context: Any) -> dict:
                 "current_state": item.get("current_state", ""),
                 "updated_at": item.get("updated_at", ""),
                 "pending_approval": item.get("current_state") == "PENDING_APPROVAL",
+                "canvas_course_url": item.get("canvas_course_url", ""),
             })
 
         pending = sum(1 for s in subjects if s["current_state"] == "PENDING_APPROVAL")

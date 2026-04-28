@@ -264,6 +264,14 @@ def _extract_learning_outcomes_structured(text: str) -> list[dict]:
 
 def _extract_syllabus(text: str) -> str:
     """Extract syllabus/content topics from Anáhuac structured format."""
+    # Extract duration
+    duration_match = re.search(r"[Dd]uraci[oó]n\s+del\s+ciclo[:\s]*(\d+)\s*semanas", text, re.IGNORECASE)
+    num_weeks = int(duration_match.group(1)) if duration_match else 0
+
+    # Extract credits
+    credits_match = re.search(r"[Cc]r[eé]ditos[:\s]*(\d+)", text)
+    credits = int(credits_match.group(1)) if credits_match else 0
+
     syllabus_match = re.search(
         r"[Cc]ontenido\s+tem[aá]tico[:\s]*(.+?)(?=Actividades\s+de\s+aprendizaje|Criterios\s+de\s+evaluaci[oó]n|Software|Recursos\s+[Bb]ibliogr[aá]ficos|\Z)",
         text, re.IGNORECASE | re.DOTALL
@@ -289,6 +297,17 @@ def _extract_syllabus(text: str) -> str:
     if current_topic:
         topics.append(" — ".join(current_topic))
 
-    # Build syllabus string
+    # Build syllabus string with duration info
     numbered = [f"{i+1}) {t}" for i, t in enumerate(topics)]
-    return "Contenido tematico: " + ". ".join(numbered)
+    result = "Contenido tematico: " + ". ".join(numbered)
+
+    # Append duration and credits
+    meta_parts = []
+    if num_weeks:
+        meta_parts.append(f"Duracion: {num_weeks} semanas")
+    if credits:
+        meta_parts.append(f"{credits} creditos")
+    if meta_parts:
+        result += ". " + ", ".join(meta_parts) + "."
+
+    return result

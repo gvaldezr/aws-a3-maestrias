@@ -2,56 +2,30 @@
 
 ## Resueltos
 
-### Issue 1: Agentes no reciben contexto académico ✅
-**Resuelto**: Cada agente carga el subject JSON de S3 via `_load_subject_context()` y construye prompts con syllabus, competencias, RAs y papers reales.
-
-### Issue 2: MaxTokensReachedException en DI y Content ✅
-**Resuelto**: `max_tokens` aumentado a 16384, prompts compactados, system prompts simplificados.
-
-### Issue 3: TypeError string indices en Content tools ✅
-**Resuelto**: `_ensure_dicts()` convierte strings JSON a dicts en los 3 tools del Content agent.
-
-### Issue 4: Auto-persistencia falla (permisos IAM) ✅
-**Resuelto**: Policy `AcademicPipelineDataAccess` agregada a los 3 roles de AgentCore Runtime con S3, DynamoDB, KMS y Secrets Manager.
-
-### Issue 5: Estado regresa de PENDING_APPROVAL a CONTENT_READY ✅
-**Resuelto**: Los 3 agentes verifican el estado actual antes de escribir — no regresan estados avanzados.
-
-### Issue 6: QA Report no se persiste en S3 ✅
-**Resuelto**: QA Gate usa `_save_json_direct()` para guardar qa_report sin pasar por el schema validator.
-
-### Issue 7: DOCX parser no extrae datos de tablas ✅
-**Resuelto**: `_extract_docx()` lee tablas además de párrafos. Parser reconoce formato Anáhuac (Denominación, Fines de aprendizaje, Contenido temático).
-
-### Issue 8: CORS en API Gateway ✅
-**Resuelto**: Gateway Responses para DEFAULT_4XX y DEFAULT_5XX con CORS headers. Frontend usa IdToken (no AccessToken).
-
-### Issue 9: Canvas Publisher import error (httpx/tenacity) ✅
-**Resuelto**: `canvas_client.py` usa import lazy de httpx dentro de `_request()`. Eliminada dependencia de tenacity.
-
----
+1. **Agentes sin contexto académico** → Cada agente carga subject JSON de S3
+2. **MaxTokensReachedException** → Content agent usa llamadas LLM individuales (no agent loop)
+3. **Auto-persistencia fallaba** → IAM permissions + direct persist + state regression guard
+4. **DOCX parser no leía tablas** → Extrae tablas Anáhuac (nombre, RAs, syllabus, semanas)
+5. **CORS en API Gateway** → Gateway Responses para 4xx/5xx + IdToken
+6. **QA Report no persistía** → Direct S3 write (bypass schema validator)
+7. **Semanas incorrectas** → Parser extrae "Duración del ciclo: N semanas"
+8. **TypeError en tools** → `_ensure_dicts()` para strings JSON
+9. **Contenido genérico** → Templates Anáhuac MADTFIN + LLM individual calls
+10. **Scopus sin abstracts** → OpenAlex como complemento (auto-enrich en Scholar persist)
+11. **Quiz formato incorrecto** → QA Gate acepta ra_ids (plural)
+12. **Checkpoint 500 error** → Direct S3 write para approve/reject (bypass schema validator)
+13. **Canvas un solo módulo** → 1 módulo por semana + módulos globales
+14. **Rúbricas sin formato** → HTML tables con colores (4 niveles)
+15. **Guía facilitador como JSON** → Renderizada como tabla HTML
+16. **Reto en módulo incorrecto** → Módulo propio al final
+17. **Nombre del curso genérico** → Usa nombre de la asignatura + prefijo MADTFIN
 
 ## Pendientes
 
-### Issue 10: Registros de prueba en DynamoDB
-**Severidad**: Baja
-**Descripción**: Hay ~18 registros de pruebas anteriores en DynamoDB que aparecen en el dashboard.
-**Solución**: Limpiar manualmente los registros con `aws dynamodb delete-item`.
-
-### Issue 11: Test coverage 26%
-**Severidad**: Media
-**Descripción**: 191 tests pasan pero la cobertura es 26% (muchos Lambda handlers sin tests unitarios).
-**Solución**: Agregar tests para ingestion_handler, dashboard_handler, checkpoint, canvas_publisher.
-
-### Issue 12: Procesamiento paralelo no implementado (RF-09)
-**Severidad**: Baja (funcional para 1 asignatura a la vez)
-**Descripción**: Step Functions procesa 1 asignatura por ejecución. Para paralelo, necesita Map state.
-
-### Issue 13: Notificaciones SNS no configuradas (RF-11)
-**Severidad**: Baja
-**Descripción**: Los topics SNS existen pero no tienen suscriptores. No hay alarmas CloudWatch.
-
-### Issue 14: Infrastructure test expects 2 secrets, finds 3
-**Severidad**: Baja
-**Descripción**: `test_secrets_manager_secrets_created` espera 2 secrets pero hay 3 (se agregó Canvas token).
-**Solución**: Actualizar el test a `resource_count_is("AWS::SecretsManager::Secret", 3)`.
+| Problema | Severidad | Detalle |
+|----------|-----------|---------|
+| Content agent ~5 min con LLM | Baja | Dentro del timeout de 900s |
+| Scopus Abstract API 401 | Baja | API key sin acceso. OpenAlex como complemento |
+| Test coverage 26% | Baja | 191 tests pasan |
+| RF-09 Paralelo | Media | 1 asignatura a la vez. Falta Map state en Step Functions |
+| RF-11 Alarmas SNS | Baja | Topics existen pero sin suscriptores |

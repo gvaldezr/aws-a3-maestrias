@@ -69,7 +69,7 @@ def _get_agent():
                 resp = client.get(
                     "https://api.elsevier.com/content/search/scopus",
                     params={"query": query, "count": 25, "sort": "citedby-count",
-                            "field": "dc:identifier,dc:title,dc:creator,prism:publicationName,prism:coverDate,citedby-count,prism:doi"},
+                            "field": "dc:identifier,dc:title,dc:creator,prism:publicationName,prism:coverDate,citedby-count,prism:doi,affiliation,prism:aggregationType,subtypeDescription,openaccess,prism:pageRange,authkeywords"},
                     headers={"X-ELS-APIKey": api_key, "Accept": "application/json"},
                 )
 
@@ -86,6 +86,13 @@ def _get_agent():
                     year = int(e.get("prism:coverDate", "2000")[:4])
                 except ValueError:
                     continue
+                # Extract affiliation
+                affil = e.get("affiliation", [])
+                affil_name = affil[0].get("affilname", "") if isinstance(affil, list) and affil else ""
+                affil_country = affil[0].get("affiliation-country", "") if isinstance(affil, list) and affil else ""
+                # Extract author keywords
+                auth_kw = e.get("authkeywords", "")
+
                 papers.append({
                     "scopus_id": e.get("dc:identifier", "").replace("SCOPUS_ID:", ""),
                     "title": title,
@@ -93,12 +100,44 @@ def _get_agent():
                     "year": year,
                     "journal": e.get("prism:publicationName", ""),
                     "quartile": "Q1",
+                    "cited_by": int(e.get("citedby-count", 0)),
                     "key_finding": f"Cited {e.get('citedby-count', 0)} times",
                     "doi": e.get("prism:doi"),
+                    "doc_type": e.get("subtypeDescription", "Article"),
+                    "open_access": e.get("openaccess", "0") == "1",
+                    "affiliation": affil_name,
+                    "country": affil_country,
+                    "page_range": e.get("prism:pageRange", ""),
+                    "author_keywords": auth_kw,
                 })
             return {"papers": papers, "total": len(papers)}
         except Exception as exc:
             return {"papers": [], "total": 0, "error": str(exc)}
+
+    @tool
+    def enrich_papers_with_abstracts(papers: list) -> dict:
+        """Enrich papers with abstracts from OpenAlex (free API). Call after search_scopus_papers.
+
+        Args:
+            papers: List of paper dicts from search_scopus_papers (must have doi field)
+        """
+        try:
+            from openalex_client import fetch_abstracts_batch
+        except ImportError:
+            try:
+                from src.agents.scholar.openalex_client import fetch_abstracts_batch
+            except ImportError:
+                return {"enriched": 0, "error": "openalex_client not available"}
+
+        abstracts = fetch_abstracts_batch(papers, max_papers=20, delay=0.3)
+        enriched = 0
+        for paper in papers:
+            sid = paper.get("scopus_id", "")
+            if sid in abstracts:
+                paper["abstract"] = abstracts[sid][:1000]  # Cap at 1000 chars
+                paper["key_finding"] = abstracts[sid][:300]  # Use abstract start as key_finding
+                enriched += 1
+        return {"enriched": enriched, "total": len(papers)}
 
     @tool
     def build_knowledge_matrix(papers: list, learning_outcomes: list) -> dict:
@@ -126,20 +165,25 @@ def _get_agent():
 
     _scholar_agent = Agent(
         model=model,
-        tools=[search_scopus_papers, build_knowledge_matrix],
+        tools=[search_scopus_papers, enrich_papers_with_abstracts, build_knowledge_matrix],
         system_prompt=(
             "You are Scholar, an academic research agent for university programs. "
-            "You receive the COMPLETE academic context: subject name, syllabus, competencies, and learning outcomes. "
+            "WORKFLOW: "
+            "1. Call search_scopus_papers to find Q1/Q2 papers "
+            "2. Call enrich_papers_with_abstracts to get abstracts from OpenAlex "
+            "3. Call build_knowledge_matrix to structure the knowledge "
             "CRITICAL RULES: "
-            "1. Generate search keywords DIRECTLY from the syllabus topics — NOT generic ML/data science terms. "
-            "2. Keywords must be DOMAIN-SPECIFIC (e.g., for finance subjects, use financial terms). "
-            "3. Combine domain terms with methodological terms from the syllabus. "
-            "4. After searching, filter out papers that are NOT relevant to the subject domain. "
-            "Use search_scopus_papers to find Q1/Q2 papers, then build_knowledge_matrix to extract concepts. "
-            "CRITICAL: Your final response MUST be ONLY a single JSON code block with NO text before or after. "
+            "1. Generate search keywords DIRECTLY from the syllabus topics. "
+            "2. Keywords must be DOMAIN-SPECIFIC. "
+            "3. After enriching with abstracts, use the abstract content to write SUBSTANTIVE "
+            "   definitions in the knowledge_matrix core_concepts (2-3 sentences each). "
+            "4. Each core_concept must have: concept name, academic definition based on paper abstracts, "
+            "   supporting_papers list, and competency alignment. "
+            "5. Each RA entry must have: syllabus_topics_covered, core_concepts, key_methodologies. "
+            "CRITICAL: Final response MUST be ONLY a single JSON code block. "
             "Format: ```json\n{...}\n``` "
-            "The JSON MUST have keys: top20_papers, knowledge_matrix, keywords_used. "
-            "Do NOT include markdown tables, explanations, or commentary outside the JSON block."
+            "Keys: top20_papers, knowledge_matrix, keywords_used. "
+            "No text outside the JSON block."
         ),
     )
     return _scholar_agent
@@ -270,6 +314,30 @@ def _self_persist(subject_id: str, result_text: str, section: str, new_state: st
         sj.setdefault("research", {})
         if parsed.get("top20_papers"):
             sj["research"]["top20_papers"] = parsed["top20_papers"]
+            # Enrich with OpenAlex abstracts
+            try:
+                from openalex_client import fetch_abstracts_batch
+            except ImportError:
+                try:
+                    from src.agents.scholar.openalex_client import fetch_abstracts_batch
+                except ImportError:
+                    fetch_abstracts_batch = None
+            if fetch_abstracts_batch:
+                try:
+                    abstracts = fetch_abstracts_batch(sj["research"]["top20_papers"], max_papers=20, delay=0.3)
+                    enriched = 0
+                    for paper in sj["research"]["top20_papers"]:
+                        sid = paper.get("scopus_id", "")
+                        if sid in abstracts and abstracts[sid]:
+                            paper["abstract"] = abstracts[sid][:1500]
+                            if paper.get("key_finding", "").startswith("Cited"):
+                                paper["key_finding"] = abstracts[sid][:300]
+                            enriched += 1
+                    import logging
+                    logging.getLogger().info(f"OPENALEX: Enriched {enriched}/{len(sj['research']['top20_papers'])} papers with abstracts")
+                except Exception as e:
+                    import logging
+                    logging.getLogger().warning(f"OPENALEX: Failed to enrich: {e}")
         if parsed.get("knowledge_matrix"):
             sj["research"]["knowledge_matrix"] = parsed["knowledge_matrix"]
         if parsed.get("keywords_used"):
