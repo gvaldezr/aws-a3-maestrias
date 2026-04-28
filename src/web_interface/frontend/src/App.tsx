@@ -83,7 +83,7 @@ export function App() {
       <div style={styles.loginWrapper}>
         <div style={styles.loginCard}>
           <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
-            <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}>🎓</div>
+            <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}><img src="/assets/isotipo.jpg" alt="Anáhuac" style={{height:"48px",width:"auto",objectFit:"contain"}} /></div>
             <h1 style={{margin:0,fontSize:"1.3rem",color:"#040404"}}>Vince Scholar</h1>
             <p style={{margin:"0.3rem 0 0",color:"#9C9C9C",fontSize:"0.85rem"}}>Anáhuac Mayab</p>
           </div>
@@ -116,7 +116,7 @@ export function App() {
     <div style={{fontFamily:"'Montserrat',system-ui,-apple-system,sans-serif",background:"#FFFFFF",minHeight:"100vh"}}>
       <nav style={styles.nav}>
         <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-          <span style={{fontSize:"1.3rem"}}>🎓</span>
+          <img src="/assets/isotipo.jpg" alt="Anáhuac" style={{height:"28px",width:"auto",objectFit:"contain"}} />
           <h1 style={{margin:0,fontSize:"1rem",fontWeight:600}}>Vince Scholar</h1>
         </div>
         <button onClick={handleLogout} style={styles.navBtnLight}>Cerrar Sesión</button>
