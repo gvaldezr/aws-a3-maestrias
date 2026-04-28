@@ -248,11 +248,15 @@ def _get_checkpoint_summary(subject_id: str) -> dict:
             "papers_count": len(papers),
             "has_masterclass": bool(cp.get("masterclass_script")),
             "has_agentic_challenge": bool(cp.get("agentic_challenge")),
+            "forums_count": len(cp.get("forums", [])),
+            "weekly_units_count": len(cp.get("weekly_units", [])),
         },
 
         # New content types
         "masterclass_script": cp.get("masterclass_script", {}),
         "agentic_challenge": cp.get("agentic_challenge", {}),
+        "forums": cp.get("forums", []),
+        "weekly_units": cp.get("weekly_units", []),
 
         # Academic inputs for reference
         "competencies": inputs.get("competencies", []),

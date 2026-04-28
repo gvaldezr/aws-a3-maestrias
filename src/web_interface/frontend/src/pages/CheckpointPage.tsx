@@ -10,7 +10,7 @@ interface Props {
   onDecisionComplete: () => void;
 }
 
-type Tab = "overview" | "objectives" | "readings" | "quizzes" | "papers" | "maestria" | "masterclass" | "challenge" | "canvas";
+type Tab = "overview" | "objectives" | "readings" | "quizzes" | "forums" | "papers" | "maestria" | "masterclass" | "challenge" | "canvas";
 
 export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
   const [summary, setSummary] = useState<Record<string, any> | null>(null);
@@ -52,6 +52,7 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
     { key: "objectives", label: "🎯 Objetivos", count: summary.objectives?.length },
     { key: "readings", label: "📖 Lecturas", count: summary.readings?.length },
     { key: "quizzes", label: "❓ Quizzes", count: summary.quizzes?.length },
+    { key: "forums", label: "💬 Foros", count: summary.forums?.length },
     { key: "papers", label: "📚 Papers", count: summary.papers?.length },
     { key: "maestria", label: "🎓 Maestría" },
     { key: "masterclass", label: "🎬 Masterclass" },
@@ -90,6 +91,7 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
         {activeTab === "objectives" && <ObjectivesTab objectives={summary.objectives || []} card={summary.descriptive_card} />}
         {activeTab === "readings" && <ReadingsTab readings={summary.readings || []} />}
         {activeTab === "quizzes" && <QuizzesTab quizzes={summary.quizzes || []} />}
+        {activeTab === "forums" && <ForumsTab forums={summary.forums || []} />}
         {activeTab === "papers" && <PapersTab papers={summary.papers || []} />}
         {activeTab === "maestria" && <MaestriaTab artifacts={summary.maestria_artifacts} />}
         {activeTab === "masterclass" && <MasterclassTab script={summary.masterclass_script} />}
@@ -148,6 +150,7 @@ function OverviewTab({ summary }: { summary: Record<string, any> }) {
         <StatCard label="Casos" value={cp.cases_count ?? 0} />
         <StatCard label="Masterclass" value={cp.has_masterclass ? "✅" : "—"} ok={cp.has_masterclass} />
         <StatCard label="Reto" value={cp.has_agentic_challenge ? "✅" : "—"} ok={cp.has_agentic_challenge} />
+        <StatCard label="Foros" value={cp.forums_count ?? 0} />
       </div>
 
       <h3>Carta Descriptiva</h3>
@@ -323,6 +326,68 @@ function MaestriaTab({ artifacts }: { artifacts: any }) {
           </div>
         )) || <p>No disponible</p>}
       </Section>
+    </div>
+  );
+}
+
+function ForumsTab({ forums }: { forums: any[] }) {
+  if (!forums || forums.length === 0) return <p style={{color:"#718096",padding:"1rem"}}>Los foros se generarán en la próxima ejecución del pipeline.</p>;
+  return (
+    <div>
+      <h3 style={{marginTop:0}}>💬 Foros de Aprendizaje ({forums.length})</h3>
+      {forums.map((f: any, i: number) => (
+        <div key={i} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:"6px",marginBottom:"1rem",overflow:"hidden"}}>
+          <div style={{background:"#2d3748",color:"white",padding:"0.5rem 1rem",fontSize:"0.85rem"}}>
+            <strong>Semana {f.week}:</strong> {f.title}
+          </div>
+          <div style={{padding:"1rem"}}>
+            {f.case && (
+              <div style={{marginBottom:"1rem"}}>
+                <h4 style={{margin:"0 0 0.5rem",color:"#2b6cb0"}}>{f.case.title || "Caso de Negocio"}</h4>
+                <p style={{lineHeight:1.7,margin:0}}>{f.case.description}</p>
+              </div>
+            )}
+            {f.questions && (
+              <div style={{marginBottom:"1rem"}}>
+                <h4 style={{margin:"0 0 0.5rem"}}>Preguntas de Discusión</h4>
+                <ol style={{margin:0,paddingLeft:"1.5rem",lineHeight:1.8}}>
+                  {f.questions.map((q: string, qi: number) => <li key={qi}>{q}</li>)}
+                </ol>
+              </div>
+            )}
+            {f.rubric && (
+              <div>
+                <h4 style={{margin:"0 0 0.5rem"}}>Rúbrica de Evaluación</h4>
+                <div style={{overflowX:"auto"}}>
+                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:"0.8rem",minWidth:"500px"}}>
+                    <thead>
+                      <tr style={{background:"#edf2f7"}}>
+                        <th style={thStyle}>Criterio</th><th style={thStyle}>Peso</th>
+                        <th style={{...thStyle,background:"#c6f6d5"}}>Excelente</th>
+                        <th style={{...thStyle,background:"#bee3f8"}}>Bueno</th>
+                        <th style={{...thStyle,background:"#fefcbf"}}>Regular</th>
+                        <th style={{...thStyle,background:"#fed7d7"}}>Deficiente</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(f.rubric.criteria || []).map((cr: any, ci: number) => (
+                        <tr key={ci}>
+                          <td style={{...tdStyle,fontWeight:600}}>{cr.criterion}</td>
+                          <td style={tdStyle}>{cr.weight}</td>
+                          <td style={{...tdStyle,background:"#f0fff4"}}>{cr.excelente || cr.excellent || ""}</td>
+                          <td style={{...tdStyle,background:"#ebf8ff"}}>{cr.bueno || cr.good || ""}</td>
+                          <td style={{...tdStyle,background:"#fffff0"}}>{cr.regular || ""}</td>
+                          <td style={{...tdStyle,background:"#fff5f5"}}>{cr.deficiente || cr.deficient || ""}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
