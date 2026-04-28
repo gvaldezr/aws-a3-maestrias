@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scholar Agent - Anáhuac Mayab</title>
+    <title>Vince Scholar - Estrategia Institucional Anáhuac Mayab</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -69,24 +69,6 @@
             font-size: clamp(3rem, 8vw, 6.5rem);
         }
 
-        .impact-card {
-            border-left: 4px solid var(--anahuac-orange);
-            background: rgba(255, 89, 0, 0.05);
-            padding: 1rem 1.5rem;
-            border-radius: 0 1rem 1rem 0;
-        }
-
-        .comparison-badge {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 6px 16px;
-            border-radius: 99px;
-            font-size: 0.85rem;
-            color: #f87171;
-            font-weight: 600;
-        }
-
-        /* Cost Table */
         .cost-table {
             width: 100%;
             border-collapse: separate;
@@ -107,7 +89,6 @@
         .cost-table tr td:first-child { border-radius: 12px 0 0 12px; }
         .cost-table tr td:last-child { border-radius: 0 12px 12px 0; text-align: right; font-weight: bold; }
 
-        /* Timeline User Experience */
         .timeline-container {
             display: flex;
             justify-content: space-between;
@@ -151,14 +132,12 @@
 </head>
 <body class="relative overflow-hidden">
 
-    <!-- Barra de progreso superior -->
     <div class="absolute top-0 left-0 w-full h-1.5 bg-slate-900 z-50">
         <div id="progress" class="h-full bg-orange-600 progress-bar" style="width: 0%;"></div>
     </div>
 
     <div id="slides-container" class="relative h-full w-full">
 
-        <!-- SLIDE 1: PORTADA -->
         <div class="slide active items-center text-center">
             <div class="mb-6 inline-block p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20">
                 <i data-lucide="graduation-cap" class="w-16 h-16 text-[#ff5900]"></i>
@@ -167,37 +146,36 @@
                 VINCE <span class="text-gradient">SCHOLAR</span>
             </h1>
             <p class="text-xl md:text-2xl text-slate-400 font-light max-w-2xl mx-auto">
-                Pipeline académico automatizado para Anáhuac Mayab.
+                Aceleración Estratégica de Programas Académicos para Anáhuac Mayab.
             </p>
             <div class="mt-12 flex items-center gap-4 opacity-40">
                 <span class="text-xs font-bold tracking-[0.4em] uppercase">AWS Builders League 2026</span>
             </div>
         </div>
 
-        <!-- SLIDE 2: EL DOLOR DEL CLIENTE -->
         <div class="slide">
             <div class="absolute top-8 left-0 w-full text-center">
-                <h2 class="text-sm font-bold uppercase tracking-[0.3em] text-slate-500">Perspectiva del Cliente: El Diseñador Instruccional</h2>
+                <h2 class="text-sm font-bold uppercase tracking-[0.3em] text-slate-500">Perspectiva Ejecutiva: Agilidad y Vanguardia</h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-7xl mx-auto w-full">
                 <div class="relative px-4">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="p-2 bg-orange-500/10 rounded-lg">
-                            <i data-lucide="user" class="w-6 h-6 text-orange-500"></i>
+                            <i data-lucide="building-2" class="w-6 h-6 text-orange-500"></i>
                         </div>
-                        <span class="text-slate-400 font-bold text-xs uppercase tracking-widest">El Cuello de Botella</span>
+                        <span class="text-slate-400 font-bold text-xs uppercase tracking-widest">El Desfase Competitivo en instituciones educativas</span>
                     </div>
                     <blockquote class="hero-quote leading-tight text-white">
-                        “Tengo el diseño listo, pero sigo <span class="text-red-500 font-bold">paralizado</span> esperando que el experto tenga tiempo para validarme.”
+                        “Nuestra capacidad de innovar está <span class="text-red-500 font-bold">limitada</span> por tiempos de validación que el mercado no perdona.”
                     </blockquote>
                     <div class="mt-8 space-y-4">
                         <div class="flex items-start gap-4">
-                            <i data-lucide="clock-8" class="w-5 h-5 text-red-400 mt-1"></i>
-                            <p class="text-slate-400">Dependencia crítica de agendas saturadas.</p>
+                            <i data-lucide="trending-down" class="w-5 h-5 text-red-400 mt-1"></i>
+                            <p class="text-slate-400">Lento Time-to-Market: Programas que pierden relevancia antes de nacer.</p>
                         </div>
                         <div class="flex items-start gap-4">
-                            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-400 mt-1"></i>
-                            <p class="text-slate-400">Pérdida de meses en el time-to-market del programa.</p>
+                            <i data-lucide="users" class="w-5 h-5 text-red-400 mt-1"></i>
+                            <p class="text-slate-400">Dependencia crítica de expertos externos con agendas saturadas.</p>
                         </div>
                     </div>
                 </div>
@@ -205,109 +183,101 @@
                     <div class="absolute inset-0 bg-orange-600/10 blur-[120px] rounded-full"></div>
                     <div class="card-glass text-center relative w-full max-w-md border-orange-500/40">
                         <div class="flex justify-center gap-2 mb-4">
-                             <i data-lucide="zap" class="w-6 h-6 text-orange-500 fill-orange-500"></i>
-                             <span class="text-orange-500 font-black uppercase tracking-[0.4em] text-sm">Autonomía Radical</span>
-                        </div>
-                        <div class="flex flex-col items-center mb-6">
-                            <span class="comparison-badge line-through mb-4 italic uppercase tracking-tighter">40 Horas de Trabajo Manual</span>
-                            <div class="hero-time tracking-tighter">15</div>
-                            <div class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mt-2">Minutos</div>
-                        </div>
-                        <p class="text-slate-300 text-lg font-light leading-snug">
-                            El DI recupera el control generando bases con <span class="text-white font-bold">rigor científico</span> de forma inmediata.
-                        </p>
+    <i data-lucide="zap" class="w-6 h-6 text-orange-500 fill-orange-500"></i>
+    <span class="text-orange-500 font-black uppercase tracking-[0.4em] text-sm">Escalabilidad Real</span>
+</div>
+<div class="flex flex-col items-center mb-6">
+    <span class="bg-red-500/10 border border-red-500/20 px-4 py-1 rounded-full text-red-400 text-xs mb-4 italic text-center">Horas anuales en procesos manuales</span>
+    <div class="hero-time tracking-tighter text-red-500/20" style="font-size: clamp(4rem, 10vw, 8rem); text-decoration: line-through;">5,724</div>
+    <div class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mt-2">36 Horas</div>
+    <span class="text-orange-500 font-bold text-xs mt-2 uppercase tracking-widest">Con Vince Scholar</span>
+</div>
+<p class="text-slate-300 text-lg font-light leading-snug">
+    ¿Qué harían sus expertos con <span class="text-white font-bold">5,688 horas extra</span> al año? Liberamos el talento humano mediante <span class="text-white font-bold">automatización inteligente</span>.
+</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 3: ORQUESTACIÓN Y AGENTES -->
         <div class="slide">
-            <h2 class="text-4xl font-black mb-10 border-l-8 border-orange-600 pl-6 mx-auto max-w-6xl w-full uppercase tracking-tighter">Orquestación <span class="text-orange-500">AWS</span></h2>
+            <h2 class="text-4xl font-black mb-10 border-l-8 border-orange-600 pl-6 mx-auto max-w-6xl w-full uppercase tracking-tighter">Garantía de Calidad <span class="text-orange-500">Anáhuac</span></h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto w-full">
                 <div class="p-8 rounded-[2rem] bg-slate-900/50 border border-slate-800 hover:border-orange-500/30 transition-all">
                     <i data-lucide="search" class="w-10 h-10 text-blue-400 mb-6"></i>
                     <h3 class="text-2xl font-bold mb-3 text-white">Scholar Agent</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Filtra y cita papers de fuentes como Scopus para fundamentar el diseño con evidencia científica real.</p>
+                    <p class="text-slate-400 text-sm leading-relaxed">Respalda la oferta académica con evidencia científica real (Scopus) asegurando el prestigio institucional.</p>
                 </div>
                 <div class="p-8 rounded-[2rem] bg-slate-900/50 border border-orange-500/50 shadow-[0_0_30px_rgba(255,89,0,0.1)]">
                     <i data-lucide="brain-circuit" class="w-10 h-10 text-orange-500 mb-6"></i>
                     <h3 class="text-2xl font-bold mb-3 text-white">DI Agent</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Transforma los objetivos en una estructura pedagógica completa siguiendo la Taxonomía de Bloom.</p>
+                    <p class="text-slate-400 text-sm leading-relaxed">Estandariza la excelencia pedagógica bajo la Taxonomía de Bloom en todos los programas.</p>
                 </div>
                 <div class="p-8 rounded-[2rem] bg-slate-900/50 border border-slate-800 hover:border-orange-500/30 transition-all">
                     <i data-lucide="shield-check" class="w-10 h-10 text-green-400 mb-6"></i>
                     <h3 class="text-2xl font-bold mb-3 text-white">QA Agent</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Garantiza la alineación total al perfil de egreso y detecta brechas de contenido antes de publicar.</p>
+                    <p class="text-slate-400 text-sm leading-relaxed">Auditoría automática: Garantiza 100% de alineación al perfil de egreso antes del lanzamiento.</p>
                 </div>
             </div>
             <div class="mt-12 text-center text-slate-500 text-[10px] font-bold uppercase tracking-[0.5em]">
-                Amazon Bedrock AgentCore• AWS Step Functions • Claude 3.5 Sonnet • Amazon OpenSearch
+                Amazon Bedrock • AWS Step Functions • Claude 3.5 Sonnet • Amazon OpenSearch
             </div>
         </div>
 
-        <!-- SLIDE 4: EXPERIENCIA DEL USUARIO (DIAGRAMA) -->
         <div class="slide">
             <div class="max-w-6xl mx-auto w-full text-center mb-16">
-                <h2 class="text-orange-500 text-4xl font-black mb-4 uppercase tracking-tighter">De 40 horas a 15 minutos</h2>
-                <p class="text-slate-400 text-lg">El flujo de trabajo automatizado que libera al Diseñador Instruccional:</p>
+                <h2 class="text-orange-500 text-4xl font-black mb-4 uppercase tracking-tighter">Optimización del Pipeline Académico</h2>
+                <p class="text-slate-400 text-lg">De 40 horas de gestión manual a un flujo de trabajo automatizado:</p>
             </div>
 
             <div class="relative max-w-6xl mx-auto w-full">
                 <div class="timeline-line"></div>
                 <div class="timeline-container">
-                    <!-- Paso 1 -->
                     <div class="timeline-step">
                         <div class="step-number">1</div>
                         <h4 class="font-bold text-white text-lg mb-2">Ingesta</h4>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Carga de Perfil <br> de Egreso (S3)</p>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Carga de Perfil <br> Institucional</p>
                     </div>
-                    <!-- Paso 2 -->
                     <div class="timeline-step">
                         <div class="step-number">2</div>
                         <h4 class="font-bold text-white text-lg mb-2">Agentes</h4>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Procesamiento <br> Multi-Agente</p>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Procesamiento <br> de Alto Nivel</p>
                     </div>
-                    <!-- Paso 3 -->
                     <div class="timeline-step">
                         <div class="step-number">3</div>
-                        <h4 class="font-bold text-white text-lg mb-2">QA Gate</h4>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Validación <br> Automática</p>
+                        <h4 class="font-bold text-white text-lg mb-2">Validación</h4>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">QA Automático <br> de Alineación</p>
                     </div>
-                    <!-- Paso 4 -->
                     <div class="timeline-step">
                         <div class="step-number">4</div>
-                        <h4 class="font-bold text-white text-lg mb-2">Validación</h4>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Revisión Humana <br> (React Dashboard)</p>
+                        <h4 class="font-bold text-white text-lg mb-2">Toque Final</h4>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Aprobación del <br> Experto Humano</p>
                     </div>
-                    <!-- Paso 5 -->
                     <div class="timeline-step">
                         <div class="step-number">5</div>
-                        <h4 class="font-bold text-white text-lg mb-2">Publicación</h4>
-                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Curso Vivo <br> en Canvas LMS</p>
+                        <h4 class="font-bold text-white text-lg mb-2">Lanzamiento</h4>
+                        <p class="text-slate-400 text-[11px] uppercase tracking-wider leading-relaxed">Time-to-Market <br> Disruptivo</p>
                     </div>
                 </div>
             </div>
 
             <div class="mt-20 max-w-2xl mx-auto text-center italic text-slate-500 border-t border-slate-800 pt-8">
-                "La IA asiste la fundamentación, pero <span class="text-white font-bold">el experto humano mantiene el criterio final</span>."
+                "No solo reducimos costos; multiplicamos la capacidad de la Anáhuac Mayab para liderar el mercado."
             </div>
         </div>
 
-        <!-- SLIDE 5: VIABILIDAD FINANCIERA -->
         <div class="slide">
             <div class="max-w-6xl mx-auto w-full">
                 <div class="flex items-center gap-4 mb-12">
                     <div class="w-2 h-12 bg-orange-600"></div>
-                    <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tighter">Viabilidad Financiera: <span class="text-orange-500">Eficiencia de Costos</span></h2>
+                    <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tighter">Business Case: <span class="text-orange-500">Retorno de Inversión</span></h2>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-                    <!-- Detalle de Costos -->
                     <div class="lg:col-span-3 space-y-8">
                         <div>
-                            <h3 class="text-xl font-bold mb-2">Estimación por Materia</h3>
-                            <p class="text-slate-400 text-sm max-w-md">El costo operativo se reduce drásticamente mediante arquitectura serverless (Pago por uso).</p>
+                            <h3 class="text-xl font-bold mb-2">Costo Operativo por Materia</h3>
+                            <p class="text-slate-400 text-sm max-w-md">Eficiencia radical mediante arquitectura serverless pago por uso.</p>
                         </div>
 
                         <div class="flex items-baseline gap-3">
@@ -318,45 +288,44 @@
                         <table class="cost-table">
                             <thead>
                                 <tr>
-                                    <th>Componente</th>
-                                    <th>Costo Est.</th>
+                                    <th>Concepto</th>
+                                    <th>Inversión Est.</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>IA (Amazon Bedrock Agentcore - Sonnet)</td>
+                                    <td>IA Generativa (Bedrock + Sonnet)</td>
                                     <td>$0.89</td>
                                 </tr>
                                 <tr>
-                                    <td>Infraestructura (Lambda, S3, DDB)</td>
+                                    <td>Infraestructura Serverless</td>
                                     <td>$0.08</td>
                                 </tr>
                                 <tr>
-                                    <td>Orquestación (Step Functions)</td>
+                                    <td>Orquestación Inteligente</td>
                                     <td>$0.01</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- ROI y Optimización -->
                     <div class="lg:col-span-2 space-y-6">
                         <div class="card-glass border-orange-500/20 p-8 relative overflow-hidden">
                             <div class="absolute top-0 right-0 p-4 opacity-10">
                                 <i data-lucide="trending-up" class="w-24 h-24 text-white"></i>
                             </div>
-                            <span class="text-orange-500 font-bold uppercase tracking-widest text-xs">ROI Disruptivo</span>
+                            <span class="text-orange-500 font-bold uppercase tracking-widest text-xs">Ahorro Institucional</span>
                             <div class="text-7xl font-black text-white my-2 tracking-tighter">99.5%</div>
-                            <p class="text-slate-400 font-medium">Ahorro vs. Proceso Manual</p>
+                            <p class="text-slate-400 font-medium">vs. Costo de Proceso Manual</p>
                         </div>
 
                         <div class="p-6 rounded-3xl bg-white/5 border border-white/10">
                             <div class="flex items-center gap-3 mb-4 text-orange-500">
                                 <i data-lucide="rocket" class="w-5 h-5"></i>
-                                <span class="font-bold text-sm uppercase tracking-wider">Optimización Futura:</span>
+                                <span class="font-bold text-sm uppercase tracking-wider">Impacto Estratégico:</span>
                             </div>
                             <p class="text-slate-300 text-sm leading-relaxed">
-                                Mediante modelos <span class="text-white font-bold">Haiku</span> y procesamiento en <span class="text-white font-bold">Batch</span>, el costo puede descender hasta <span class="text-orange-500 font-bold">$0.24 USD</span> por materia sin sacrificar calidad.
+                                El valor real no es el ahorro, sino la capacidad de lanzar <span class="text-white font-bold">10 veces más programas</span> con el mismo presupuesto.
                             </p>
                         </div>
                     </div>
@@ -364,11 +333,10 @@
             </div>
         </div>
 
-        <!-- SLIDE 6: CIERRE -->
         <div class="slide items-center text-center">
             <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-tight">
-                Escalando el <br>
-                <span class="text-gradient">Potencial Humano</span>
+                Liderando el Futuro <br>
+                <span class="text-gradient">Académico</span>
             </h2>
             <div class="w-24 h-1.5 bg-orange-600 mb-8 mx-auto"></div>
             <p class="text-sm font-bold uppercase tracking-[0.6em] text-slate-600">Vince scholar | Anáhuac Mayab</p>
@@ -376,7 +344,6 @@
 
     </div>
 
-    <!-- Navegación -->
     <div class="absolute bottom-8 w-full flex justify-between px-10 z-50 pointer-events-none">
         <button id="prevBtn" class="pointer-events-auto p-4 rounded-full bg-slate-900/80 text-white hover:bg-orange-600 transition-all disabled:opacity-10 border border-slate-800">
             <i data-lucide="arrow-left" class="w-5 h-5"></i>

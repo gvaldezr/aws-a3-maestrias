@@ -1,9 +1,9 @@
-name: Deploy Slides to GitHub Pages
+name: Deploy Presentations to GitHub Pages
 
 on:
   push:
     branches: [main]
-    paths: [slides.html]
+    paths: [slides.html, press.html]
   workflow_dispatch:
 
 permissions:
@@ -28,6 +28,7 @@ jobs:
         run: |
           mkdir _site
           cp slides.html _site/index.html
+          cp press.html _site/press.html
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
