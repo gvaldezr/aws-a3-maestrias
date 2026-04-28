@@ -540,9 +540,9 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
     import logging
     log = logging.getLogger(__name__)
 
-    log.info(f"CONTENT_DIRECT: Generating content for {subject_name} ({subject_id})")
+    log.info(f"CONTENT: Generating weekly content for {subject_name} ({subject_id})")
 
-    # Try LLM-powered generation first, fall back to deterministic
+    # Import LLM generators
     try:
         from llm_generator import generate_reading_llm, generate_quiz_llm, generate_masterclass_llm, generate_challenge_llm
     except ImportError:
@@ -554,143 +554,54 @@ def invoke(payload: dict, context: RequestContext = None) -> dict:
             generate_masterclass_llm = None
             generate_challenge_llm = None
 
-    use_llm = generate_reading_llm is not None
+    # Import weekly generator
+    try:
+        from weekly_generator import generate_weekly_content
+    except ImportError:
+        from src.agents.content.weekly_generator import generate_weekly_content
 
-    # 1. Executive readings — LLM per week
-    if use_llm:
-        log.info("CONTENT_LLM: Generating readings with LLM")
-        km = knowledge_matrix if isinstance(knowledge_matrix, list) else []
-        km_by_topic = {}
-        for km_entry in km:
-            if isinstance(km_entry, dict):
-                for topic in km_entry.get("syllabus_topics_covered", []):
-                    km_by_topic.setdefault(topic.lower().strip(), []).append(km_entry)
+    # Generate all content organized by week
+    content_result = generate_weekly_content(
+        weeks=weeks,
+        subject_name=subject_name,
+        language=language,
+        papers=papers,
+        knowledge_matrix=knowledge_matrix,
+        learning_outcomes=learning_outcomes,
+        objectives=objectives,
+        competencies=competencies,
+        generate_reading_llm=generate_reading_llm,
+        generate_quiz_llm=generate_quiz_llm,
+        generate_masterclass_llm=generate_masterclass_llm,
+        generate_challenge_llm=generate_challenge_llm,
+    )
 
-        llm_readings = []
-        for week in weeks:
-            w = week.get("week", 1)
-            theme = week.get("theme", "")
-            bloom = week.get("bloom_level", "")
-            subtopics = week.get("subtopics", [])
-            is_last_week = (w == len(weeks))
+    # Build content_package in the format expected by QA Gate and frontend
+    weekly_units = content_result.get("weekly_units", [])
 
-            # Find KM concepts for this week
-            theme_lower = theme.lower().strip()
-            relevant_km = km_by_topic.get(theme_lower, [])
-            if not relevant_km:
-                theme_words = {wd for wd in theme_lower.split() if len(wd) > 4}
-                for tk, entries in km_by_topic.items():
-                    if theme_words & {wd for wd in tk.split() if len(wd) > 4}:
-                        relevant_km.extend(entries)
+    # Flatten readings for backward compatibility
+    all_readings = []
+    all_quizzes = []
+    all_forums = []
+    for unit in weekly_units:
+        all_readings.extend(unit.get("readings", []))
+        if unit.get("quiz"):
+            all_quizzes.append(unit["quiz"])
+        if unit.get("forum"):
+            all_forums.append(unit["forum"])
 
-            concepts = []
-            methodologies_list = []
-            for kme in relevant_km:
-                for c in kme.get("core_concepts", []):
-                    if isinstance(c, dict):
-                        concepts.append(c)
-                for m in kme.get("key_methodologies", []):
-                    if isinstance(m, str):
-                        methodologies_list.append(m)
-
-            theme_words_list = [wd.lower() for wd in theme.split() if len(wd) > 4]
-            rel_papers = [p for p in papers if any(wd in p.get("title", "").lower() for wd in theme_words_list)][:3] or papers[:2]
-
-            # Generate 2 readings per week (except last week which is synthesis)
-            num_readings = 1 if is_last_week else 2
-
-            for reading_num in range(1, num_readings + 1):
-                if num_readings == 2:
-                    # Split concepts between the 2 readings
-                    half = max(1, len(concepts) // 2)
-                    reading_concepts = concepts[:half] if reading_num == 1 else concepts[half:]
-                    reading_methods = methodologies_list[:3] if reading_num == 1 else methodologies_list[3:]
-                    reading_papers = rel_papers[:2] if reading_num == 1 else rel_papers[1:3]
-                    suffix = "A" if reading_num == 1 else "B"
-                    title = f"Semana {w}{suffix}: {theme}"
-                else:
-                    reading_concepts = concepts
-                    reading_methods = methodologies_list
-                    reading_papers = rel_papers
-                    title = f"Semana {w}: {theme} (Sintesis)"
-
-                content_md = generate_reading_llm(w, len(weeks), theme, subject_name, bloom,
-                                                   subtopics, reading_concepts, reading_papers, reading_methods)
-                llm_readings.append({"week": w, "reading_num": reading_num, "title": title,
-                                     "bloom_level": bloom, "content_md": content_md, "language": language})
-                log.info(f"CONTENT_LLM: Reading week {w}.{reading_num} done ({len(content_md)} chars)")
-
-        readings_result = {"readings": llm_readings}
-    else:
-        readings_result = _call_generate_readings(weeks, subject_name, language, papers, knowledge_matrix)
-    log.info(f"CONTENT: Readings: {len(readings_result.get('readings', []))}")
-
-    # 2. Quiz — LLM generates 8 critical reasoning questions
-    if use_llm:
-        log.info("CONTENT_LLM: Generating quiz with LLM")
-        ra_descs = [lo.get("description", "") for lo in learning_outcomes]
-        obj_descs = [o.get("description", "") for o in objectives]
-        ra_ids_list = [lo.get("ra_id", "") for lo in learning_outcomes]
-        llm_questions = generate_quiz_llm(subject_name, ra_descs, obj_descs)
-        if llm_questions and len(llm_questions) >= 6:
-            quizzes_result = {"quizzes": [{
-                "quiz_id": "QUIZ-RC-001",
-                "title": f"Quiz de Razonamiento Critico: {subject_name}",
-                "type": "critical_reasoning",
-                "week": 3,
-                "total_questions": len(llm_questions),
-                "ra_ids": ra_ids_list,
-                "questions": llm_questions,
-            }]}
-            log.info(f"CONTENT_LLM: Quiz done ({len(llm_questions)} questions)")
-        else:
-            log.warning("CONTENT_LLM: Quiz LLM failed, using deterministic fallback")
-            quizzes_result = _call_generate_quizzes(learning_outcomes, subject_name, language, objectives)
-    else:
-        quizzes_result = _call_generate_quizzes(learning_outcomes, subject_name, language, objectives)
-    log.info(f"CONTENT: Quizzes: {len(quizzes_result.get('quizzes', []))}")
-
-    # 3. Maestria artifacts (deterministic — structure-heavy, not narrative)
+    # Maestria artifacts (deterministic)
     maestria_result = _call_generate_maestria(papers, subject_name, competencies, language, weeks, learning_outcomes)
-    log.info(f"CONTENT: Maestria artifacts generated")
 
-    # Assemble result
     content_package = {
-        "executive_readings": readings_result,
-        "quizzes": quizzes_result,
+        "weekly_units": weekly_units,
+        "executive_readings": {"readings": all_readings},
+        "quizzes": {"quizzes": all_quizzes},
+        "forums": all_forums,
         "maestria_artifacts": maestria_result,
+        "masterclass_script": content_result.get("masterclass_script", {}),
+        "agentic_challenge": content_result.get("agentic_challenge", {}),
     }
-
-    # 4. Masterclass script — LLM
-    if use_llm:
-        log.info("CONTENT_LLM: Generating masterclass with LLM")
-        mid_week = weeks[len(weeks) // 2] if weeks else {}
-        mc_theme = mid_week.get("theme", subject_name)
-        obj_descs_short = [o.get("description", "")[:60] for o in objectives[:3]]
-        comp_ids_list = [c.get("competency_id", "") for c in competencies]
-        mc = generate_masterclass_llm(subject_name, mc_theme, obj_descs_short, papers[:5], comp_ids_list)
-        if mc and mc.get("structure"):
-            content_package["masterclass_script"] = mc
-            log.info("CONTENT_LLM: Masterclass done")
-        else:
-            content_package["masterclass_script"] = _call_generate_masterclass(subject_name, weeks, objectives, papers, competencies)
-    else:
-        content_package["masterclass_script"] = _call_generate_masterclass(subject_name, weeks, objectives, papers, competencies)
-
-    # 5. Agentic challenge — LLM
-    if use_llm:
-        log.info("CONTENT_LLM: Generating agentic challenge with LLM")
-        ra_descs = [lo.get("description", "") for lo in learning_outcomes]
-        comp_ids_list = [c.get("competency_id", "") for c in competencies]
-        w2_theme = weeks[1].get("theme", subject_name) if len(weeks) > 1 else subject_name
-        ch = generate_challenge_llm(subject_name, ra_descs, comp_ids_list, w2_theme)
-        if ch and (ch.get("scenario") or ch.get("rubric")):
-            content_package["agentic_challenge"] = ch
-            log.info("CONTENT_LLM: Challenge done")
-        else:
-            content_package["agentic_challenge"] = _call_generate_agentic_challenge(subject_name, learning_outcomes, competencies, weeks)
-    else:
-        content_package["agentic_challenge"] = _call_generate_agentic_challenge(subject_name, learning_outcomes, competencies, weeks)
 
     # Persist directly to S3
     _direct_persist_content(subject_id, sj, content_package)
@@ -1230,6 +1141,10 @@ def _self_persist_content(subject_id: str, result_text: str) -> None:
         sj["content_package"]["masterclass_script"] = parsed["masterclass_script"]
     if parsed.get("agentic_challenge"):
         sj["content_package"]["agentic_challenge"] = parsed["agentic_challenge"]
+    if parsed.get("forums"):
+        sj["content_package"]["forums"] = parsed["forums"]
+    if parsed.get("weekly_units"):
+        sj["content_package"]["weekly_units"] = parsed["weekly_units"]
 
     # Only advance state if not already past CONTENT_READY
     current = sj["pipeline_state"]["current_state"]
