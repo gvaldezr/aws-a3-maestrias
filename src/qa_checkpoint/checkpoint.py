@@ -155,6 +155,7 @@ def _get_checkpoint_summary(subject_id: str) -> dict:
         "program_type": meta.get("program_type", ""),
         "subject_type": meta.get("subject_type", ""),
         "current_state": subject_json.get("pipeline_state", {}).get("current_state", ""),
+        "canvas_course_url": subject_json.get("publication", {}).get("canvas_course_url", ""),
         "qa_report": qa,
 
         # Descriptive card

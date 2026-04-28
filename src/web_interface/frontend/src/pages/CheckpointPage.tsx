@@ -99,7 +99,22 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
         {activeTab === "canvas" && <CanvasPreviewTab preview={summary.canvas_preview} />}
       </div>
 
-      {/* Decision Panel */}
+      {/* Decision Panel — only for PENDING_APPROVAL */}
+      {summary.current_state === "PUBLISHED" ? (
+        <div style={{background:"#c6f6d5",border:"1px solid #9ae6b4",borderRadius:"8px",padding:"1.5rem",textAlign:"center"}}>
+          <p style={{margin:0,fontSize:"1.1rem",color:"#22543d",fontWeight:600}}>✅ Este curso ya fue publicado en Canvas LMS</p>
+          {summary.canvas_course_url && (
+            <a href={summary.canvas_course_url} target="_blank" rel="noopener noreferrer"
+              style={{display:"inline-block",marginTop:"0.75rem",background:"#38a169",color:"white",padding:"0.5rem 1.5rem",borderRadius:"6px",textDecoration:"none",fontWeight:600}}>
+              🔗 Ver curso en Canvas
+            </a>
+          )}
+        </div>
+      ) : summary.current_state === "APPROVED" ? (
+        <div style={{background:"#bee3f8",border:"1px solid #90cdf4",borderRadius:"8px",padding:"1.5rem",textAlign:"center"}}>
+          <p style={{margin:0,fontSize:"1.1rem",color:"#2a4365",fontWeight:600}}>⏳ Curso aprobado, publicación en proceso...</p>
+        </div>
+      ) : (
       <div style={{background:"#f7fafc",border:"1px solid #e2e8f0",borderRadius:"8px",padding:"1.5rem"}}>
         <h2 style={{margin:"0 0 1rem",fontSize:"1.1rem"}}>Decisión</h2>
         <textarea
@@ -119,6 +134,7 @@ export function CheckpointPage({ subjectId, onDecisionComplete }: Props) {
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }
